@@ -342,7 +342,7 @@
 \else 
   \def\@orzelek{logoAGH.eps}
   \def\@logoWMS{logoWMS.eps}\fi
-\renewcommand{\titlesetup}{\huge\bfseries}
+% \renewcommand{\titlesetup}{\huge\bfseries}
 \newcommand{\mgr@aut@font}{\LARGE}
 \newcommand{\mgr@other@font}{\large}
 \newcommand{\mgr@otheri@font}{\normalsize}

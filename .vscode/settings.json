@@ -1,0 +1,17 @@
+{
+    "files.exclude": {
+        "*.fdb_latexmk": true, 
+        "*.toc": true, 
+        "*.fls": true, 
+        "*.aux": true,
+        "*.gz": true,
+        "*.eps": true,
+        "*.jpg": true,
+        "*.png": true,
+        "*.cls": true,
+        "logoAGH.pdf": true,
+        "logoWMS.pdf": true,
+        "logoWMS-eps-converted-to.pdf": true,
+        "orzelAGH-eps-converted-to.pdf": true,
+    }
+}
