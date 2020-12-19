@@ -13,5 +13,14 @@
         "logoWMS.pdf": true,
         "logoWMS-eps-converted-to.pdf": true,
         "orzelAGH-eps-converted-to.pdf": true,
-    }
+    },
+    "spellright.language": [
+        "en",
+        "pl"
+    ],
+    "spellright.documentTypes": [
+        "markdown",
+        "latex",
+        "plaintext"
+    ]
 }

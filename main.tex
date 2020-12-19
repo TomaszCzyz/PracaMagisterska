@@ -5,21 +5,13 @@
 %%    autor: Tomasz Czyż
 %%    Copyright (C) 2003 by ------
 %% ************************* Plik główny *************************
-%%
-%-> Opcje klasy: 
-%->  - man -> Wersja "meska" pracy :) Kwestia jednej litery w oświadczeniu. Domyślnie jest
-%->           w wersji "damskiej".
-%->  - robocza -> Produkuje wersję roboczą (nagłówek wzbogacony o datę kompilacji oraz
-%->               nazwisko autora w stopce) 
-%->  - pdftex -> Obowiązkowa przy kompilacji pdfLaTeX-em.
-%->  - mfu, oik, pit, opt -> Specjalności, patrz niżej.
-%->  - twoside -> standardowa w klasie mwbk. Posłuży nam do przygotowania wersji dwustronnej pracy
+
 %%
 %% ======== PREAMBUŁA ======== 
 %%
 \documentclass[oik, pdftex, robocza, man]{mgrwms}
 
-\usepackage[utf8]{inputenc}  % opcja latin2 dla Linuxa
+\usepackage[utf8]{inputenc}  % opcja latin2 dla Linux
 \usepackage{amsmath}           % łatwiejszy skład matematyki
 \newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
 \usepackage{amssymb} 
@@ -29,7 +21,7 @@
 
 \usepackage{color}
 
-\usepackage[polish]{babel}     % pakiet 'babel' koniecznie z pakietem 'fontenc'!
+\usepackage[polish]{babel}
 \usepackage[OT4]{fontenc}
 \usepackage{polski}
 \allowdisplaybreaks
@@ -41,10 +33,10 @@
 %%
 %% ======== METRYCZKA PRACY ========
 %%
-\title{ \LARGE Tytuł}
-\author{Autor}
-\promotor{dr xxx}
-\nralbumu{000000}
+\title{ \LARGE Aproksymacja funkcji kawałkami regularnych przy użyciu informacji dokładnej i niedokładnej}
+\author{Tomasz Czyż}
+\promotor{dr Maciej Goćwin}
+\nralbumu{290565}
 \maketitle
 
 \slowakluczowe{słowa kluczowe}
@@ -73,8 +65,6 @@
 \let\c@table\c@figure
 \makeatother
 
-% \input{----}
-
 %%
 %% ======== SPIS TREŚCI ========
 %%
@@ -96,7 +86,9 @@
 \end{abstract}
 
 %%
+%%
 %% ======== GŁÓWNA CZĘŚĆ PRACY ========
+%%
 %%
 
 %%
@@ -104,8 +96,10 @@
 %%
 
 \begin{wstep}    % ew. \begin{wstep}[Wprowadzenie]
-    Wstep
-\end{wstep}
+    Celem niniejszej pracy jest analiza zachowania różnych algorytmów aproksymujących funkcje kawałkami gładkie przy użyciu informacji dokładniej i niedokładniej.
+    Pierwszy z omawianych algorytmów został przedstawiony w pracy \cite{PoA}, gdzie rozważane są funkcje klasy $F^{\infty}_r$. Zakładamy, że zarówno sama funkcja $f: [0,T] \longrightarrow \R$ może być nieciągła, jak i jej pochodna, począwszy od rzędu możliwe większego od pierwszego. Czyli, dla przykładu, $f$ może być dwa razy różniczkowalna na $[0, T]$ i $f^{(3)}(s)$ może nie istnieć w jakimś punkcie $s$. Ponadto, $f$ może mieć skończenie wiele punktów osobliwych; ich ilość i położenie jest nieznane. Dodatkowo, algorytm używa $n$ wartości funkcji w punktach $x_1, \ldots x_n$ jako jedyne dostępne informacje o funkcji $f$, a w przypadku algorytmu adaptacyjnego dopuszczamy, że wybór $x_j$ zależy od $f(x_1), \ldots, f(x_{j-1})$.
+    W wymienionej pracy do znalezienia optymalnego algorytmu nieadaptacyjnego i adaptacyjnego w najgorszym przypadku oraz w przypadku asymptotycznym do mierzenia błędu stosowana jest m.in. norma $L^p (1 \leq  p < \infty)$
+    \end{wstep}
 
 %%
 %% ==== ROZDZIAŁ 1 ====
@@ -113,7 +107,7 @@
 
 \chapter{Rozdział 1}
 
-Lotem ipsum
+Jakaś zmiana
 
 \mgrclosechapter
 
@@ -139,8 +133,26 @@ Lotem ipsum
 % \bibliography{<pliki bib>} 
 %%
 \begin{thebibliography}{88}
-    %-> Treść bibliografii. 
-    % \bibitem{<Klucz>}
+
+    \bibitem{PoA}
+    L. Plaskota, G. W. Wasilkowski, Y. Zhao, 
+    \emph{The power of adaption for approximating functions with singularities}, Mathematics Of Computation 77
+    2008, p. 2309–2338
+
+    \bibitem{UA}
+    L. Plaskota, G. W. Wasilkowski, 
+    \emph{Uniform approximation of piecewise r-smooth and globally continuous functions}, SIAM Journal on Numerical
+    Analysis, Vol. 47, No. 1 (2008/2009)
+
+    \bibitem{CoDF}
+    B. Kacewicz, P. Przybyłowicz, 
+    \emph{Complexity of the derivative-free solution of
+    systems of IVPs with unknown singularity hypersurface}, Journal of Complexity
+    
+    \bibitem{AoP}
+    P. M. Morkisz, L. Plaskota, 
+    \emph{Approximation of piecewise Hölder functions from inexact information}, Journal of Complexity
+
 \end{thebibliography}
 
 \end{document}
