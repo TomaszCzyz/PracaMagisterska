@@ -1,0 +1,223 @@
+%%% & --translate-file=cp1250pl
+%% ************ AKADEMIA GÓRNICZO-HUTNICZA W KRAKOWIE **************
+%% ***************** Wydział Matematyki Stosowanej ***************** 
+%% ****************** PRACA MAGISTERSKA w LaTeX-u ******************
+%%    autor: ------
+%%    Copyright (C) 2003 by ------
+%% ************************* Plik główny *************************
+%%
+%-> Opcje klasy: 
+%->  - man -> Wersja "meska" pracy :) Kwestia jednej litery w oświadczeniu. Domyślnie jest
+%->           w wersji "damskiej".
+%->  - robocza -> Produkuje wersję roboczą (nagłówek wzbogacony o datę kompilacji oraz
+%->               nazwisko autora w stopce) 
+%->  - pdftex -> Obowiązkowa przy kompilacji pdfLaTeX-em.
+%->  - mfu, oik, pit, opt -> Specjalności, patrz niżej.
+%->  - twoside -> standardowa w klasie mwbk. Posłuży nam do przygotowania wersji dwustronnej pracy
+%%
+%% ======== PREAMBUŁA ======== 
+%%
+\documentclass[oik,pdftex]{mgrwms}
+%%
+%-> Pakiet inputenc jeżeli TeX nie obsługuje przekodowań (pierwsza linijka pliku),
+%-> a chcemy pisać z pomocą stron kodowych 
+%-> (cp1250 dla Windows, iso 8859-2 (latin2) dla Linuxa)
+%%
+\usepackage[utf8]{inputenc}  % opcja latin2 dla Linuxa
+\usepackage{amsmath}           % łatwiejszy skład matematyki
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+\usepackage{amssymb} 
+\usepackage{latexsym}
+\usepackage{amsthm}
+\usepackage{enumerate}
+
+\usepackage{color}
+%%
+%-> ładujemy wybrany pakiet polonizacyjny.
+%%
+\usepackage[polish]{babel}     % pakiet 'babel' koniecznie z pakietem 'fontenc'!
+\usepackage[OT4]{fontenc}
+\usepackage{polski}
+\allowdisplaybreaks
+%\usepackage{breqn}
+%%
+%-> Dodatkowe polecenia które trzeba umieścić w preambule:  
+%-> - \makeindex, jeżeli włączamy indeks (nieobowiązkowy)
+%-> - \includeonly, dla warunkowej kompilacji, i ew. pozostałe
+%%
+% \makeindex
+% \includeonly{---,---,---,---}
+%%
+%% <<<< BiBTeX >>>>
+%%
+% \bibliographystyle{ddabbrv}
+% \nocite{*}
+%%
+\begin{document}
+% \prefixing  % jeżeli piszemy z 'polskim' oraz używamy 'ciachów': /a, /e, /c,... 
+%%
+%%
+%% ======== METRYCZKA PRACY ========
+\title{ \LARGE Tytuł}
+\author{Autor}
+\promotor{dr xxx}
+\nralbumu{000000}
+\maketitle
+%%
+\slowakluczowe{słowa kluczowe}
+\keywords{keywords}
+%%
+%-> Specjalność (tutaj nie uwzględnioną) zadajemy przez opcję klasy:
+%-> (czyli np. \documentclass[man,pit]{mgrwms})
+%-> - mfu (Mat. w ekonomii, finansach i ubezpieczeniach)
+%-> - oik (Mat. obliczeniowa i komputerowa)
+%-> - pit (Mat. w naukach technicznych i przyrodniczych)
+%-> - opt (Optymalizacja) 
+%%
+%-> Uwaga! W przypadku niektórych, dosyć długich tytułów, ;) zasadna może być próba ZMNIEJSZENIA
+%-> czcionki do stopnia \LARGE.
+%-> Wykonujemy zatem: \title{\LARGE Nasz nieco przydługi temat... ;)}
+%-> Jeżeli tytuł zajmuje pięć linii (lub więcej) może to okazać się wskazane dla zwiększenia 
+%-> estetyki strony tytułowej.
+%%
+%%
+%% Aby wstawić własny obrazek należy mieć go w .png, a następnie wyeksportować do (np. przy pomocy GIMPA) do .eps!
+%%
+%% ======== NASZE MAKRA ========
+%%
+%-> Miejsce na nasze makra (jedno z wielu ;). Lepszym pomysłem będzie jednak 
+%-> umieszczenie ich w osobnym pliku i wczytanie poleceniem \input
+%%
+\newtheorem{thm}{\indent Twierdzenie}[chapter]
+\newtheorem{lemma}[thm]{\indent Lemat}
+\newtheorem{cor}[thm]{\indent Wniosek}
+\newtheorem{obs}[thm]{\indent Obserwacja}
+\newtheorem{uw}[thm]{\indent Uwaga}
+\newtheorem{df}[thm]{Definicja}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Pra}{\mathbb{Pra}}
+
+\makeatletter
+\newcommand*{\defeq}{\mathrel{\rlap{%
+                     \raisebox{0.3ex}{$\m@th\cdot$}}%
+                     \raisebox{-0.3ex}{$\m@th\cdot$}}%
+                     =}
+\let\c@table\c@figure
+\makeatother
+
+% \input{----}
+%%
+%%
+%% ======== SPIS TREŚCI ========
+%%
+\tableofcontents
+%%
+%%
+%% ======== STRESZCZENIE PRACY (POLSKIE) ========
+%TODO streszczenie
+\begin{streszczenie}
+Streszczenie
+ 
+
+%%
+%-> Tutaj umieszczamy streszczenie po polsku (bezpośrednio lub np. ładując
+%-> poleceniem \input{plik}). Jeżeli praca jest w języku polskim streszczenie
+%-> NIE POWINNO przekroczyć jednej strony, jeżeli zaś w języku obcym wówczas 
+%-> ma mieć MINIMUM 4 str.!
+%%
+%-> Treść streszczenia po polsku
+%%
+\end{streszczenie}
+%%
+%%
+%% ======== STRESZCZENIE PRACY (ANGIELSKIE) ========
+%TODO abstract
+\begin{abstract}
+Abstract
+
+%%
+%-> Podobnie jak wyżej umieszczamy abstract angielski. Sposoby umieszczenia dowolne.
+%-> Tutaj też, NIE PRZEKRACZAMY jednej strony!
+%%
+%-> Treść streszczenia po angielsku
+%%
+\end{abstract}
+%%
+%%
+%% ======== GŁÓWNA CZĘŚĆ PRACY ========
+%%
+%-> Wstęp/Wprowadzenie jest rozdziałem NIENUMEROWANYM. Sposób nazwania
+%-> do wyboru. Domyślnie nazywa się "Wstęp", ale przez argument opcjonalny możemy to zmienić.
+%-> (\begin{wstep}[Wprowadzenie]).
+%%
+%%
+%% ==== WSTĘP ====
+%%
+%TODO Wstęp
+\begin{wstep}    % ew. \begin{wstep}[Wprowadzenie]
+Wstep
+
+%%
+%-> Treść wstępu (oczywiście może być w innym pliku...)
+% \input{----}
+%%
+\end{wstep}
+%%
+%%
+%% ==== ROZDZIAŁ 1 ====
+%%
+%%
+%-> Treść rozdziału 1
+%%
+
+\chapter{Rozdział 1}
+
+Lotem ipsum
+
+\mgrclosechapter
+
+%% ==== ROZDZIAŁ 2 ====
+%%
+%\chapter{Wyniki numeryczne}
+%%
+%-> Treść rozdziału 2
+%%
+%\mgrclosechapter
+%%
+%-> W podobny sposób umieszczamy kolejne rozdziały, pamiętając by umieścić 
+%-> na końcu polecenie \mgrcloschapter (!)
+%%
+%%
+%% ======== DODATKI ========
+%%
+%-> Po rozdziałach miejsce na ewentualne dodatki. 
+% \appendix
+% \chapter{----}
+%%
+%-> Treść dodatku A
+%%
+% \mgrclosechapter
+%%
+%%
+%% ======== BIBLIOGRAFIA ========
+%%
+%-> OBOWIĄZKOWA część pracy. Umieszczamy zaraz po ostatnim rozdziale.  
+%-> Możemy użyć środowiska thebibliography lub też bazy BiBTeX.
+%-> Sposób formatowania linii z daną pozycją literatury, 
+%-> umieszczony jest w pliku mgrinfo.pdf (katalog doc\mgrinfo)
+%-> 
+%% <<<< BiBTeX >>>>
+%%
+% \bibliography{<pliki bib>} 
+%%
+\begin{thebibliography}{88}
+%%
+%-> Treść bibliografii. 
+% \bibitem{<Klucz>} ... 
+%%
+\end{thebibliography}
+
+\end{document}
+
+%% =========================================================== %%
