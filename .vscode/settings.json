@@ -14,6 +14,7 @@
         "logoWMS-eps-converted-to.pdf": true,
         "orzelAGH-eps-converted-to.pdf": true,
     },
+    "latex-workshop.latex.autoBuild.run": "never",
     "spellright.language": [
         "en",
         "pl"
