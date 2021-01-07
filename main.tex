@@ -29,6 +29,7 @@
 % \bibliographystyle{ddabbrv}
 % \nocite{*}
 
+
 \begin{document}
 %%
 %% ======== METRYCZKA PRACY ========
@@ -105,10 +106,31 @@
 
     Ostatni z analizowanych algorytmów pochodzi z pracy \cite{AoP} i jako jedyny z przedstawionych algorytmów uwzględnia zaburzenie danych. W artykule uogólnione zostają rezultaty z \cite{PoA} i \cite{UA} poprzez wprowadzanie informacji niedokładniej oraz założenie, że wykładnik Höldera $\varrho \in (0,1]$. (...) Z tego powodu w pracy \cite{AoP} przedstawiony został nowy algorytm do lokalizacji osobliwości. Co więcej dla $\varrho = 0$, co odpowiada informacji dokładniej, przedstawiony algorytm jest nawet prostszy niż te z \cite{PoA} i \cite{UA}.
 
-    \end{wstep}
+\end{wstep}
+
 
 %%
-%% ==== ROZDZIAŁ 1 ====
+%% ==== ROZDZIAŁ ====
+%%
+
+\chapter{Definicje}
+
+Dla liczby całkowitej $ r \geq 0$, $0 < \varrho \leq 1$ oraz $a < b$, przez $H_{r, \varrho}(a,b)$ oznaczamy przestrzeń funkcji $g: [a,b] \rightarrow \R$ takich, że $g \in C^r([a, b])$ i $g^{(r)}$ jest Hölderowsko ciągła z wykładnikiem $\varrho$,
+\begin{equation*}
+    c(g) := \sup_{a \leq x \leq y \leq b} \frac{|g^{(r)}(x) - g^{(r)}(y)|}{|x-y|^{\varrho}} < \infty.
+\end{equation*}
+Dla danego $T > 0$ niech $F_{r, \varrho} = F_{r, \varrho}(T)$ będzie przestrzenią funkcji $f: \R \rightarrow \R$ spełniających następujące warunki: istnieje $s_f \in [0, T)$ i $g_f \in H_{r, \varrho}(0,T)$ takie, że
+\begin{equation*}
+    f(lT + s_f + x) = g_f(x) \quad \text{for all} \quad l = 0, \pm 1, \pm 2, \ldots \quad \text{i} \quad x \in [0, T)
+\end{equation*}
+
+
+
+\mgrclosechapter
+
+
+%%
+%% ==== ROZDZIAŁ ====
 %%
 
 \chapter{Złożoność obliczeniowa}
@@ -118,7 +140,7 @@ rozdział o informacji zaburzonej itp.
 \mgrclosechapter
 
 %%
-%% ==== ROZDZIAŁ 2 ====
+%% ==== ROZDZIAŁ ====
 %%
 
 \chapter{Ograniczenia z dołu}
@@ -128,7 +150,7 @@ rozdział o informacji zaburzonej itp.
 
 
 %%
-%% ==== ROZDZIAŁ 3 ====
+%% ==== ROZDZIAŁ ====
 %%
 
 \chapter{Algorytmy}
@@ -156,7 +178,7 @@ Powyższe kroki mogą być zapisane następująco; dla $t_i = ih \; \forall i$. 
 
     \textit{Krok 2} & Oznaczymy przez $\tilde{p}_+$ i $\tilde{p}_-$ wielomiany stopnia $ \leq r$, które interpolują węzły $(t_j, \tilde{f}(t_j))$ odpowiednio dla $i^* - r \leq j \leq i^*$ oraz dla $i^* + r + 1 \leq j \leq i^* + 2r + 1$. Następnie wykonaj iterację: \\
                     & $u := u_1$, $v := v_1$ \\
-                    & \textbf{dopóki} $v-u < \omega$ \textbf{do} \\
+                    & \textbf{dopóki} $v-u > \omega$ \textbf{do} \\
                     & \hspace{20pt}$z_j := u + j(v-u) / (r+2), \qquad j = 1, 2, \ldots, r + 1$ \\
                     & \hspace{20pt}\(\displaystyle j^* := arg \max_{1 \leq j \leq r + 1}|\tilde{p}_{+}(z_j) - \tilde{p}_{-}(z_j)| \) \\
                     & \hspace{20pt}\textbf{if} $|\tilde{f}(z_{j^*}) - \tilde{p}_{-}(z_j)| \leq |\tilde{f}(z_{j^*}) - \tilde{p}_{+}(z_j)|$ \textbf{then} \\
@@ -189,7 +211,7 @@ Finalną aproksymacją $s_f$ jest
 
 
 %%
-%% ==== ROZDZIAŁ 4 ====
+%% ==== ROZDZIAŁ ====
 %%
 
 \chapter{Testy numeryczne}
