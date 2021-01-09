@@ -1,0 +1,269 @@
+%%% & --translate-file=cp1250pl
+%% ************ AKADEMIA GÓRNICZO-HUTNICZA W KRAKOWIE **************
+%% ***************** Wydział Matematyki Stosowanej ***************** 
+%% ****************** PRACA MAGISTERSKA w LaTeX-u ******************
+%%    autor: Tomasz Czyż
+%%    Copyright (C) 2003 by ------
+%% ************************* Plik główny *************************
+
+%%
+%% ======== PREAMBUŁA ======== 
+%%
+\documentclass[oik, pdftex, robocza, man]{mgrwms}
+
+\usepackage[utf8]{inputenc}  % opcja latin2 dla Linux
+\usepackage{amsmath}           % łatwiejszy skład matematyki
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+\usepackage{amssymb} 
+\usepackage{latexsym}
+\usepackage{amsthm}
+\usepackage{enumerate}
+
+\usepackage{color}
+
+\usepackage[polish]{babel}
+\usepackage[OT4]{fontenc}
+\usepackage{polski}
+\allowdisplaybreaks
+%% <<<< BiBTeX >>>>
+% \bibliographystyle{ddabbrv}
+% \nocite{*}
+
+
+\begin{document}
+%%
+%% ======== METRYCZKA PRACY ========
+%%
+\title{ \LARGE Aproksymacja funkcji kawałkami regularnych przy użyciu informacji dokładnej i niedokładnej}
+\author{Tomasz Czyż}
+\promotor{dr Maciej Goćwin}
+\nralbumu{290565}
+\maketitle
+
+\slowakluczowe{słowa kluczowe}
+\keywords{keywords}
+%%
+%% ======== MAKRA ========
+%%
+%-> Miejsce na nasze makra (jedno z wielu ;). Lepszym pomysłem będzie jednak 
+%-> umieszczenie ich w osobnym pliku i wczytanie poleceniem \input
+%%
+\newtheorem{thm}{\indent Twierdzenie}[chapter]
+\newtheorem{lemma}[thm]{\indent Lemat}
+\newtheorem{cor}[thm]{\indent Wniosek}
+\newtheorem{obs}[thm]{\indent Obserwacja}
+\newtheorem{uw}[thm]{\indent Uwaga}
+\newtheorem{df}[thm]{Definicja}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Pra}{\mathbb{Pra}}
+\newcommand{\F}{\mathcal{F}}
+
+\makeatletter
+\newcommand*{\defeq}{\mathrel{\rlap{%
+                     \raisebox{0.3ex}{$\m@th\cdot$}}%
+                     \raisebox{-0.3ex}{$\m@th\cdot$}}%
+                     =}
+\let\c@table\c@figure
+\makeatother
+
+%%
+%% ======== SPIS TREŚCI ========
+%%
+\tableofcontents
+%%
+%% ======== STRESZCZENIE PRACY (POLSKIE) ========
+%%
+
+\begin{streszczenie}
+    Streszczenie
+\end{streszczenie}
+
+%%
+%% ======== STRESZCZENIE PRACY (ANGIELSKIE) ========
+%%
+
+\begin{abstract}
+    Abstract
+\end{abstract}
+
+%%
+%%
+%% ======== GŁÓWNA CZĘŚĆ PRACY ========
+%%
+%%
+
+%%
+%% ==== WSTĘP ====
+%%
+
+\begin{wstep}    % ew. \begin{wstep}[Wprowadzenie]
+    Celem niniejszej pracy jest analiza zachowania różnych algorytmów aproksymujących funkcje kawałkami gładkie przy użyciu informacji dokładniej i niedokładniej.
+    Pierwszy z analizowanych algorytmów został przedstawiony w pracy \cite{PoA}. Rozważane są w niej funkcje klasy $F^{\infty}_r$, o których zakładamy, że zarówno sama funkcja $f: [0,T] \longrightarrow \R$ może być nieciągła, jak i jej pochodna, począwszy od rzędu możliwe większego od pierwszego. Czyli, dla przykładu, $f$ może być dwa razy różniczkowalna na $[0, T]$ i $f^{(3)}(s)$ może nie istnieć w jakimś punkcie $s$. Ponadto, $f$ może mieć skończenie wiele punktów osobliwych; ich ilość i położenie jest nieznane. Dodatkowo, algorytm przedstawiony w \cite{PoA} używa $n$ wartości funkcji w punktach $x_1, \ldots x_n$ jako jedyne dostępne informacje o funkcji $f$, a w przypadku algorytmu adaptacyjnego dopuszczamy, że wybór $x_j$ zależy od $f(x_1), \ldots, f(x_{j-1})$.
+    W wymienionej pracy do znalezienia optymalnego algorytmu nieadaptacyjnego i adaptacyjnego w najgorszym przypadku oraz w przypadku asymptotycznym do mierzenia błędu stosowana jest m.in. norma $L^p (1 \leq  p < \infty)$.
+
+    W artykule \cite{UA} rozszerzony jest wynik prac \cite{IaA} i \cite{PoA} poprzez skupienie się na klasie funkcji ciągłych globalnie r-regularnych z co najwyżej jednym punktem osobliwym. W podanej pracy przedstawiony jest algorytm nieadaptacyjny, który asymptotycznie poprawia ograniczenie błędu z \cite{AoP}.
+
+    Ostatni z analizowanych algorytmów pochodzi z pracy \cite{AoP} i jako jedyny z przedstawionych algorytmów uwzględnia zaburzenie danych. W artykule uogólnione zostają rezultaty z \cite{PoA} i \cite{UA} poprzez wprowadzanie informacji niedokładniej oraz założenie, że wykładnik Höldera $\varrho \in (0,1]$. (...) Z tego powodu w pracy \cite{AoP} przedstawiony został nowy algorytm do lokalizacji osobliwości. Co więcej dla $\varrho = 0$, co odpowiada informacji dokładniej, przedstawiony algorytm jest nawet prostszy niż te z \cite{PoA} i \cite{UA}.
+
+\end{wstep}
+
+
+%%
+%% ==== ROZDZIAŁ ====
+%%
+
+\chapter{Definicje}
+
+Dla liczby całkowitej $ r \geq 0$, $0 < \varrho \leq 1$ oraz $a < b$, przez $H_{r, \varrho}(a,b)$ oznaczamy przestrzeń funkcji $g: [a,b] \rightarrow \R$ takich, że $g \in C^r([a, b])$ i $g^{(r)}$ jest Hölderowsko ciągła z wykładnikiem $\varrho$,
+\begin{equation*}
+    c(g) := \sup_{a \leq x \leq y \leq b} \frac{|g^{(r)}(x) - g^{(r)}(y)|}{|x-y|^{\varrho}} < \infty.
+\end{equation*}
+Dla danego $T > 0$ niech $F_{r, \varrho} = F_{r, \varrho}(T)$ będzie przestrzenią funkcji $f: \R \rightarrow \R$ spełniających następujące warunki: istnieje $s_f \in [0, T)$ i $g_f \in H_{r, \varrho}(0,T)$ takie, że
+\begin{equation*}
+    f(lT + s_f + x) = g_f(x) \quad \text{for all} \quad l = 0, \pm 1, \pm 2, \ldots \quad \text{i} \quad x \in [0, T)
+\end{equation*}
+
+
+
+\mgrclosechapter
+
+
+%%
+%% ==== ROZDZIAŁ ====
+%%
+
+\chapter{Złożoność obliczeniowa}
+
+rozdział o informacji zaburzonej itp.
+
+\mgrclosechapter
+
+%%
+%% ==== ROZDZIAŁ ====
+%%
+
+\chapter{Ograniczenia z dołu}
+
+
+\mgrclosechapter
+
+
+%%
+%% ==== ROZDZIAŁ ====
+%%
+
+\chapter{Algorytmy}
+
+
+\section{Algorytm oparty o informację zaburzoną}
+
+W tej opiszemy algorytm bazujący na informacji zaburzonej przedstawiony w artykule \cite{AoP}. Analizowany algorytm używa co najwyżej $n$ wartości funkcji z precyzją $\delta $ oraz w najgorszym przypadku ma błąd proporcjonalny do $\max{(\delta, n^{-1 / r + \varrho })}$ w klasie funkcji $\F^D_{r,\varrho }$ dla $p < \infty$ oraz w klasie $\F^C_{r,\varrho }$ dla $p \leq \infty$. Kluczowym parametrem algorytmu jest
+$$
+    h = T / m \quad with \quad  m \geq 2r + 1,
+$$
+gdzie $m$ jest początkową gęstością siatki. Dodatkowo, niech $\omega  = \omega(h)$ spełnia $0 < \omega < (r + 1)h $.
+
+Na początku algorytm aproksymuje punkt osobliwy $s_f$. Jest to realizowane w trzech krokach. W kroku 1. przy pomocy siatki rozmiarze o długości $h$ i różnic dzielonych lokalizowany jest punkt $s_f$ na przedziale $[u_1, v_1]$ o długości $(r + 1)h$. W kroku 2. używamy wielomianów interpolujących $\tilde{p}_+$ i $\tilde{p}_-$ do zwężenia tego przedziału do $[u_2, v_2]$. Krok 3. produkuje przedział $[u_3, v_3] \subseteq [u_2, v_2]$, w którym różnica $|\tilde{p}_{+} - \tilde{p}_{-}|$ jest nierosnąca na $[u_3, \xi]$ i niemalejąca na $[\xi, v_3]$, gdzie $\xi$ jest finalną aproksymacją $s_f$.
+
+Powyższe kroki mogą być zapisane następująco; dla $t_i = ih \; \forall i$. \vspace{10pt}
+
+\noindent
+\begin{tabular}{p{0.10\linewidth} p{0.85\linewidth}}
+    
+    \textit{Krok 1} & Oblicz różnice dzielone $\tilde{d}_i = \tilde{f}[t_i, \ldots, t_{i+r+1}]$ for $1 \leq i \leq m $ oraz znajdź \\
+                    & \(\displaystyle \qquad i^* = arg \max_{1 \leq i \leq m }|\tilde{d}_i| \)  \\
+                    & Niech $u_1 = t_{i^*}$ i $v_1 = t_{i^* + r + 1}$. \\
+                    & \\
+
+    \textit{Krok 2} & Oznaczymy przez $\tilde{p}_+$ i $\tilde{p}_-$ wielomiany stopnia $ \leq r$, które interpolują węzły $(t_j, \tilde{f}(t_j))$ odpowiednio dla $i^* - r \leq j \leq i^*$ oraz dla $i^* + r + 1 \leq j \leq i^* + 2r + 1$. Następnie wykonaj iterację: \\
+                    & $u := u_1$, $v := v_1$ \\
+                    & \textbf{dopóki} $v-u > \omega$ \textbf{do} \\
+                    & \hspace{20pt}$z_j := u + j(v-u) / (r+2), \qquad j = 1, 2, \ldots, r + 1$ \\
+                    & \hspace{20pt}\(\displaystyle j^* := arg \max_{1 \leq j \leq r + 1}|\tilde{p}_{+}(z_j) - \tilde{p}_{-}(z_j)| \) \\
+                    & \hspace{20pt}\textbf{if} $|\tilde{f}(z_{j^*}) - \tilde{p}_{-}(z_j)| \leq |\tilde{f}(z_{j^*}) - \tilde{p}_{+}(z_j)|$ \textbf{then} \\
+                    & \hspace{40pt}$u:= z_{j^*}$ \\
+                    & \hspace{20pt}\textbf{else} \\
+                    & \hspace{40pt}$v:= z_{j^*}$ \\
+                    & \textbf{end while} \\
+                    & Niech $u_2 = u$ i $v_2 = v$. \\
+                    & \\
+
+    \textit{Krok 3} & Wykonaj iterację: \\
+                    & $u := u_2$, $v := v_2$ \\
+                    & \textbf{dopóki} istnieje maksimum lokalne $|\tilde{p}_{+} - \tilde{p}_{-}|$ na $(u,v)$ \textbf{do} \\
+                    & \hspace{20pt}$z :=$ największe maksimum lokalne $|\tilde{p}_{+} - \tilde{p}_{-}|$ na $(u,v)$ \\
+                    & \hspace{20pt}\textbf{if} $|\tilde{f}(z) - \tilde{p}_{-}(z)| \leq |\tilde{f}(z) - \tilde{p}_{+}(z)|$ \textbf{then} \\
+                    & \hspace{40pt}$u:= z$ \\
+                    & \hspace{20pt}\textbf{else} \\
+                    & \hspace{40pt}$v:= z$ \\
+                    & \textbf{end while} \\
+                    & Niech $u_3 = u$ i $v_3 = v$.
+\end{tabular} \vspace{10pt}
+
+Finalną aproksymacją $s_f$ jest
+\begin{equation*}
+        \xi := arg \max_{u_3 \leq x \leq v_3}|\tilde{p}_{+} - \tilde{p}_{-}| \hspace{200pt}
+\end{equation*}
+
+
+\mgrclosechapter
+
+
+%%
+%% ==== ROZDZIAŁ ====
+%%
+
+\chapter{Testy numeryczne}
+
+porównanie algorytmów
+
+\mgrclosechapter
+
+
+
+%%
+%% ======== DODATKI ========
+%%
+% \appendix
+% \chapter{----}
+%%
+%-> Treść dodatku A
+%%
+% \mgrclosechapter
+
+%%
+%% ======== BIBLIOGRAFIA ========
+%%
+
+%% <<<< BiBTeX >>>>
+% \bibliography{<pliki bib>} 
+%%
+\begin{thebibliography}{88}
+
+    \bibitem{IaA}
+    F. Arandiga, A. Cohen, R. Donat, N. Dyn,
+    \emph{Interpolation and approximation of piecewise smooth functions}, SIAM J. Numer. Anal. 43 (2005) 41–57
+
+    \bibitem{PoA}
+    L. Plaskota, G. W. Wasilkowski, Y. Zhao, 
+    \emph{The power of adaption for approximating functions with singularities}, Mathematics Of Computation 77
+    2008, p. 2309–2338
+
+    \bibitem{UA}
+    L. Plaskota, G. W. Wasilkowski, 
+    \emph{Uniform approximation of piecewise r-smooth and globally continuous functions}, SIAM Journal on Numerical
+    Analysis, Vol. 47, No. 1 (2008/2009)
+
+    \bibitem{CoDF}
+    B. Kacewicz, P. Przybyłowicz, 
+    \emph{Complexity of the derivative-free solution of
+    systems of IVPs with unknown singularity hypersurface}, Journal of Complexity
+    
+    \bibitem{AoP}
+    P. M. Morkisz, L. Plaskota, 
+    \emph{Approximation of piecewise Hölder functions from inexact information}, Journal of Complexity
+
+\end{thebibliography}
+
+\end{document}

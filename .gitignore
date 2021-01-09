@@ -1,6 +1,11 @@
-*.fdb_latexmk
-*.toc
-*.fls
-*.aux
-*.gz
-*.log
+materialy/
+roznice_dzielone.png
+szablontex-poprawione_litery.txt
+zgloszenie_tematu_pr_magisterskiej.doc
+zgloszenie_tematu_pr_magisterskiej.pdf
+Praca-Magisterska/*.fdb_latexmk
+Praca-Magisterska/*.toc
+Praca-Magisterska/*.fls
+Praca-Magisterska/*.aux
+Praca-Magisterska/*.gz
+Praca-Magisterska/*.log
