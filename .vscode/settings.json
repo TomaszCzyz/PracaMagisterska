@@ -1,0 +1,27 @@
+{
+    "files.exclude": {
+        "**/*.fdb_latexmk": true, 
+        "**/*.toc": true, 
+        "**/*.fls": true, 
+        "**/*.aux": true,
+        "**/*.gz": true,
+        "**/*.eps": true,
+        "**/*.cls": true,
+        "Praca-Magisterska/*.jpg": true,
+        "Praca-Magisterska/*.png": true,
+        "Praca-Magisterska/logoAGH.pdf": true,
+        "Praca-Magisterska/logoWMS.pdf": true,
+        "Praca-Magisterska/logoWMS-eps-converted-to.pdf": true,
+        "Praca-Magisterska/orzelAGH-eps-converted-to.pdf": true,
+    },
+    "latex-workshop.latex.autoBuild.run": "never",
+    "spellright.language": [
+        "en",
+        "pl"
+    ],
+    "spellright.documentTypes": [
+        "markdown",
+        "latex",
+        "plaintext"
+    ]
+}
