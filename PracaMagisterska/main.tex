@@ -1,0 +1,413 @@
+%%% & --translate-file=cp1250pl
+%% ************ AKADEMIA GÓRNICZO-HUTNICZA W KRAKOWIE **************
+%% ***************** Wydział Matematyki Stosowanej ***************** 
+%% ****************** PRACA MAGISTERSKA w LaTeX-u ******************
+%%    autor: Tomasz Czyż
+%%    Copyright (C) 2003 by ------
+%% ************************* Plik główny *************************
+
+%%
+%% ======== PREAMBUŁA ======== 
+%%
+\documentclass[oik, pdftex, robocza, man]{mgrwms}
+
+\usepackage[utf8]{inputenc}  % opcja latin2 dla Linux
+\usepackage{amsmath}           % łatwiejszy skład matematyki
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+\DeclareMathOperator*{\esssup}{ess\,sup}
+\usepackage{amssymb}
+\usepackage{bbm}
+\usepackage{latexsym}
+\usepackage{amsthm}
+\usepackage{enumerate}
+\usepackage{enumitem}
+
+\usepackage{color}
+
+\usepackage[polish]{babel}
+\usepackage[OT4]{fontenc}
+\usepackage{polski}
+\allowdisplaybreaks
+%% <<<< BiBTeX >>>>
+% \bibliographystyle{ddabbrv}
+% \nocite{*}
+
+
+\begin{document}
+%%
+%% ======== METRYCZKA PRACY ========
+%%
+\title{ \LARGE Aproksymacja funkcji kawałkami regularnych przy użyciu informacji dokładnej i niedokładnej}
+\author{Tomasz Czyż}
+\promotor{dr Maciej Goćwin}
+\nralbumu{290565}
+\maketitle
+
+\slowakluczowe{słowa kluczowe}
+\keywords{keywords}
+%%
+%% ======== MAKRA ========
+%%
+%-> Miejsce na nasze makra (jedno z wielu ;). Lepszym pomysłem będzie jednak 
+%-> umieszczenie ich w osobnym pliku i wczytanie poleceniem \input
+%%
+\newtheorem{thm}{Twierdzenie}[chapter]
+\newtheorem{lemma}[thm]{Lemat}
+\newtheorem{stw}[thm]{Stwierdzenie}
+\newtheorem{cor}[thm]{\indent Wniosek}
+\newtheorem{obs}[thm]{\indent Obserwacja}
+\newtheorem{uw}[thm]{\indent Uwaga}
+\newtheorem{df}[thm]{Definicja}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Pra}{\mathbb{Pra}}
+\newcommand{\F}{\mathcal{F}}
+
+\makeatletter
+\newcommand*{\defeq}{\mathrel{\rlap{%
+                     \raisebox{0.3ex}{$\m@th\cdot$}}%
+                     \raisebox{-0.3ex}{$\m@th\cdot$}}%
+                     =}
+\let\c@table\c@figure
+\makeatother
+
+%%
+%% ======== SPIS TREŚCI ========
+%%
+\tableofcontents
+%%
+%% ======== STRESZCZENIE PRACY (POLSKIE) ========
+%%
+
+\begin{streszczenie}
+    Streszczenie
+\end{streszczenie}
+
+%%
+%% ======== STRESZCZENIE PRACY (ANGIELSKIE) ========
+%%
+
+\begin{abstract}
+    Abstract
+\end{abstract}
+
+%%
+%%
+%% ======== GŁÓWNA CZĘŚĆ PRACY ========
+%%
+%%
+
+%%
+%% ==== WSTĘP ====
+%%
+
+\begin{wstep}    % ew. \begin{wstep}[Wprowadzenie]
+    Celem niniejszej pracy jest analiza zachowania różnych algorytmów aproksymujących funkcje kawałkami gładkie przy użyciu informacji dokładniej i niedokładniej.
+    Pierwszy z analizowanych algorytmów został przedstawiony w pracy \cite{PoA}. Rozważane są w niej funkcje klasy $F^{\infty}_r$, o których zakładamy, że zarówno sama funkcja $f: [0,T] \longrightarrow \R$ może być nieciągła, jak i jej pochodna, począwszy od rzędu możliwe większego od pierwszego. Czyli, dla przykładu, $f$ może być dwa razy różniczkowalna na $[0, T]$ i $f^{(3)}(s)$ może nie istnieć w jakimś punkcie $s$. Ponadto, $f$ może mieć skończenie wiele punktów osobliwych; ich ilość i położenie jest nieznane. Dodatkowo, algorytm przedstawiony w \cite{PoA} używa $n$ wartości funkcji w punktach $x_1, \ldots x_n$ jako jedyne dostępne informacje o funkcji $f$, a w przypadku algorytmu adaptacyjnego dopuszczamy, że wybór $x_j$ zależy od $f(x_1), \ldots, f(x_{j-1})$.
+    W wymienionej pracy do znalezienia optymalnego algorytmu nieadaptacyjnego i adaptacyjnego w najgorszym przypadku oraz w przypadku asymptotycznym do mierzenia błędu stosowana jest m.in. norma $L^p (1 \leq  p < \infty)$.
+
+    W artykule \cite{UA} rozszerzony jest wynik prac \cite{IaA} i \cite{PoA} poprzez skupienie się na klasie funkcji ciągłych globalnie r-regularnych z co najwyżej jednym punktem osobliwym. W podanej pracy przedstawiony jest algorytm nieadaptacyjny, który asymptotycznie poprawia ograniczenie błędu z \cite{AoP}.
+
+    Ostatni z analizowanych algorytmów pochodzi z pracy \cite{AoP} i jako jedyny z przedstawionych algorytmów uwzględnia zaburzenie danych. W artykule uogólnione zostają rezultaty z \cite{PoA} i \cite{UA} poprzez wprowadzanie informacji niedokładniej oraz założenie, że wykładnik Höldera $\varrho \in (0,1]$. (...) Z tego powodu w pracy \cite{AoP} przedstawiony został nowy algorytm do lokalizacji osobliwości. Co więcej dla $\varrho = 0$, co odpowiada informacji dokładniej, przedstawiony algorytm jest nawet prostszy niż te z \cite{PoA} i \cite{UA}.
+
+\end{wstep}
+
+
+%%
+%% ==== ROZDZIAŁ ====
+%%
+
+\chapter{Definicje}
+
+Dla liczby całkowitej $ r \geq 0$, $\varrho \in (0,1]$ oraz $a < b$, przez $H_{r, \varrho}(a,b)$ oznaczamy przestrzeń funkcji $g: [a,b] \rightarrow \R$ takich, że $g \in C^r([a, b])$ i $g^{(r)}$ jest Hölderowsko ciągła z wykładnikiem $\varrho$, tzn.
+\begin{equation*}
+    c(g) := \sup_{a \leq x \leq y \leq b} \frac{|g^{(r)}(x) - g^{(r)}(y)|}{|x-y|^{\varrho}} < \infty.
+\end{equation*}
+Dla danego $T > 0$ niech $F_{r, \varrho} = F_{r, \varrho}(T)$ będzie przestrzenią funkcji $f: \R \rightarrow \R$ spełniających następujące warunki: istnieje $s_f \in [0, T)$ i $g_f \in H_{r, \varrho}(0,T)$ takie, że
+\begin{equation*}
+    f(lT + s_f + x) = g_f(x) \quad \text{for all} \quad l = 0, \pm 1, \pm 2, \ldots \quad \text{i} \quad x \in [0, T)
+\end{equation*}
+Można powiedzieć, że $f$ jest 'kopią' $g_f$ na każdym z przedziałów $(lT + s_f, (l + 1)T + s_f]$ i $f$ jest prawostronnie ciągła na $lT + s_f$. W związku z tym wszystkie punkty, które różnią się między sobą o wielokrotność $T$ będą uważane za identyczne. Dla przykładu, jeżeli $0 < x_1 \leq T < x_2 \leq 2T$, to przedział $(x_1, x_2]$ będzie utożsamiany z $(x_1,T] \cup (0, x_2 - T] \subset (0, T]$.
+
+Przez $\Delta_f^{(j)}$ ozanaczmy \emph{skoki nieciągłości} dla kolejnych pochdnych $f$ w punkcie nieciągłości $s_f$,
+\begin{equation*}
+    \Delta_f^{(j)} = f^{(j)}(s_f^+) - f^{(j)}(s_f^-) = g_f^{(j)}(0) - g_f^{(j)}(T) \quad 0 \leq j \leq r,
+\end{equation*}
+
+Z względu na sposób wyboru punktów $x_j$, $1 \leq j \leq n$, rozróżniamy \textit{informacje nieadaptacyjną}, gdy punkty wybierane są niezależnie od $f$ oraz \textit{informacje adaptacyjną}, gdy wybór $x_j$ zależy od poprzednio otrzymanych wartości $f$. W przypadku informacji adaptacyjnej $x_1$ jest ustalone natomiast
+\begin{equation*}
+    x_j = x_j(y_1, y_2, \ldots, y_{j-1}) \quad j \geq 2.
+\end{equation*}
+
+Przez \textit{informację} rozumiemy znane wartości aproksymowanej funkcji, Informację będziemy utożsamiać z wielowartościowym operatorem $N$. W przypadku, gdy $f \in F_{r, \varrho}$ przez $N(f)$ oznaczamy zbiór wszystkich możliwych informacji o funkcji $f$
+
+\begin{equation*}
+    y = (y_{1}, y_{2}, \dots, y_{n})
+\end{equation*}
+
+\noindent
+Wtedy $N\!: F_{r, \varrho} \longrightarrow Y$, gdzie $Y$ jest \textit{zasięgiem} $N$, to znaczy $\displaystyle Y = \bigcup_{f \in F_{r, \varrho}} N(f)$
+
+W tej pracy będziemy rozpatrywać aproksymacje funkcji $f \in F_{r, \varrho}$ względem normy $L^p$, gdzie $1 \leq p \leq \infty$.
+
+Dla inforamcji $y$ oraz funkcji $f$ i jej aproksymacji $\phi(y)$, gdzie $\phi : Y \longmapsto L^p(0, T)$ błąd aproksymacji wynosi
+\begin{equation*}
+    \|f-\phi(y)\|_{L^p} = \left( \int_{0}^{T} |(f-\phi(y))(x)|^p \,dx  \right)^{1/p} \qquad if \; 1 \leq p < \infty
+\end{equation*}
+oraz
+\begin{equation*}
+    \|f-\phi(y)\|_{L^\infty} = \esssup_{0 < x \leq T} | (f - \phi(y))(x) |
+\end{equation*}
+
+\textit{Najgorszy przypadek błędu} definiujemy jako
+\begin{equation*}
+    e^{wor}_{p}(\phi, N, \mathcal{F}) = \sup_{f \in \mathcal{F}} \sup_{y \in N(f)} \|f - \phi(y) \|_{L^p}
+\end{equation*}
+
+Rozróżniamy następujące klasy $\mathcal{F}$:
+\begin{equation*}
+    \begin{split}
+        \mathcal{K} & = \{f = c \mathbbm{1}_{\R}, c \in \R \}, \\
+        \mathcal{H}_{r, \varrho} & = \{ f \in F_{r, \varrho}: c(g_{f}) \leq 1, \Delta_{f}^{(j)} = 0 \; for\; all\; 0 \leq j \leq r\} \\
+        \mathcal{F}_{r, \varrho}^{C} & = \{ f \in F_{r, \varrho}: c(g_{f}) \leq 1, \Delta_{f}^{(0)} = 0 \} \\
+        \mathcal{F}_{r, \varrho}^{D} & = \{ f \in F_{r, \varrho}: c(g_{f}) \leq 1, | \Delta_{f}^{(0)} | \leq 1 \} \\
+        \mathcal{F}_{r, \varrho} & = \{ f \in F_{r, \varrho}: c(g_{f}) \leq 1 \} \\
+    \end{split}
+\end{equation*}
+Oczywiście
+\begin{equation*}
+    \mathcal{K} \subset \mathcal{H}_{r, \varrho} \subset \mathcal{F}_{r, \varrho}^{C} \subset \mathcal{F}_{r, \varrho}^{D} \subset \mathcal{F}_{r, \varrho}
+\end{equation*}
+
+Zauważmy, że zapis $y \in N(f)$ to formalny sposób powiedzenia, że $y$ jest informacją o $f$. Dla przykładu, dla informacji nieadaptacyjnej składającej się z zaburzonych ewaluacji funkcji $f$ w punktach $x_{1}, \dots, x_{n}$ z precyzją $\delta$, mamy:
+
+\begin{equation*}
+    N(f) = \{y \in \R^{n} : \quad |y_{i} - f(x_{i}| \leq \delta, \quad 1 \leq i \leq n\}
+\end{equation*}
+
+\noindent
+Gdy $\delta = 0$, wtedy $N(f)$ jest singletonem a informacja jest dokładna.
+
+Oznaczmy przez $\mathcal{N}(n, \delta)$ klasę wszystkich (adaptacyjnych) informacji $N$, które używają co najwyżej $n$ ewaluacji funkcji, z precyzją $\delta$ każda. Wtedy przez \textit{minimalany błąd najgorszego przykładu} w klasie $\mathcal{F}$, który może zostać osiągnięty przez algorytm używający informacji o co najwyżej $n$ wartościach funkcji z precyzją $\delta$ rozumiemy:
+
+\begin{equation*}
+    r^{wor}_{p}(n, \delta, \mathcal{F}) = \inf\{ e^{wor}_{p}(\varphi, N, \mathcal{F}) : \; \varphi \; uzywa \; N \in \mathcal{N}(n, \delta) \}
+\end{equation*}
+
+Poniższe ograniczenia dolne na $r^{wor}_{p}(n, \delta, \mathcal{F})$ są dość oczywiste albo mogą zostać wyprowadzone ze znanych rezultatów
+
+\begin{stw}
+\label{stw1}
+    Dla każdego $n$ i $\delta \geq 0$ mamy:
+    \begin{enumerate}[label=(\roman*)]
+        \item \label{stw1_i} $r^{wor}_{p}(n, \delta, \mathcal{K}) \leq \delta T^{1/p}$
+        \item \label{stw1_ii} $r^{wor}_{p}(n, \delta, \mathcal{H}_{r,\varrho}) \leq a_{r,\varrho}n^{-(r + \varrho)}$ dla pewnego $a_{r,\varrho} > 0$
+        \item \label{stw1_iii} $r^{wor}_{p}(n, \delta, \mathcal{F}_{r,\varrho}) = \infty, \quad r \geq 1$
+    \end{enumerate}
+\end{stw}
+\begin{proof}
+    $(\dots)$
+\end{proof}
+
+Z stwierdzenia \ref{stw1} \textit{\ref{stw1_i}-\ref{stw1_ii}} otrzymujemy, że 
+\begin{equation*}
+    r^{wor}_{p}(n, \delta, \mathcal{F}^{D}_{r,\varrho}) \geq r^{wor}_{p}(n, \delta, \mathcal{F}^{C}_{r,\varrho}) \geq \max(\delta T^{1/p}, a_{r,\varrho} n^{-(r+\varrho)})
+\end{equation*}
+W dalszej części pracy udowodnimy, że te nierówności są ostre, z wyjątkiem pierwszej dla $p=\infty$. To jest główny wyniki artykułu \cite{AoP}, który możemy zapisać w poniższej postaci:
+
+\begin{thm}
+\label{AoP_tw1}~ %
+    \begin{enumerate}
+        \item $r^{wor}_{p}(n, \delta, \mathcal{F}^{D}_{r,\varrho}) = \Theta(\max(\delta, n^{-(r+\varrho)})) \quad dla \: 1 \leq p \leq \infty$
+        \item $r^{wor}_{\infty}(n, \delta, \mathcal{F}^{C}_{r,\varrho}) = \Theta(\max(\delta, n^{-(r+\varrho)}))$
+    \end{enumerate}
+\end{thm}
+
+W celu udowodnienia powyższego twierdzenia skonstruujemy algorytm, który posiada żądane własności błędu. W tym celu przedstawimy dodatkowe rezultaty dotyczące błędu interpolacji/ekstrapolacji funkcji kawałkami holderowskich, bazujących na wartościach zaburzonych.
+
+\section{Rezultaty pomocnicze}
+
+Niech $m \geq 2r + 1$, $h + \frac{T}{m}$ oraz $t_{i} = ih$ dla każdego $i$. Przez $d_{i}$ oznaczmy różnicę dzieloną stopnia $r+1$ bazującą na wartościach $f(t_{i})$:
+\begin{equation*}
+    d_{i} = f[t_{i}, \dots, t_{i+r+1}] = \sum_{j = 1}^{i+r+1} \gamma_{j} \prod_{k=1 \land k \neq j}^{i+r+1}(t_{k}-t_{j})^{-1}
+\end{equation*}
+
+Następnie oznaczmy przez $\tilde{d_i}$ (niedokładną) różnicę dzieloną stopnia $r+1$ bazującą na wartościach $y_{j} = F(t_{j}) + e_{j}$, gdzie $|e_{j}| \leq \delta$
+\begin{equation*}
+    \tilde{d_{i}} = \tilde{f}[t_{i}, \dots, t_{i+r+1}] = \sum_{j = 1}^{i+r+1} \gamma_{j} \prod_{k=1 \land k \neq j}^{i+r+1}(t_{k}-t_{j})^{-1}
+\end{equation*}
+
+\begin{lemma}
+    Jeżeli $f \in H_{r, \varrho}(t_{i}, t_{i+r+1})$, wtedy
+    \begin{equation*}
+        |\tilde{d_{i}}| \leq \frac{c(g_{f})(r+1)^{\varrho}}{(r+1)!} h^{\varrho-1} + \delta \frac{2^{r+1}}{(r+1)!} h^{-(r+1)}
+    \end{equation*}
+\end{lemma}
+\begin{proof}
+    $(\dots)$
+\end{proof}
+
+Teraz oszacujemy błąd interpolacji i ekstrapolacji w obecności zaburzenia wartości funkcji.
+
+\mgrclosechapter
+
+%%
+%% ==== ROZDZIAŁ ====
+%%
+
+\chapter{Złożoność obliczeniowa}
+
+% notacja O(n) itp...
+
+
+\mgrclosechapter
+
+
+%%
+%% ==== ROZDZIAŁ ====
+%%
+
+\chapter{Informacja dokładna i niedokładna}
+
+\noindent
+rozdział o informacji zaburzonej itp.
+
+Przez informacje zaburzoną rozmumiemy
+\begin{equation*}
+    y_j = f(x_j) + e_j, \quad 1 \leq j \leq n
+\end{equation*}
+gdzie $n$ to liczba odwołań algorytmu do funkcji $f$
+
+
+\mgrclosechapter
+
+
+
+%%
+%% ==== ROZDZIAŁ ====
+%%
+
+\chapter{Ograniczenia z dołu}
+
+
+\mgrclosechapter
+
+
+%%
+%% ==== ROZDZIAŁ ====
+%%
+
+\chapter{Algorytmy}
+
+
+\section{Algorytm oparty o informację zaburzoną}
+
+W tej opiszemy algorytm bazujący na informacji zaburzonej przedstawiony w artykule \cite{AoP}. Analizowany algorytm używa co najwyżej $n$ wartości funkcji z precyzją $\delta $ oraz w najgorszym przypadku ma błąd proporcjonalny do $\max{(\delta, n^{-1 / r + \varrho })}$ w klasie funkcji $\F^D_{r,\varrho }$ dla $p < \infty$ oraz w klasie $\F^C_{r,\varrho }$ dla $p \leq \infty$. Kluczowym parametrem algorytmu jest
+$$
+    h = T / m \quad with \quad  m \geq 2r + 1,
+$$
+gdzie $m$ jest początkową gęstością siatki. Dodatkowo, niech $\omega  = \omega(h)$ spełnia $0 < \omega < (r + 1)h $.
+
+Na początku algorytm aproksymuje punkt osobliwy $s_f$. Jest to realizowane w trzech krokach. W kroku 1. przy pomocy siatki rozmiarze o długości $h$ i różnic dzielonych lokalizowany jest punkt $s_f$ na przedziale $[u_1, v_1]$ o długości $(r + 1)h$. W kroku 2. używamy wielomianów interpolujących $\tilde{p}_+$ i $\tilde{p}_-$ do zwężenia tego przedziału do $[u_2, v_2]$. Krok 3. produkuje przedział $[u_3, v_3] \subseteq [u_2, v_2]$, w którym różnica $|\tilde{p}_{+} - \tilde{p}_{-}|$ jest nierosnąca na $[u_3, \xi]$ i niemalejąca na $[\xi, v_3]$, gdzie $\xi$ jest finalną aproksymacją $s_f$.
+
+Powyższe kroki mogą być zapisane następująco; dla $t_i = ih \; \forall i$. \vspace{10pt}
+
+\noindent
+\begin{tabular}{p{0.10\linewidth} p{0.85\linewidth}}
+    
+    \textit{Krok 1} & Oblicz różnice dzielone $\tilde{d}_i = \tilde{f}[t_i, \ldots, t_{i+r+1}]$ for $1 \leq i \leq m $ oraz znajdź \\
+                    & \(\displaystyle \qquad i^* = arg \max_{1 \leq i \leq m }|\tilde{d}_i| \)  \\
+                    & Niech $u_1 = t_{i^*}$ i $v_1 = t_{i^* + r + 1}$. \\
+                    & \\
+
+    \textit{Krok 2} & Oznaczymy przez $\tilde{p}_+$ i $\tilde{p}_-$ wielomiany stopnia $ \leq r$, które interpolują węzły $(t_j, \tilde{f}(t_j))$ odpowiednio dla $i^* - r \leq j \leq i^*$ oraz dla $i^* + r + 1 \leq j \leq i^* + 2r + 1$. Następnie wykonaj iterację: \\
+                    & $u := u_1$, $v := v_1$ \\
+                    & \textbf{dopóki} $v-u > \omega$ \textbf{do} \\
+                    & \hspace{20pt}$z_j := u + j(v-u) / (r+2), \qquad j = 1, 2, \ldots, r + 1$ \\
+                    & \hspace{20pt}\(\displaystyle j^* := arg \max_{1 \leq j \leq r + 1}|\tilde{p}_{+}(z_j) - \tilde{p}_{-}(z_j)| \) \\
+                    & \hspace{20pt}\textbf{if} $|\tilde{f}(z_{j^*}) - \tilde{p}_{-}(z_j)| \leq |\tilde{f}(z_{j^*}) - \tilde{p}_{+}(z_j)|$ \textbf{then} \\
+                    & \hspace{40pt}$u:= z_{j^*}$ \\
+                    & \hspace{20pt}\textbf{else} \\
+                    & \hspace{40pt}$v:= z_{j^*}$ \\
+                    & \textbf{end while} \\
+                    & Niech $u_2 = u$ i $v_2 = v$. \\
+                    & \\
+
+    \textit{Krok 3} & Wykonaj iterację: \\
+                    & $u := u_2$, $v := v_2$ \\
+                    & \textbf{dopóki} istnieje maksimum lokalne $|\tilde{p}_{+} - \tilde{p}_{-}|$ na $(u,v)$ \textbf{do} \\
+                    & \hspace{20pt}$z :=$ największe maksimum lokalne $|\tilde{p}_{+} - \tilde{p}_{-}|$ na $(u,v)$ \\
+                    & \hspace{20pt}\textbf{if} $|\tilde{f}(z) - \tilde{p}_{-}(z)| \leq |\tilde{f}(z) - \tilde{p}_{+}(z)|$ \textbf{then} \\
+                    & \hspace{40pt}$u:= z$ \\
+                    & \hspace{20pt}\textbf{else} \\
+                    & \hspace{40pt}$v:= z$ \\
+                    & \textbf{end while} \\
+                    & Niech $u_3 = u$ i $v_3 = v$.
+\end{tabular} \vspace{10pt}
+
+Finalną aproksymacją $s_f$ jest
+\begin{equation*}
+        \xi := arg \max_{u_3 \leq x \leq v_3}|\tilde{p}_{+} - \tilde{p}_{-}| \hspace{200pt}
+\end{equation*}
+
+
+\mgrclosechapter
+
+
+%%
+%% ==== ROZDZIAŁ ====
+%%
+
+\chapter{Testy numeryczne}
+
+porównanie algorytmów
+
+\mgrclosechapter
+
+
+
+%%
+%% ======== DODATKI ========
+%%
+% \appendix
+% \chapter{----}
+%%
+%-> Treść dodatku A
+%%
+% \mgrclosechapter
+
+%%
+%% ======== BIBLIOGRAFIA ========
+%%
+
+%% <<<< BiBTeX >>>>
+% \bibliography{<pliki bib>} 
+%%
+\begin{thebibliography}{88}
+
+    \bibitem{IaA}
+    F. Arandiga, A. Cohen, R. Donat, N. Dyn,
+    \emph{Interpolation and approximation of piecewise smooth functions}, SIAM J. Numer. Anal. 43 (2005) 41–57
+
+    \bibitem{PoA}
+    L. Plaskota, G. W. Wasilkowski, Y. Zhao, 
+    \emph{The power of adaption for approximating functions with singularities}, Mathematics Of Computation 77
+    2008, p. 2309–2338
+
+    \bibitem{UA}
+    L. Plaskota, G. W. Wasilkowski, 
+    \emph{Uniform approximation of piecewise r-smooth and globally continuous functions}, SIAM Journal on Numerical
+    Analysis, Vol. 47, No. 1 (2008/2009)
+
+    \bibitem{CoDF}
+    B. Kacewicz, P. Przybyłowicz, 
+    \emph{Complexity of the derivative-free solution of
+    systems of IVPs with unknown singularity hypersurface}, Journal of Complexity
+    
+    \bibitem{AoP}
+    P. M. Morkisz, L. Plaskota, 
+    \emph{Approximation of piecewise Hölder functions from inexact information}, Journal of Complexity
+
+\end{thebibliography}
+
+\end{document}

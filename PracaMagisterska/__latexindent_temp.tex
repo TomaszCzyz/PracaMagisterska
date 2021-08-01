@@ -14,7 +14,9 @@
 \usepackage[utf8]{inputenc}  % opcja latin2 dla Linux
 \usepackage{amsmath}           % łatwiejszy skład matematyki
 \newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
-\usepackage{amssymb} 
+\DeclareMathOperator*{\esssup}{ess\,sup}
+\usepackage{amssymb}
+\usepackage{bbm}
 \usepackage{latexsym}
 \usepackage{amsthm}
 \usepackage{enumerate}
@@ -115,13 +117,64 @@
 
 \chapter{Definicje}
 
-Dla liczby całkowitej $ r \geq 0$, $0 < \varrho \leq 1$ oraz $a < b$, przez $H_{r, \varrho}(a,b)$ oznaczamy przestrzeń funkcji $g: [a,b] \rightarrow \R$ takich, że $g \in C^r([a, b])$ i $g^{(r)}$ jest Hölderowsko ciągła z wykładnikiem $\varrho$,
+Dla liczby całkowitej $ r \geq 0$, $\varrho \in (0,1]$ oraz $a < b$, przez $H_{r, \varrho}(a,b)$ oznaczamy przestrzeń funkcji $g: [a,b] \rightarrow \R$ takich, że $g \in C^r([a, b])$ i $g^{(r)}$ jest Hölderowsko ciągła z wykładnikiem $\varrho$, tzn.
 \begin{equation*}
     c(g) := \sup_{a \leq x \leq y \leq b} \frac{|g^{(r)}(x) - g^{(r)}(y)|}{|x-y|^{\varrho}} < \infty.
 \end{equation*}
 Dla danego $T > 0$ niech $F_{r, \varrho} = F_{r, \varrho}(T)$ będzie przestrzenią funkcji $f: \R \rightarrow \R$ spełniających następujące warunki: istnieje $s_f \in [0, T)$ i $g_f \in H_{r, \varrho}(0,T)$ takie, że
 \begin{equation*}
     f(lT + s_f + x) = g_f(x) \quad \text{for all} \quad l = 0, \pm 1, \pm 2, \ldots \quad \text{i} \quad x \in [0, T)
+\end{equation*}
+Można powiedzieć, że $f$ jest 'kopią' $g_f$ na każdym z przedziałów $(lT + s_f, (l + 1)T + s_f]$ i $f$ jest prawostronnie ciągła na $lT + s_f$. W związku z tym wszystkie punkty, które różnią się między sobą o wielokrotność $T$ będą uważane za identyczne. Dla przykładu, jeżeli $0 < x_1 \leq T < x_2 \leq 2T$, to przedział $(x_1, x_2]$ będzie utożsamiany z $(x_1,T] \cup (0, x_2 - T] \subset (0, T]$.
+
+Przez $\Delta_f^{(j)}$ ozanaczmy \emph{skoki nieciągłości} dla kolejnych pochdnych $f$ w punkcie nieciągłości $s_f$,
+\begin{equation*}
+    \Delta_f^{(j)} = f^{(j)}(s_f^+) - f^{(j)}(s_f^-) = g_f^{(j)}(0) - g_f^{(j)}(T) \quad 0 \leq j \leq r,
+\end{equation*}
+
+Z względu na sposób wyboru punktów $x_j$, $1 \leq j \leq n$, rozróżniamy \textit{informacje nieadaptacyjną}, gdy punkty wybierane są niezależnie od $f$ oraz \textit{informacje adaptacyjną}, gdy wybór $x_j$ zależy od poprzednio otrzymanych wartości $f$. W przypadku informacji adaptacyjnej $x_1$ jest ustalone natomiast
+\begin{equation*}
+    x_j = x_j(y_1, y_2, \ldots, y_{j-1}) \quad j \geq 2.
+\end{equation*}
+
+Przez \textit{informację} rozumiemy znane wartości aproksymowanej funkcji, Informację będziemy utożsamiać z wielowartościowym operatorem $N$. W przypadku, gdy $f \in F_{r, \varrho}$ przez $N(f)$ oznaczamy zbiór wszystkich możliwych informacji o funkcji $f$
+
+\begin{equation*}
+    y = (y_{1}, y_{2}, \dots, y_{n})
+\end{equation*}
+
+\noindent
+Wtedy $N\!: F_{r, \varrho} \longrightarrow Y$, gdzie $Y$ jest \textit{zasięgiem} $N$, to znaczy $\displaystyle Y = \bigcup_{f \in F_{r, \varrho}} N(f)$
+
+W tej pracy będziemy rozpatrywać aproksymacje funkcji $f \in F_{r, \varrho}$ względem normy $L^p$, gdzie $1 \leq p \leq \infty$.
+
+Dla inforamcji $y$ oraz funkcji $f$ i jej aproksymacji $\phi(y)$, gdzie $\phi : Y \longmapsto L^p(0, T)$ błąd aproksymacji wynosi
+\begin{equation*}
+    \|f-\phi(y)\|_{L^p} = \left( \int_{0}^{T} |(f-\phi(y))(x)|^p \,dx  \right)^{1/p} \qquad if \; 1 \leq p < \infty
+\end{equation*}
+oraz
+\begin{equation*}
+    \|f-\phi(y)\|_{L^\infty} = \esssup_{0 < x \leq T} \| (f - g) \|
+\end{equation*}
+
+\textit{Najgorszy przypadek błędu} definiujemy jako
+\begin{equation*}
+    e^{wor}_{p}(\phi, N, \mathcal{F}) = \sup_{f \in \mathcal{F}} \sup_{y \in N(f)} \|f - \phi(y) \|_{L^p}
+\end{equation*}
+
+Rozróżniamy następujące klasy $\mathcal{F}$:
+\begin{equation*}
+    \begin{split}
+        \mathcal{K} & = \{f = c \mathbbm{1}_{\R}, c \in \R \}, \\
+        \mathcal{H}_{r, \varrho} & = \{ f \in F_{r, \varrho}: c(g_{f}) \leq 1, \Delta_{f}^{(j)} = 0 \; for\; all\; 0 \leq j \leq r\} \\
+        \mathcal{F}_{r, \varrho}^{C} & = \{ f \in F_{r, \varrho}: c(g_{f}) \leq 1, \Delta_{f}^{(0)} = 0 \} \\
+        \mathcal{F}_{r, \varrho}^{D} & = \{ f \in F_{r, \varrho}: c(g_{f}) \leq 1, | \Delta_{f}^{(0)} | \leq 1 \} \\
+        \mathcal{F}_{r, \varrho} & = \{ f \in F_{r, \varrho}: c(g_{f}) \leq 1 \} \\
+    \end{split}
+\end{equation*}
+Oczywiście
+\begin{equation*}
+    \mathcal{K} \subset \mathcal{H}_{r, \varrho} \subset \mathcal{F}_{r, \varrho}^{C} \subset \mathcal{F}_{r, \varrho}^{D} \subset \mathcal{F}_{r, \varrho}
 \end{equation*}
 
 
@@ -135,9 +188,31 @@ Dla danego $T > 0$ niech $F_{r, \varrho} = F_{r, \varrho}(T)$ będzie przestrzen
 
 \chapter{Złożoność obliczeniowa}
 
-rozdział o informacji zaburzonej itp.
+% notacja O(n) itp...
+
 
 \mgrclosechapter
+
+
+%%
+%% ==== ROZDZIAŁ ====
+%%
+
+\chapter{Informacja dokładna i niedokładna}
+
+\noindent
+rozdział o informacji zaburzonej itp.
+
+Przez informacje zaburzoną rozmumiemy
+\begin{equation*}
+    y_j = f(x_j) + e_j, \quad 1 \leq j \leq n
+\end{equation*}
+gdzie $n$ to liczba odwołań algorytmu do funkcji $f$
+
+
+\mgrclosechapter
+
+
 
 %%
 %% ==== ROZDZIAŁ ====

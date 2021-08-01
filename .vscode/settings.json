@@ -7,12 +7,12 @@
         "**/*.gz": true,
         "**/*.eps": true,
         "**/*.cls": true,
-        "Praca-Magisterska/*.jpg": true,
-        "Praca-Magisterska/*.png": true,
-        "Praca-Magisterska/logoAGH.pdf": true,
-        "Praca-Magisterska/logoWMS.pdf": true,
-        "Praca-Magisterska/logoWMS-eps-converted-to.pdf": true,
-        "Praca-Magisterska/orzelAGH-eps-converted-to.pdf": true,
+        "PracaMagisterska/*.jpg": true,
+        "PracaMagisterska/*.png": true,
+        "PracaMagisterska/logoAGH.pdf": true,
+        "PracaMagisterska/logoWMS.pdf": true,
+        "PracaMagisterska/logoWMS-eps-converted-to.pdf": true,
+        "PracaMagisterska/orzelAGH-eps-converted-to.pdf": true,
     },
     "latex-workshop.latex.autoBuild.run": "never",
     "spellright.language": [
@@ -23,5 +23,7 @@
         "markdown",
         "latex",
         "plaintext"
-    ]
+    ],
+    "python.pythonPath": "C:\\Users\\tczyz\\Anaconda3\\envs\\myenv\\python.exe",
+    "jupyter.jupyterServerType": "local"
 }
