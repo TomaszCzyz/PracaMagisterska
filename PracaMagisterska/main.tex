@@ -21,6 +21,7 @@
 \usepackage{amsthm}
 \usepackage{enumerate}
 \usepackage{enumitem}
+\usepackage{mathtools}
 
 \usepackage{color}
 
@@ -234,7 +235,7 @@ Niech $m \geq 2r + 1$, $h + \frac{T}{m}$ oraz $t_{i} = ih$ dla każdego $i$. Prz
 
 Następnie oznaczmy przez $\tilde{d_i}$ (niedokładną) różnicę dzieloną stopnia $r+1$ bazującą na wartościach $y_{j} = F(t_{j}) + e_{j}$, gdzie $|e_{j}| \leq \delta$
 \begin{equation*}
-    \tilde{d_{i}} = \tilde{f}[t_{i}, \dots, t_{i+r+1}] = \sum_{j = 1}^{i+r+1} \gamma_{j} \prod_{k=1 \land k \neq j}^{i+r+1}(t_{k}-t_{j})^{-1}
+    \tilde{d_{i}} = \tilde{f}[t_{i}, \dots, t_{i+r+1}] = \sum_{j = 1}^{i+r+1} \gamma_{j} \prod_{\substack{k=1 \\ k \neq j}}^{i+r+1}(t_{k}-t_{j})^{-1}
 \end{equation*}
 
 \begin{lemma}
@@ -247,7 +248,86 @@ Następnie oznaczmy przez $\tilde{d_i}$ (niedokładną) różnicę dzieloną sto
     $(\dots)$
 \end{proof}
 
-Teraz oszacujemy błąd interpolacji i ekstrapolacji w obecności zaburzenia wartości funkcji.
+Teraz oszacujemy błąd interpolacji i ekstrapolacji w obecności zaburzenia wartości funkcji. Niech $p_{i}$ i $\tilde{p_{i}}$ odpowiadają wielomianom stopnia co najwyżej $r$ interpolujących $f$ opartych na dokładnych i niedokładnych wartościach funkcji $f$ w punktach $t_{i}, t_{i+1}, \dots, t_{i+r}$. Dla $r \geq 1$, wprowadźmy oznaczenia:
+\begin{equation*}
+    \beta_{r} = \max_{0 \leq t \leq r} |\prod_{k=0}^{r} (t-k)|, \quad
+    \Lambda_{r} = \max_{0 \leq t \leq r} \sum_{k=0}^{r} \prod_{\substack{l=0 \\ l \neq k}}^{r} \left| \frac{t-l}{k-l} \right| \quad
+    \tilde{\Lambda}_{r} = \sum_{k=0}^{r} \prod_{\substack{l=0 \\ l \neq k}}^{r} \left| \frac{2r+1-l}{k-l} \right|
+\end{equation*}
+
+\begin{lemma}
+    Niech $f \in H_{0, \varrho}$, wtedy: \\
+    $dla \; x \in [t_{i-\frac{1}{2}}, t_{i + \frac{1}{2}}] :$
+    \begin{equation*}
+        |f(x) - \tilde{p}_{1}(x)| \leq C_{0, \varrho}(f) h^{\varrho} + \delta, \quad C_{0, \varrho}(f) = c(g_{f}) 2^{-\varrho} \\
+    \end{equation*}
+    $dla \; x \in [t_{i-1}, t_{i - \frac{1}{2}}) \cup (t_{i + \frac{1}{2}}, t_{i+1}]  :$
+    \begin{equation*}
+        |f(x) - \tilde{p}_{i}(x)| \leq \overline{C} _{0, \varrho}(f) h^{\varrho}  + \delta, \quad \overline{C} _{0, \varrho}(f) = c(g_{f}) \\
+    \end{equation*}
+    Niech $f \in H_{r, \varrho}$ i $r \geq 1$, wtedy: \\
+    $dla \; x \in [t_{i}, t_{i + r}] : $
+    \begin{equation*}
+        |f(x) - \tilde{p}_{i}(x)| \leq C_{r, \varrho}(f) h^{r+\varrho} + \delta\Lambda_{r}, \quad C_{r, \varrho}(f) = c(g_{f}) 2^{-\varrho} \\
+    \end{equation*}
+    $dla \; x \in [t_{i-r-1}, t_{i}) \cup (t_{i + r}, t_{i+2r+1}]  :$
+    \begin{equation*}
+        |f(x) - \tilde{p}_{i}(x)| \leq \overline{C} _{r, \varrho}(f) h^{r+\varrho} + \delta\overline{\Lambda}_{r}, \overline{C} _{r, \varrho}(f) = c(g_{f}) \frac{(2r+1)!(2r+1)^{\varrho}}{r(r!)^{2}} \\
+    \end{equation*}
+\end{lemma}
+
+\begin{proof}
+    $(\dots)$
+\end{proof}
+
+\begin{lemma}
+    Niech $f \in F_{r, \varrho}$ oraz 
+    \begin{equation*}
+        s_{f} \in 
+        \left\{
+            \begin{array}{ll}
+                (t_{i-\frac{1}{2}}, t_{i + \frac{1}{2}}], \; gdy \; r=0 \\
+                (t_{i}, t_{i - r}], \; gdy \; r \geq 0    
+            \end{array}
+        \right.
+    \end{equation*}
+    Przypuśćmy, że $|\tilde{d}_{k}| \leq Bh^{\varrho-1} \forall_{k}$. Wtedy dla każdego $x \in [t_{i-1}, t_{i+1}]$, gdy $r=0$ lub dla każdego $x \in [t_{i-r-1}, t_{i+2r+1}]$, gdy $r \geq 1$, mamy:
+    \begin{equation*}
+        |f(x) - \tilde{p}_{i}(x)| \leq D_{r}(B, f)h^{r+\varrho} + \delta\Lambda_{r},
+    \end{equation*}
+    gdzie $D_{0}(B,f) = c(g_{f}) + B$ i
+    \begin{equation*}
+        D_{r}(B, f)=c\left(g_{f}\right) \frac{\beta_{r}(r+1)^{\varrho}}{r r !}+B\left(2^{r+1}-1\right) \frac{(2 r) !}{(r-1) !} \quad \text { for } r \geq 1 .
+    \end{equation*}
+\end{lemma}
+\begin{proof}
+    $(\dots)$
+\end{proof}
+
+\subsection{(Podstawowe definicje z artykułów \cite{PoA} i \cite{UA})}
+
+Dla $r \geq 1$, $a < b$, przez $W_{r}(a,b)$ oznaczamy przestrzeń funkcji $r$-gładkich, zdefiniowanych w następujący sposób:
+\begin{equation*}
+    W_{r}(a, b)=\left\{f \in C^{r-1}([a, b]) \mid \quad f^{(r-1)} \text{ absolutnie ciągła, }\left\|f^{(r)}\right\|_{L^{\infty}(a, b)}<\infty\right\}
+\end{equation*}
+
+Przez $F_{r} = F_{r}(0, T)$, dla $T > 0$, oznaczamy funkcje $r$-gładkie, ale posiadające jeden punkt osobliwy, tzn. takich funkcji $f$, że $f \in W_{r}(0,T)$ albo
+\begin{equation*}
+    f(x)= \begin{cases}f_{-}(x), & 0 \leq x<s_{f} \\ f_{+}(x), & s_{f} \leq x \leq T\end{cases},
+\end{equation*}
+gdzie $f_{-}(x) \in W_{r}(0, s_{f})$, $f_{+}(x) \in W_{r}(s_{f}, T)$, dla $s_{f} \in (0,T)$. Innumi słowy $f \in F_{r}$ wtw, gdy
+\begin{equation*}
+    f(x)=g(x)+\mathbbm{1}_{\left[s_{f}, T\right]}(x) \sum_{j=0}^{r-1} \Delta_{f}^{(j)} \frac{\left(x-s_{f}\right)^{j}}{j !}, \quad 0 \leq x \leq T
+\end{equation*}
+gdzie $g \in W_{r}(0,T)$ i $\Delta_{f}^{(j)}$ to skoki nieciągłości odpowiadającej pochodnej w punkcie $s_{f}$. Warto zauważyć, że 
+$0 \leq a<b \leq T$ mamy $\left\|f^{(r)}\right\|_{L^{\infty}(a, b)}=\left\|g^{(r)}\right\|_{L^{\infty}(a, b)}$
+
+W pracy \cite{UA} skupiamy się na klasie funkcji $G_{r} = G(0,T) \coloneqq F_{r}(0,T) \cap C([0,T])$. Stąd wynika, że $f \in G$ wtw, gdy $f \in F_{r} \land \Delta_{f}^{(0)} = 0$.
+Zakładamy też, że $r \geq 2$.
+
+
+
+
 
 \mgrclosechapter
 
@@ -349,6 +429,38 @@ Finalną aproksymacją $s_f$ jest
 \begin{equation*}
         \xi := arg \max_{u_3 \leq x \leq v_3}|\tilde{p}_{+} - \tilde{p}_{-}| \hspace{200pt}
 \end{equation*}
+
+\subsection{Analiza algorytmu}
+
+Przedstawiony algorytm używa $m$ wartości funkcji w kroku 1 oraz jedyną wartość funkcji w każdej iteracji w krokach 2 i 3. Czyli w kroku 2 używamy co najwyżej
+\begin{equation}
+    \left[\frac{\ln \left(\frac{(r+1) h}{\omega(h)}\right)}{\ln \left(\frac{r+2}{r+1}\right)}\right\rceil
+\end{equation}
+wartości funkcji i $(r-1)$ w kroku 3.
+Stąd otrzymujemy, że jeżezli $\omega = \omega(h) \geq kh^{\alpha}$ dla pewngo ustalonego $k$ i $\alpha$, wtedy w najgoryszym przypadku liczba użytych wartości funkcji równa sie asymptotycznie $m = \frac{T}{h}$ dla $h \rightarrow 0^{+}$.
+
+\textit{(punktowa analiza błędu...)}
+
+Podsumowując analizę błędu dla każdego punktu otrzymujemy, że gdy $\delta \leq bh^{r+\varrho}$ wtedy:
+\begin{equation*}
+    \begin{cases}
+        |f(x) - \phi_{h}^{*}(y_{h})(x)| \propto \max(1, c(g_{f})) h^{r+\varrho} & \text{ dla } x \notin (u_{2}, v_{2}] \\
+        |f(x) - \phi_{h}^{*}(y_{h})(x)| \propto \max(1, c(g_{f})) h^{r+\varrho} + |\Delta_{f}^{(0)}| & \text{ dla } x \in (u_{2}, v_{2}] \\
+    \end{cases}
+\end{equation*}
+gdzie $v_{2} - u_{2} \leq \omega$
+
+Mamy również, że liczba ewaluacji funkcji $n$ jest proporcjonalna do $h^{-1}$, tak więc $h^{r+\varrho}$ jest proporcjonalne do $n^{-(r+\varrho)}$. Z tego wynika poniższe stwierdzenia:
+\begin{stw}
+    Niech $1 \leq p \leq \infty$. Jeżeli $\delta \leq bh^{r+\varrho}$ oraz $\omega(h) = h^{(r+\varrho)p + 1}$, wtedy
+    \begin{equation*}
+        e_{\mathrm{p}}^{wor}\left(\varphi_{h}^{*}, N_{h}^{*} ; \mathcal{F}_{r, \varrho}^{D}\right)=\mathcal{O}\left(n^{-(r+\varrho)}\right)
+    \end{equation*}
+\end{stw}
+
+Warto wspomnieć, że powyższe ograniczenia górne nie może zostać spełnione przez algorytmy nieadaptacyjne, co zostało pokazane w \cite{PoA}. Pokazano tam również, że dla $p=\infty$ nie istnieje algorytm z błędem zbiegającym do zera, dlatego założenia $p < \infty$ jest niezbędne. Dodatkowo, gdy rozważymy klasę $\mathcal{F}_{r, \varrho}^{C} \subset \mathcal{F}_{r, \varrho}^{D}$, to możemy uprościć algorytm biorąc $\omega(h) = (r+1)h$ i unikając iteracji w kroku 2. Otrzymujemy w ten sposób algorytm, który dla $r=0,1$ jest nieadaptacyjny, a dla $r \geq 2$ używa co najwyżej $r-1$ dodatkowych punktów, niezależnie od tego jak małe jest $h$. Co więcej, organiczenie górne zachodzi dla $p = \infty$
+
+
 
 
 \mgrclosechapter

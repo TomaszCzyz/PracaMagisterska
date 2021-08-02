@@ -1,8 +1,8 @@
+**/*/workspace.xml
 materialy/
+dokumenty/
 roznice_dzielone.png
 szablontex-poprawione_litery.txt
-zgloszenie_tematu_pr_magisterskiej.doc
-zgloszenie_tematu_pr_magisterskiej.pdf
 PracaMagisterska/*.fdb_latexmk
 PracaMagisterska/*.toc
 PracaMagisterska/*.fls
