@@ -20,6 +20,7 @@
 \usepackage{latexsym}
 \usepackage{amsthm}
 \usepackage{enumerate}
+\usepackage{enumitem}
 
 \usepackage{color}
 
@@ -50,8 +51,9 @@
 %-> Miejsce na nasze makra (jedno z wielu ;). Lepszym pomysłem będzie jednak 
 %-> umieszczenie ich w osobnym pliku i wczytanie poleceniem \input
 %%
-\newtheorem{thm}{\indent Twierdzenie}[chapter]
-\newtheorem{lemma}[thm]{\indent Lemat}
+\newtheorem{thm}{Twierdzenie}[chapter]
+\newtheorem{lemma}[thm]{Lemat}
+\newtheorem{stw}[thm]{Stwierdzenie}
 \newtheorem{cor}[thm]{\indent Wniosek}
 \newtheorem{obs}[thm]{\indent Obserwacja}
 \newtheorem{uw}[thm]{\indent Uwaga}
@@ -154,7 +156,7 @@ Dla inforamcji $y$ oraz funkcji $f$ i jej aproksymacji $\phi(y)$, gdzie $\phi : 
 \end{equation*}
 oraz
 \begin{equation*}
-    \|f-\phi(y)\|_{L^\infty} = \esssup_{0 < x \leq T} \| (f - g) \|
+    \|f-\phi(y)\|_{L^\infty} = \esssup_{0 < x \leq T} | (f - \phi(y))(x) |
 \end{equation*}
 
 \textit{Najgorszy przypadek błędu} definiujemy jako
@@ -177,10 +179,95 @@ Oczywiście
     \mathcal{K} \subset \mathcal{H}_{r, \varrho} \subset \mathcal{F}_{r, \varrho}^{C} \subset \mathcal{F}_{r, \varrho}^{D} \subset \mathcal{F}_{r, \varrho}
 \end{equation*}
 
+Zauważmy, że zapis $y \in N(f)$ to formalny sposób powiedzenia, że $y$ jest informacją o $f$. Dla przykładu, dla informacji nieadaptacyjnej składającej się z zaburzonych ewaluacji funkcji $f$ w punktach $x_{1}, \dots, x_{n}$ z precyzją $\delta$, mamy:
 
+\begin{equation*}
+    N(f) = \{y \in \R^{n} : \quad |y_{i} - f(x_{i}| \leq \delta, \quad 1 \leq i \leq n\}
+\end{equation*}
+
+\noindent
+Gdy $\delta = 0$, wtedy $N(f)$ jest singletonem a informacja jest dokładna.
+
+Oznaczmy przez $\mathcal{N}(n, \delta)$ klasę wszystkich (adaptacyjnych) informacji $N$, które używają co najwyżej $n$ ewaluacji funkcji, z precyzją $\delta$ każda. Wtedy przez \textit{minimalany błąd najgorszego przykładu} w klasie $\mathcal{F}$, który może zostać osiągnięty przez algorytm używający informacji o co najwyżej $n$ wartościach funkcji z precyzją $\delta$ rozumiemy:
+
+\begin{equation*}
+    r^{wor}_{p}(n, \delta, \mathcal{F}) = \inf\{ e^{wor}_{p}(\varphi, N, \mathcal{F}) : \; \varphi \; uzywa \; N \in \mathcal{N}(n, \delta) \}
+\end{equation*}
+
+Poniższe ograniczenia dolne na $r^{wor}_{p}(n, \delta, \mathcal{F})$ są dość oczywiste albo mogą zostać wyprowadzone ze znanych rezultatów
+
+\begin{stw}
+\label{stw1}
+    Dla każdego $n$ i $\delta \geq 0$ mamy:
+    \begin{enumerate}[label=(\roman*)]
+        \item \label{stw1_i} $r^{wor}_{p}(n, \delta, \mathcal{K}) \leq \delta T^{1/p}$
+        \item \label{stw1_ii} $r^{wor}_{p}(n, \delta, \mathcal{H}_{r,\varrho}) \leq a_{r,\varrho}n^{-(r + \varrho)}$ dla pewnego $a_{r,\varrho} > 0$
+        \item \label{stw1_iii} $r^{wor}_{p}(n, \delta, \mathcal{F}_{r,\varrho}) = \infty, \quad r \geq 1$
+    \end{enumerate}
+\end{stw}
+\begin{proof}
+    $(\dots)$
+\end{proof}
+
+Z stwierdzenia \ref{stw1} \textit{\ref{stw1_i}-\ref{stw1_ii}} otrzymujemy, że 
+\begin{equation*}
+    r^{wor}_{p}(n, \delta, \mathcal{F}^{D}_{r,\varrho}) \geq r^{wor}_{p}(n, \delta, \mathcal{F}^{C}_{r,\varrho}) \geq \max(\delta T^{1/p}, a_{r,\varrho} n^{-(r+\varrho)})
+\end{equation*}
+W dalszej części pracy udowodnimy, że te nierówności są ostre, z wyjątkiem pierwszej dla $p=\infty$. To jest główny wyniki artykułu \cite{AoP}, który możemy zapisać w poniższej postaci:
+
+\begin{thm}
+\label{AoP_tw1}~ %
+    \begin{enumerate}
+        \item $r^{wor}_{p}(n, \delta, \mathcal{F}^{D}_{r,\varrho}) = \Theta(\max(\delta, n^{-(r+\varrho)})) \quad dla \: 1 \leq p \leq \infty$
+        \item $r^{wor}_{\infty}(n, \delta, \mathcal{F}^{C}_{r,\varrho}) = \Theta(\max(\delta, n^{-(r+\varrho)}))$
+    \end{enumerate}
+\end{thm}
+
+W celu udowodnienia powyższego twierdzenia skonstruujemy algorytm, który posiada żądane własności błędu. W tym celu przedstawimy dodatkowe rezultaty dotyczące błędu interpolacji/ekstrapolacji funkcji kawałkami holderowskich, bazujących na wartościach zaburzonych.
+
+\section{Rezultaty pomocnicze}
+
+Niech $m \geq 2r + 1$, $h + \frac{T}{m}$ oraz $t_{i} = ih$ dla każdego $i$. Przez $d_{i}$ oznaczmy różnicę dzieloną stopnia $r+1$ bazującą na wartościach $f(t_{i})$:
+\begin{equation*}
+    d_{i} = f[t_{i}, \dots, t_{i+r+1}] = \sum_{j = 1}^{i+r+1} \gamma_{j} \prod_{k=1 \land k \neq j}^{i+r+1}(t_{k}-t_{j})^{-1}
+\end{equation*}
+
+Następnie oznaczmy przez $\tilde{d_i}$ (niedokładną) różnicę dzieloną stopnia $r+1$ bazującą na wartościach $y_{j} = F(t_{j}) + e_{j}$, gdzie $|e_{j}| \leq \delta$
+\begin{equation*}
+    \tilde{d_{i}} = \tilde{f}[t_{i}, \dots, t_{i+r+1}] = \sum_{j = 1}^{i+r+1} \gamma_{j} \prod_{\substack{k=1 \\ k \neq j}}^{i+r+1}(t_{k}-t_{j})^{-1}
+\end{equation*}
+
+\begin{lemma}
+    Jeżeli $f \in H_{r, \varrho}(t_{i}, t_{i+r+1})$, wtedy
+    \begin{equation*}
+        |\tilde{d_{i}}| \leq \frac{c(g_{f})(r+1)^{\varrho}}{(r+1)!} h^{\varrho-1} + \delta \frac{2^{r+1}}{(r+1)!} h^{-(r+1)}
+    \end{equation*}
+\end{lemma}
+\begin{proof}
+    $(\dots)$
+\end{proof}
+
+Teraz oszacujemy błąd interpolacji i ekstrapolacji w obecności zaburzenia wartości funkcji. Niech $p_{i}$ i $\tilde{p_{i}}$ odpowiadają wielomianom stopnia co najwyżej $r$ interpolujących $f$ opartych na dokładnych i niedokładnych wartościach funkcji $f$ w punktach $t_{i}, t_{i+1}, \dots, t_{i+r}$. Dla $r \geq 1$, wprowadźmy oznaczenia:
+\begin{equation*}
+    \beta_{r} = \max_{0 \leq t \leq r} |\prod_{k=0}^{r} (t-k)|, \quad
+    \Lambda_{r} = \max_{0 \leq t \leq r} \sum_{k=0}^{r} \prod_{\substack{l=0 \\ l \neq k}}^{r} \left| \frac{t-l}{k-l} \right| \quad
+    \tilde{\Lambda}_{r} = \sum_{k=0}^{r} \prod_{\substack{l=0 \\ l \neq k}}^{r} \left| \frac{2r+1-l}{k-l} \right|
+\end{equation*}
+
+\begin{lemma}
+    Niech $f \in H_{0, \varrho}$, wtedy:
+        \begin{align*}
+            dla \; x \in [t_{i-\frac{1}{2}}, t_{i + \frac{1}{2}}] : & \qquad |f(x) - \tilde{p}_{1}(x)| \leq C_{0, \varrho}(f) + \delta= c(g_{f}) 2^{-\varrho} \\
+            dla \; x \in [t_{i-1}, t_{i - \frac{1}{2}}) \cup (t_{i + \frac{1}{2}}, t_{i+1}]  : & \qquad |f(x) - \tilde{p}_{1}(x)| \leq \overline{C} _{0, \varrho}(f)  + \delta = c(g_{f}) \\
+        \end{align*}    
+    Niech $f \in H_{r, \varrho}$ i $r \geq 1$, wtedy:
+        \begin{align*}
+            dla \; x \in [t_{i}, t_{i + r}] : & \qquad |f(x) - \tilde{p}_{1}(x)| \leq C_{r, \varrho}(f) h^{r+\varrho} + \delta\Lambda_{r} = c(g_{f}) 2^{-\varrho} \\
+            dla \; x \in [t_{i-1}, t_{i - \frac{1}{2}}) \cup (t_{i + \frac{1}{2}}, t_{i+1}]  : & \qquad |f(x) - \tilde{p}_{1}(x)| \leq \overline{C} _{0, \varrho}(f) = c(g_{f}) \\
+        \end{align*}    
+\end{lemma}
 
 \mgrclosechapter
-
 
 %%
 %% ==== ROZDZIAŁ ====

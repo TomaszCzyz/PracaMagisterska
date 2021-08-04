@@ -329,6 +329,7 @@ Zakładamy też, że $r \geq 2$.
 
 
 
+
 \mgrclosechapter
 
 %%
@@ -452,6 +453,7 @@ gdzie $v_{2} - u_{2} \leq \omega$
 
 Mamy również, że liczba ewaluacji funkcji $n$ jest proporcjonalna do $h^{-1}$, tak więc $h^{r+\varrho}$ jest proporcjonalne do $n^{-(r+\varrho)}$. Z tego wynika poniższe stwierdzenia:
 \begin{stw}
+    \label{stw2}
     Niech $1 \leq p \leq \infty$. Jeżeli $\delta \leq bh^{r+\varrho}$ oraz $\omega(h) = h^{(r+\varrho)p + 1}$, wtedy
     \begin{equation*}
         e_{\mathrm{p}}^{wor}\left(\varphi_{h}^{*}, N_{h}^{*} ; \mathcal{F}_{r, \varrho}^{D}\right)=\mathcal{O}\left(n^{-(r+\varrho)}\right)
@@ -459,6 +461,25 @@ Mamy również, że liczba ewaluacji funkcji $n$ jest proporcjonalna do $h^{-1}$
 \end{stw}
 
 Warto wspomnieć, że powyższe ograniczenia górne nie może zostać spełnione przez algorytmy nieadaptacyjne, co zostało pokazane w \cite{PoA}. Pokazano tam również, że dla $p=\infty$ nie istnieje algorytm z błędem zbiegającym do zera, dlatego założenia $p < \infty$ jest niezbędne. Dodatkowo, gdy rozważymy klasę $\mathcal{F}_{r, \varrho}^{C} \subset \mathcal{F}_{r, \varrho}^{D}$, to możemy uprościć algorytm biorąc $\omega(h) = (r+1)h$ i unikając iteracji w kroku 2. Otrzymujemy w ten sposób algorytm, który dla $r=0,1$ jest nieadaptacyjny, a dla $r \geq 2$ używa co najwyżej $r-1$ dodatkowych punktów, niezależnie od tego jak małe jest $h$. Co więcej, organiczenie górne zachodzi dla $p = \infty$
+Stosując powyższą modyfikację możemy sformułować następujące stwierdzenie.
+
+\begin{stw}
+    \label{stw3}
+    Jeżeli $\delta \leq bh^{r+\varrho}$ i $\omega(h) = (r+1)h$, wtedy:
+    \begin{equation}
+        \mathrm{e}_{\infty}^{\mathrm{wor}}\left(\varphi_{h}^{*}, N_{h}^{*} ; \mathcal{F}_{r, \varrho}^{C}\right)=\mathcal{O}\left(n^{-(r+\varrho)}\right) .
+    \end{equation}
+\end{stw}
+
+Ponownie, dla $r \geq 2$ użycie informacji adaptacyjnej jest konieczne. Łącząc wyniki \ref{stw2}, \ref{stw3} i \ref{stw1}\ref{stw1_i} otrzymujemy \ref{AoP_tw1}.
+Faktycznie, dla ustalonego $\delta$ i $n$ możemy wybrać $h = \frac{T}{m}$ takie, że
+\begin{equation}
+    m = m(n, \delta)=\left\lfloor\min \left(\beta n, \frac{1}{T}\left(\frac{b}{\delta}\right)^{\frac{1}{r+\varrho}}\right)\right\rfloor=\varTheta\left(\min \left(n, \delta^{-1 /(r+\varrho)}\right)\right),
+\end{equation}
+
+\begin{uw}
+    Zauważmy, że dla ustalonej precyzji $\delta$ nie ma sensu brać $m$ większego niż $m_{max} = \varTheta(\delta^{-1 / (r+\varrho)})$ wartości funkcji, ponieważ dla $m = m_{max}$ osiągamy maksymalną dokładność dla danego $\delta$.
+\end{uw}
 
 
 

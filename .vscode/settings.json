@@ -13,6 +13,7 @@
         "PracaMagisterska/logoWMS.pdf": true,
         "PracaMagisterska/logoWMS-eps-converted-to.pdf": true,
         "PracaMagisterska/orzelAGH-eps-converted-to.pdf": true,
+        "PracaMagisterska/__latexindent_temp.tex": true
     },
     "latex-workshop.latex.autoBuild.run": "never",
     "spellright.language": [
