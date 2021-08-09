@@ -55,14 +55,16 @@
 \newtheorem{thm}{Twierdzenie}[chapter]
 \newtheorem{lemma}[thm]{Lemat}
 \newtheorem{stw}[thm]{Stwierdzenie}
-\newtheorem{cor}[thm]{\indent Wniosek}
-\newtheorem{obs}[thm]{\indent Obserwacja}
-\newtheorem{uw}[thm]{\indent Uwaga}
+\newtheorem{cor}[thm]{Wniosek}
+\newtheorem{obs}[thm]{Obserwacja}
+\newtheorem{uw}[thm]{Uwaga}
 \newtheorem{df}[thm]{Definicja}
 \newcommand{\E}{\mathbb{E}}
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\Pra}{\mathbb{Pra}}
 \newcommand{\F}{\mathcal{F}}
+\newcommand{\G}{G^{r,\varrho}([a,b])}
+\newcommand{\1}{\mathbbm{1}}
 
 \makeatletter
 \newcommand*{\defeq}{\mathrel{\rlap{%
@@ -168,7 +170,7 @@ oraz
 Rozróżniamy następujące klasy $\mathcal{F}$:
 \begin{equation*}
     \begin{split}
-        \mathcal{K} & = \{f = c \mathbbm{1}_{\R}, c \in \R \}, \\
+        \mathcal{K} & = \{f = c \1_{\R}, c \in \R \}, \\
         \mathcal{H}_{r, \varrho} & = \{ f \in F_{r, \varrho}: c(g_{f}) \leq 1, \Delta_{f}^{(j)} = 0 \; for\; all\; 0 \leq j \leq r\} \\
         \mathcal{F}_{r, \varrho}^{C} & = \{ f \in F_{r, \varrho}: c(g_{f}) \leq 1, \Delta_{f}^{(0)} = 0 \} \\
         \mathcal{F}_{r, \varrho}^{D} & = \{ f \in F_{r, \varrho}: c(g_{f}) \leq 1, | \Delta_{f}^{(0)} | \leq 1 \} \\
@@ -317,7 +319,7 @@ Przez $F_{r} = F_{r}(0, T)$, dla $T > 0$, oznaczamy funkcje $r$-gładkie, ale po
 \end{equation*}
 gdzie $f_{-}(x) \in W_{r}(0, s_{f})$, $f_{+}(x) \in W_{r}(s_{f}, T)$, dla $s_{f} \in (0,T)$. Innumi słowy $f \in F_{r}$ wtw, gdy
 \begin{equation*}
-    f(x)=g(x)+\mathbbm{1}_{\left[s_{f}, T\right]}(x) \sum_{j=0}^{r-1} \Delta_{f}^{(j)} \frac{\left(x-s_{f}\right)^{j}}{j !}, \quad 0 \leq x \leq T
+    f(x)=g(x)+\1_{\left[s_{f}, T\right]}(x) \sum_{j=0}^{r-1} \Delta_{f}^{(j)} \frac{\left(x-s_{f}\right)^{j}}{j !}, \quad 0 \leq x \leq T
 \end{equation*}
 gdzie $g \in W_{r}(0,T)$ i $\Delta_{f}^{(j)}$ to skoki nieciągłości odpowiadającej pochodnej w punkcie $s_{f}$. Warto zauważyć, że 
 $0 \leq a<b \leq T$ mamy $\left\|f^{(r)}\right\|_{L^{\infty}(a, b)}=\left\|g^{(r)}\right\|_{L^{\infty}(a, b)}$
@@ -380,10 +382,150 @@ gdzie $n$ to liczba odwołań algorytmu do funkcji $f$
 
 \chapter{Algorytmy}
 
+\section{Algorytm oparty o informację dokładną}
+
+Algurytm przedstawiony w pracy \cite{CoDF} lokalizuje osobliwość przy pomocy wielomianów Lagrange'a $w_{g}^{r}$. Na wejściu algorytm otrzymuje $g \in \G$, przedział $[a,b]$, regularność $r$ oraz współczynnik Höldera $\varrho$. Kluczowym elementem algorytmu jest zdefiniowana poniżej wielkość (\textit{test}), która jest użyta do wykrycie punktu osobliwego.
+\begin{equation}
+    \label{eqn:test}
+    A_{g}(a, \bar{a}, \bar{b}, b)=\max _{0 \leq j \leq r} \frac{\left\|w_{g}^{r}([\bar{b}, b])\left(z_{j}\right)-w_{g}^{r}([a, \bar{a}])\left(z_{j}\right)\right\|}{\bar{h}^{r+e}},
+\end{equation}
+gdzie $a<\bar{a}<\bar{b}<b$, $z_{j} = \bar{a} + (\bar{b} - \bar{a})j/r$, dla $j=0,1,\dots,r$ oraz $\bar{h} = b - a$ jest długością przedziału, na którym \textit{test} jest zdefiniowany.
+
+\vspace{10pt}
+\begin{tabular}{p{0.045\linewidth} p{0.85\linewidth}}
+    \textit{K1:}    & Niech $\delta \coloneqq h^{r+\varrho}$, $B \coloneqq \emptyset$ \\
+                    & \textbf{jeżeli} \(\displaystyle \max_{0 \leq i \leq p-1} (c_{i+1} - c_{i}) \leq 4\delta \) \textbf{wtedy} \\
+                    & $\quad$ idź do \textit{Krok 3} \\
+                    & \textbf{w p.p.} \\
+                    & $\quad$ Niech $A=\max \left\{A_{g}\left(c_{j}, c_{j}+\delta, c_{j+1}-\delta, c_{j+1}\right) \mid c_{j+1}-c_{j}>4 \delta\right\}$ \\
+                    & $\quad$ dla $j=0,1, \ldots, p-1$ \\
+                    & $\quad$ Niech $A_{g}^{i} = A_{g}\left(c_{i}, c_{i}+\delta, c_{i+1}-\delta, c_{i+1}\right)$ \\
+                    & $\quad$ \textbf{jeżeli} istnieją różne $k$ i $l$ takie, że $A = A^{k} \land A = A^{l}$ \textbf{wtedy} \\
+                    & $\quad\quad$ idź do \textit{Krok 3} \\
+                    & \\
+
+    \textit{K2:}    & Niech $[c_{k}, c_{k+1}]$ - przedział otrzymany w \textit{Krok 1}\\
+                    & $B = BISECTION(g, [a,b], r, \varrho)$\\
+                    & \\
+
+    \textit{K3:}    & Niech $\bar{M} = \left\{ c_{0}, \dots, c_{p} \right\} \cap B$ \\
+                    & $q(t)= \begin{cases}
+                        g\left(c_{i}\right)                                                 &\text{gdy } t \in \left[c_{i}, c_{i+1}\right) \land c_{i+1}-c_{i} \leq 4 \delta \\ 
+                        g\left(c_{i}\right)                                                 &\text{gdy } t \in \left[c_{i}, c_{i}+\delta\right) \land c_{i+1}-c_{i}>4 \delta, \\ 
+                        w_{g}^{r}\left(\left[c_{i}+\delta, c_{i+1}-\delta\right]\right)(t)  &\text{gdy } t \in\left[c_{i}+\delta, c_{i+1}-\delta\right) \land c_{i+1}-c_{i}>4 \delta \\ 
+                        g\left(c_{i+1}-\delta\right)                                        &\text{gdy } t \in\left[c_{i+1}-\delta, c_{i+1}\right) \land c_{i+1}-c_{i}>4 \delta
+                        \end{cases}$ \\
+                    & dla $i=0,1,\dots,k-1$ z $q(b) = $ zdefiniowanym przez ciągłość na ostatnim przedziale \\
+                    & $B \coloneqq B \cup \left\{ c_{i} + \delta, c_{i+1} - \delta \mid c_{i+1} - c_{i} > 4\delta,\; i=0,\dots,k-1 \right\}$ \\
+
+\end{tabular} \vspace{10pt}
+
+\subsection{Analiza algorytmu}
+
+\begin{thm}
+    \label{2014_tw1}
+    Niech $r+\varrho \geq 1$. Istnieją stałe $C$ i $m_{0}$ takie, że dla $m>m_{0}$, przedziału $[a,b]$ oraz wszystkich $g \in \G$ z $\delta_{g}^{0} = 0$ zachodzi:
+    \begin{equation*}
+        \sup_{t \in [a,b]} \| g(t) - q(t) \| \leq Cm^{-(r+\varrho)}
+    \end{equation*}
+    Dodatkowo, obliczenie $q$ wymaga $O(p+\log m)$ ewaluacji fun $g$, gdzie $p$ jest liczbą przedziałów w początkowym podziale $M$ przedziału $[a,b]$. Czyli, aby otrzymać optymalną aproksymację $g \in \G$ na przedziale $[a,b]$, wystarcza wiąźć podział $M$ z $m+1$ równoodległymi punktami $x_{i} = a+(b-a)i/m$, dla $i=0,1,\dots,m$. wtedy obliczenie $q$ wymaga $O(m)$ ewaluacji funkcji $g$.
+\end{thm}
+
+Zacznijmy od wyjaśnienia własności testu \ref{eqn:test} służącego do wykrywania osobliwości. Rozważmy błąd interpolacji Lagrange'a dla nieciągłej funkcji $g \in \G$. Błąd jest ograniczony za względu na wielomian $s^{g}$ (TODO: reference).
+
+\begin{lemma}
+    Istnieje stała $C$ taka, że dla wszystkich $[a,b]$, wszystkich $g \in \G$ oraz $s=0,1,\dots,r$, mamy
+    \begin{equation*}
+        \sup _{t \in[a, b]}\left\|g(t)-w_{g}^{s}([a, b])(t)\right\| \leq C\left(\min \left\{\sup_{t \in[a, \hat{t}_{g})}\left\|s_{g}(t)\right\|, \sup _{t \in [\hat{t}_{g}, b]}\left\|s_{g}(t)\right\|\right\}+\bar{h}^{\min \{s+1, r+\varrho\}}\right)
+    \end{equation*}
+\end{lemma}
+\begin{proof}
+    $(\dots)$
+\end{proof}
+
+\begin{cor}
+    Istnieje stała $C$ taka, że dla wszystkich $[a,b]$, wszystkich $g \in \G$ z $\delta_{g}^{0} = 0$, $0 \leq \delta \leq \min{1, \bar{h}}$ oraz $s=0,1,\dots,r$, mamy
+    \begin{equation*}
+        \hat{t}_{g} \in(a, a+\delta] \cup[b-\delta, b) \Longrightarrow  \sup_{t \in[a, b]}\left\|g(t)-w_{g}^{s}([a, b])(t)\right\| \leq C\left(\delta+\bar{h}^{\min \{s+1, r+\varrho\}}\right)
+    \end{equation*}
+\end{cor}
+\begin{proof}
+    $(\dots)$
+\end{proof}
+
+\begin{lemma}
+    Istnieje stała $C$ zależna od $r$ i $L_{r}$ taka, że dla wszystkich $[a,b]$, $\bar{a} \in (a,b)$, wszystkich $g \in \G$, mamy
+    \begin{equation*}
+        \hat{t}_{g} \in(\bar{a}, b) \Longrightarrow g(t)-w_{g}^{r}([a, \bar{a}])(t)=s_{g}(t) \1_{\left[\hat{t}_{g}, b\right]}(t)+R_{g}(t), \quad t \in[\bar{a}, b],
+    \end{equation*}
+    gdzie $\| R_{g}(t) \| \leq C\bar{h}^{r+\varrho}$, dla $t \in [\bar{a}, b]$
+\end{lemma}
+\begin{proof}
+    $(\dots)$
+\end{proof}
+
+\begin{cor}
+    Istnieje stała $\bar{C}$ zależna od $r$ i $L_{r}$ taka, że dla wszystkich $[a,b]$, $\bar{a} \in (a,b)$, wszystkich $g \in \G$, mamy
+    \begin{equation*}
+        \hat{t}_{g} \in (a,\bar{a}) \Longrightarrow g(t)-w_{g}^{r}([\bar{a},a])(t)=s_{g}(t) \1_{\left[a,\hat{t}_{g}\right]}(t)+R_{g}(t), \quad t \in[a,\bar{a}],
+    \end{equation*}
+    gdzie $\| R_{g}(t) \| \leq \bar{C}\bar{h}^{r+\varrho}$, dla $t \in [a,\bar{a}]$
+\end{cor}
+\begin{proof}
+    $(\dots)$
+\end{proof}
+
+\begin{stw}
+    \label{2014_stw1}
+    Istnieje stała $C^{*}$ zależna od $r$ i $L_{r}$ taka, że dla wszystkich $a < \bar{a} < \bar{b} < b$ i $[a,b]$ oraz wszystich $g \in \G$, mamy
+    \begin{equation*}
+        \hat{t}_{g} \text{ z niezerowym wielomianem } s_{g} \text{ nie jest w } (a,b) \Longrightarrow A_{g}(a, \bar{a}, \bar{b}, b) \leq C^{*}
+    \end{equation*}
+\end{stw}
+\begin{proof}
+    $(\dots)$
+\end{proof}
+
+\begin{uw}
+    Stwierdzenie \ref{2014_stw1} pokazuje, że procedura LOCATE-APPROXIMATE wraz z zprocedurą BISECTION, sukcesywnie wybiera przedziały bazując a wartościach testu. Zauważmy, że jeżeli $\hat{t}_{g}$ jest unikalna, to wtedy dla jakiegokolwiek przedziału $[a,b]$, który nie został wybrany, mamy $A_{g}(a, \bar{a}, \bar{b}, b) \leq C^{*}$
+\end{uw}
+
+\begin{stw}
+    \label{2014_stw2}
+    Niech $D > 0$. Istnieją stałe $C$ i $\bar{N}$, zależne tylko od parametrów klast $\G$ i $D$, takie, że dla wszystkich $[a,b]$, $[\bar{a}, \bar{b}] \subset (a,b)$, $g \in \G$ oraz $s=0,1,\dots,r$, mamy
+    \begin{equation*}
+        \hat{t}_{g} \in (\bar{a}, \bar{b}] \land b-a \leq D(\bar{b}-\bar{a}) \Longrightarrow \text{dla } [\gamma, \omega]=[a, b] \vee [\gamma, \omega]=[\bar{a}, \bar{b}] \text{ zachodzi }
+    \end{equation*}
+    \begin{equation*}
+        \sup _{t \in[\gamma, \omega]}\left\|g(t)-w_{g}^{s}([\gamma, \omega])(t)\right\| \leq C\left(1+A_{g}(a, \bar{a}, \bar{b}, b)\right) \bar{h}^{\min \{s+1, r+\varrho\}}
+    \end{equation*}
+    oraz ponadto
+    \begin{equation*}
+        \sup _{t \in[\gamma, \omega]}\left\|\left(w_{g}^{s}([\gamma, \omega])\right)^{(j)}(t)\right\| \leq \bar{N}\left(1+\bar{h}^{\min \{s+1-j, r+\rho-j\}}+\left(1+A_{g}(a, \bar{a}, \bar{b}, b)\right) \bar{h}^{r+\varphi-j}\right)
+    \end{equation*}
+    dla $j=0,1,\dots,s$.
+\end{stw}
+\begin{proof}
+    $(\dots)$
+\end{proof}
+
+\begin{uw}
+    Stwierdzenie \ref{2014_stw2} pokazuje, że w przypadku z osobliwością, ograniczenie górne na błąd interpolacji możemy wyrazić za pomocą $A_{g}(a, \bar{a}, \bar{b}, b)$
+\end{uw}
+
+Poniższy lemat dotyczy przypadku, gdy osobliwość znajduje się na brzegu przdziału $[a,b]$\\
+\textit{(lemat... dowod...)}
+
+\textit{(Dowód tw1 z 2014)}
+
+\begin{uw}
+    Twierdzenie \ref{2014_tw1} zachodzi również dla funkcji $g$, która ma skok w punkcie $c_{i}$ początkowego podziału $M$ oraz ma niezerowy wielomian $s_{g}$ dla co najwyżej jednego nieznanego punktu $t_{g}$, $t_{g} \neq c_{i} \; \forall_{i}$.
+\end{uw}
+
 
 \section{Algorytm oparty o informację zaburzoną}
 
-W tej opiszemy algorytm bazujący na informacji zaburzonej przedstawiony w artykule \cite{AoP}. Analizowany algorytm używa co najwyżej $n$ wartości funkcji z precyzją $\delta $ oraz w najgorszym przypadku ma błąd proporcjonalny do $\max{(\delta, n^{-1 / r + \varrho })}$ w klasie funkcji $\F^D_{r,\varrho }$ dla $p < \infty$ oraz w klasie $\F^C_{r,\varrho }$ dla $p \leq \infty$. Kluczowym parametrem algorytmu jest
+W tym rozdziale opiszemy algorytm bazujący na informacji zaburzonej przedstawiony w artykule \cite{AoP}. Analizowany algorytm używa co najwyżej $n$ wartości funkcji z precyzją $\delta $ oraz w najgorszym przypadku ma błąd proporcjonalny do $\max{(\delta, n^{-1 / r + \varrho })}$ w klasie funkcji $\F^D_{r,\varrho }$ dla $p < \infty$ oraz w klasie $\F^C_{r,\varrho }$ dla $p \leq \infty$. Kluczowym parametrem algorytmu jest
 $$
     h = T / m \quad with \quad  m \geq 2r + 1,
 $$
@@ -403,26 +545,26 @@ Powyższe kroki mogą być zapisane następująco; dla $t_i = ih \; \forall i$. 
 
     \textit{Krok 2} & Oznaczymy przez $\tilde{p}_+$ i $\tilde{p}_-$ wielomiany stopnia $ \leq r$, które interpolują węzły $(t_j, \tilde{f}(t_j))$ odpowiednio dla $i^* - r \leq j \leq i^*$ oraz dla $i^* + r + 1 \leq j \leq i^* + 2r + 1$. Następnie wykonaj iterację: \\
                     & $u := u_1$, $v := v_1$ \\
-                    & \textbf{dopóki} $v-u > \omega$ \textbf{do} \\
-                    & \hspace{20pt}$z_j := u + j(v-u) / (r+2), \qquad j = 1, 2, \ldots, r + 1$ \\
-                    & \hspace{20pt}\(\displaystyle j^* := arg \max_{1 \leq j \leq r + 1}|\tilde{p}_{+}(z_j) - \tilde{p}_{-}(z_j)| \) \\
-                    & \hspace{20pt}\textbf{if} $|\tilde{f}(z_{j^*}) - \tilde{p}_{-}(z_j)| \leq |\tilde{f}(z_{j^*}) - \tilde{p}_{+}(z_j)|$ \textbf{then} \\
-                    & \hspace{40pt}$u:= z_{j^*}$ \\
-                    & \hspace{20pt}\textbf{else} \\
-                    & \hspace{40pt}$v:= z_{j^*}$ \\
-                    & \textbf{end while} \\
+                    & \textbf{dopóki} $v-u > \omega$ \textbf{wykonuj}: \\
+                    & $\quad$$z_j := u + j(v-u) / (r+2), \qquad j = 1, 2, \ldots, r + 1$ \\
+                    & $\quad$\(\displaystyle j^* := arg \max_{1 \leq j \leq r + 1}|\tilde{p}_{+}(z_j) - \tilde{p}_{-}(z_j)| \) \\
+                    & $\quad$\textbf{jeżeli} $|\tilde{f}(z_{j^*}) - \tilde{p}_{-}(z_j)| \leq |\tilde{f}(z_{j^*}) - \tilde{p}_{+}(z_j)|$ \textbf{wtedy} \\
+                    & $\quad\quad$$u:= z_{j^*}$ \\
+                    & $\quad$\textbf{w p.p.} \\
+                    & $\quad\quad$$v:= z_{j^*}$ \\
+                    & \textbf{koniec} \\
                     & Niech $u_2 = u$ i $v_2 = v$. \\
                     & \\
 
     \textit{Krok 3} & Wykonaj iterację: \\
                     & $u := u_2$, $v := v_2$ \\
-                    & \textbf{dopóki} istnieje maksimum lokalne $|\tilde{p}_{+} - \tilde{p}_{-}|$ na $(u,v)$ \textbf{do} \\
-                    & \hspace{20pt}$z :=$ największe maksimum lokalne $|\tilde{p}_{+} - \tilde{p}_{-}|$ na $(u,v)$ \\
-                    & \hspace{20pt}\textbf{if} $|\tilde{f}(z) - \tilde{p}_{-}(z)| \leq |\tilde{f}(z) - \tilde{p}_{+}(z)|$ \textbf{then} \\
-                    & \hspace{40pt}$u:= z$ \\
-                    & \hspace{20pt}\textbf{else} \\
-                    & \hspace{40pt}$v:= z$ \\
-                    & \textbf{end while} \\
+                    & \textbf{dopóki} istnieje maksimum lokalne $|\tilde{p}_{+} - \tilde{p}_{-}|$ na $(u,v)$ \textbf{wykonuj} \\
+                    & $\quad$$z :=$ największe maksimum lokalne $|\tilde{p}_{+} - \tilde{p}_{-}|$ na $(u,v)$ \\
+                    & $\quad$\textbf{jeżeli} $|\tilde{f}(z) - \tilde{p}_{-}(z)| \leq |\tilde{f}(z) - \tilde{p}_{+}(z)|$ \textbf{wtedy} \\
+                    & $\quad\quad$$u:= z$ \\
+                    & $\quad$\textbf{w p.p.} \\
+                    & $\quad\quad$$v:= z$ \\
+                    & \textbf{koniec} \\
                     & Niech $u_3 = u$ i $v_3 = v$.
 \end{tabular} \vspace{10pt}
 
@@ -434,13 +576,15 @@ Finalną aproksymacją $s_f$ jest
 \subsection{Analiza algorytmu}
 
 Przedstawiony algorytm używa $m$ wartości funkcji w kroku 1 oraz jedyną wartość funkcji w każdej iteracji w krokach 2 i 3. Czyli w kroku 2 używamy co najwyżej
-\begin{equation}
-    \left[\frac{\ln \left(\frac{(r+1) h}{\omega(h)}\right)}{\ln \left(\frac{r+2}{r+1}\right)}\right\rceil
-\end{equation}
+\begin{equation*}
+    \left\lceil\frac{\ln \left(\frac{(r+1) h}{\omega(h)}\right)}{\ln \left(\frac{r+2}{r+1}\right)}\right\rceil
+\end{equation*}
 wartości funkcji i $(r-1)$ w kroku 3.
-Stąd otrzymujemy, że jeżezli $\omega = \omega(h) \geq kh^{\alpha}$ dla pewngo ustalonego $k$ i $\alpha$, wtedy w najgoryszym przypadku liczba użytych wartości funkcji równa sie asymptotycznie $m = \frac{T}{h}$ dla $h \rightarrow 0^{+}$.
+Stąd otrzymujemy, że jeżezli $\omega = \omega(h) \geq kh^{\alpha}$ dla pewngo ustalonego $k$ i $\alpha$, wtedy w najgoryszym przypadku liczba użytych wartości funkcji równa sie asymptotycznie $m = \frac{T}{h}$ dla $h \rightarrow 0^{+}$. \\
+
 
 \textit{(punktowa analiza błędu...)}
+
 
 Podsumowując analizę błędu dla każdego punktu otrzymujemy, że gdy $\delta \leq bh^{r+\varrho}$ wtedy:
 \begin{equation*}

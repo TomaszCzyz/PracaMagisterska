@@ -1,0 +1,10 @@
+### Pytania o sprawy LaTeX-owe, formatowanie, tłumaczenia, itp.
+
+
+# czy tłumaczyć skróty w oznaczeniach matematycznych (np. e^{wor})
+
+# czy stosować wcięcia przez lematami, tw., stw., itd.
+
+# jaką numeracje tw, stw, itp stosowac?
+
+# cz pogrubić "y" we wzorach gdzie oznacza informacje, tzn y \in N(f)? (tak było o pracy z 2015)
