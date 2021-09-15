@@ -26,5 +26,7 @@
         "plaintext"
     ],
     "python.pythonPath": "C:\\Users\\tczyz\\Anaconda3\\envs\\myenv\\python.exe",
-    "jupyter.jupyterServerType": "local"
+    "jupyter.jupyterServerType": "local",
+    "jupyter.textOutputLimit": 0,
+    "notebook.output.textLineLimit": 1000
 }
