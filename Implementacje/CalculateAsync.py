@@ -2,7 +2,9 @@ import numpy as np
 import multiprocessing as mp
 import matplotlib.pyplot as plt
 from Examples import Example2
-from Alg2015_implementation import Alg2015, worst_case_error_n
+from Utilis import worst_case_error_n
+from alg2015.Alg2015_implementation import Alg2015
+from alg2014.Alg2014_implementation import Alg2014
 
 
 class MyCallback:
@@ -47,22 +49,31 @@ class MyCallback:
         print("finished tasks: {}/{}".format(self.finished_tasks, self.tasks_number), end='\r')
 
 
-def calculate(n_times, array, deltas):
+def calculate(n_times, array, deltas, algorithm_name):
+    my_callback = MyCallback(len(array) * len(deltas))
+
     errors = {}
-    for elem in array:
+    for elem in reversed(array):
         for delta in deltas:
             print("running algorithm({} times) for m={}, noise={}".format(n_times, elem, delta))
+            if algorithm_name == 'alg2015':
+                alg = Alg2015(func=example_fun, n_knots=elem, noise=delta)
+            elif algorithm_name == 'alg2014':
+                alg = Alg2014(func=example_fun, n_knots=elem, noise=delta)
+            else:
+                raise Exception("incorrect algorithm name")
 
-            error = worst_case_error_n(
-                alg=Alg2015(func=example_fun, n_knots=elem, noise=delta),
+            result_tuple = worst_case_error_n(
+                alg=alg,
                 num=n_times
             )
-            errors[(elem, delta)] = error
+            my_callback.apply_result_handler(result_tuple)
+            errors[(elem, delta)] = result_tuple[0]
 
     return errors
 
 
-def calculate_async(num, array, deltas):
+def calculate_async(num, array, deltas, algorithm_name):
     my_callback = MyCallback(len(array) * len(deltas))
 
     with mp.Pool(processes=mp.cpu_count() - 1) as pool:
@@ -72,7 +83,13 @@ def calculate_async(num, array, deltas):
 
             for delta in deltas:
                 print("starting processing algorithm({} times) for m={} and delta={}...".format(num, elem, delta))
-                alg = Alg2015(func=example_fun, n_knots=elem, noise=delta)
+                if algorithm_name == 'alg2015':
+                    alg = Alg2015(func=example_fun, n_knots=elem, noise=delta)
+                elif algorithm_name == 'alg2014':
+                    alg = Alg2014(func=example_fun, n_knots=elem, noise=delta)
+                else:
+                    raise Exception("incorrect algorithm name")
+
                 apply_result = pool.apply_async(
                     func=worst_case_error_n,
                     args=(alg, num),
@@ -94,17 +111,19 @@ if __name__ == '__main__':
     example_fun.f__r = 4
 
     # be careful with parameters bellow, e.g. too small m can break an algorithm
-    log10_m_array = np.linspace(1.8, 4.5, num=15)  # 10 ** 4.7 =~ 50118
+    log10_m_array = np.linspace(1.8, 3.5, num=15)  # 10 ** 4.7 =~ 50118
 
-    n_runs = 30
+    n_runs = 20
     noises = [None, 10e-6, 10e-4, 10e-2]  # [None, 10e-12, 10e-8, 10e-4]
     m_array = list(np.array(np.power(10, log10_m_array), dtype='int'))
 
-    # results = calculate(n_runs, m_array, noises)
-    results = calculate_async(n_runs, m_array, noises)
+    results = calculate(n_runs, m_array, noises, algorithm_name='alg2015')
+    # results = calculate_async(n_runs, m_array, noises, algorithm_name='alg2014')
 
     # %%
 
-    # learn1 = np.linspace(0.01, 0.00001)
-    # learn2 = np.log10(learn1)
-    # learn3 = -learn2
+    # alg = Alg2014(func=example_fun, n_knots=102, noise=10e-4)
+    # worst_case_error_n(
+    #     alg=alg,
+    #     num=10
+    # )
