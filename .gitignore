@@ -11,3 +11,10 @@ PracaMagisterska/*.aux
 PracaMagisterska/*.gz
 PracaMagisterska/*.log
 PracaMagisterska/__latexindent_temp.tex
+
+Implementacje/alg2015/data/
+
+__pycache__/
+.idea/
+**/*.log
+**/*.png

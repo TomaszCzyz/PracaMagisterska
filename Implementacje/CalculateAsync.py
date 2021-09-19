@@ -1,14 +1,18 @@
-import numpy as np
+import logging
 import multiprocessing as mp
+
 import matplotlib.pyplot as plt
+import numpy as np
+
 from Examples import Example2
 from Utilis import worst_case_error_n
-from alg2015.Alg2015_implementation import Alg2015
 from alg2014.Alg2014_implementation import Alg2014
+from alg2015.Alg2015_implementation import Alg2015
 
 
 class MyCallback:
-    def __init__(self, max_count):
+    def __init__(self, max_count, algorithm_name):
+        self.algorithm_name = algorithm_name
         self.finished_tasks = 0
         self.tasks_number = max_count
         self.log10_errors_for_noise = {}
@@ -32,6 +36,7 @@ class MyCallback:
             return
 
         fig, axs = plt.subplots(2, 2, sharex='all', sharey='all')
+        plt.title(self.algorithm_name)
         axs = axs.ravel()
 
         temp = 0
@@ -49,17 +54,17 @@ class MyCallback:
         print("finished tasks: {}/{}".format(self.finished_tasks, self.tasks_number), end='\r')
 
 
-def calculate(n_times, array, deltas, algorithm_name):
-    my_callback = MyCallback(len(array) * len(deltas))
+def calculate(n_times, array, deltas, algorithm_name, example_function):
+    my_callback = MyCallback(len(array) * len(deltas), algorithm_name)
 
     errors = {}
     for elem in reversed(array):
         for delta in deltas:
             print("running algorithm({} times) for m={}, noise={}".format(n_times, elem, delta))
             if algorithm_name == 'alg2015':
-                alg = Alg2015(func=example_fun, n_knots=elem, noise=delta)
+                alg = Alg2015(func=example_function, n_knots=elem, noise=delta)
             elif algorithm_name == 'alg2014':
-                alg = Alg2014(func=example_fun, n_knots=elem, noise=delta)
+                alg = Alg2014(func=example_function, n_knots=elem, noise=delta)
             else:
                 raise Exception("incorrect algorithm name")
 
@@ -73,20 +78,19 @@ def calculate(n_times, array, deltas, algorithm_name):
     return errors
 
 
-def calculate_async(num, array, deltas, algorithm_name):
-    my_callback = MyCallback(len(array) * len(deltas))
-
+def calculate_async(num, array, deltas, algorithm_name, example_function):
+    my_callback = MyCallback(len(array) * len(deltas), algorithm_name)
+    errors = {}
     with mp.Pool(processes=mp.cpu_count() - 1) as pool:
 
-        errors = {}
         for elem in reversed(array):
 
             for delta in deltas:
                 print("starting processing algorithm({} times) for m={} and delta={}...".format(num, elem, delta))
                 if algorithm_name == 'alg2015':
-                    alg = Alg2015(func=example_fun, n_knots=elem, noise=delta)
+                    alg = Alg2015(func=example_function, n_knots=elem, noise=delta)
                 elif algorithm_name == 'alg2014':
-                    alg = Alg2014(func=example_fun, n_knots=elem, noise=delta)
+                    alg = Alg2014(func=example_function, n_knots=elem, noise=delta)
                 else:
                     raise Exception("incorrect algorithm name")
 
@@ -106,19 +110,29 @@ def calculate_async(num, array, deltas, algorithm_name):
     return errors
 
 
-if __name__ == '__main__':
+def main():
+    logging.basicConfig(level=logging.INFO)
+    logging.info('Started')
+
     example_fun = Example2()
-    example_fun.f__r = 4
+    example_fun.f__r = 2
 
     # be careful with parameters bellow, e.g. too small m can break an algorithm
-    log10_m_array = np.linspace(1.8, 3.5, num=15)  # 10 ** 4.7 =~ 50118
+    log10_m_array = np.linspace(1.8, 4.7, num=15)  # 10 ** 4.7 =~ 50118
 
     n_runs = 20
     noises = [None, 10e-6, 10e-4, 10e-2]  # [None, 10e-12, 10e-8, 10e-4]
     m_array = list(np.array(np.power(10, log10_m_array), dtype='int'))
 
-    results = calculate(n_runs, m_array, noises, algorithm_name='alg2015')
-    # results = calculate_async(n_runs, m_array, noises, algorithm_name='alg2014')
+    # results = calculate(n_runs, m_array, noises, 'alg2014', example_fun)
+    results = calculate_async(n_runs, m_array, noises, 'alg2014', example_fun)+
+
+    logging.info('Finished')
+    return results
+
+
+if __name__ == '__main__':
+    main()
 
     # %%
 
