@@ -105,7 +105,8 @@
 %%
 
 \begin{wstep}    % ew. \begin{wstep}[Wprowadzenie]
-    Celem niniejszej pracy jest analiza zachowania różnych algorytmów aproksymujących funkcje kawałkami gładkie przy użyciu informacji dokładniej i niedokładniej.
+    Celem niniejszej pracy jest analiza algorytmu aproksymującego funkcje kawałkami gładkie, który 
+    %Celem niniejszej pracy jest analiza zachowania różnych algorytmów aproksymujących funkcje kawałkami gładkie przy użyciu informacji dokładniej i niedokładniej.
     % Pierwszy z analizowanych algorytmów został przedstawiony w pracy \cite{PoA}. Rozważane są w niej funkcje klasy $F^{\infty}_r$, o których zakładamy, że zarówno sama funkcja $f: [0,T] \longrightarrow \R$ może być nieciągła, jak i jej pochodna, począwszy od rzędu możliwe większego od pierwszego. Czyli, dla przykładu, $f$ może być dwa razy różniczkowalna na $[0, T]$ i $f^{(3)}(s)$ może nie istnieć w jakimś punkcie $s$. Ponadto, $f$ może mieć skończenie wiele punktów osobliwych; ich ilość i położenie jest nieznane. Dodatkowo, algorytm przedstawiony w \cite{PoA} używa $n$ wartości funkcji w punktach $x_1, \ldots x_n$ jako jedyne dostępne informacje o funkcji $f$, a w przypadku algorytmu adaptacyjnego dopuszczamy, że wybór $x_j$ zależy od $f(x_1), \ldots, f(x_{j-1})$.
     % W wymienionej pracy do znalezienia optymalnego algorytmu nieadaptacyjnego i adaptacyjnego w najgorszym przypadku oraz w przypadku asymptotycznym do mierzenia błędu stosowana jest m.in. norma $L^p (1 \leq  p < \infty)$.
 
@@ -116,9 +117,60 @@
 \end{wstep}
 
 
-%%
-%% ==== ROZDZIAŁ ====
-%%
+\chapter{Postawowe pojęcia}
+
+\section{Informacja, algorytm, aproksymacja}
+
+    W tym rozdziale wyjaśnijmy co rozumiemy przez aproksymacje i w jaki sposób ją otrzymujemy. W tym celu wprowadzimy fundamentalne pojęcia, takie jak operator rozwiązania, informacja zaburzona oraz algorytm. Szczególną uwagę poświęcimy informacji, która jest najważniejszym czynnikiem naszej analizy. Informacja, mowiąc w skrócie, jest tym co wiemy o problemie do rozwiązania. W niniejszej pracy kluczownym założeniem jest to, że informacja jest \textit{zaburzona}, to znaczy, nie jest dokładna, czyli ma jakiś błąd.
+
+    Niech $F$ będzie przestrznią liniową a $G$ przestrzenią unormowaną, obie nad ciałem liczb rzeczywistych. Odwzorowanie 
+    \begin{equation*}
+        S : F \rightarrow G
+    \end{equation*}
+    nazywamy \textit{operatorem rozwiązania}. Naszym zadaniem jest aproksymacja elementów $S(f)$ dla $f$ należącego do $E \subset F$, bazując wyłącznie na informacji zaburzonej o $f$. Przejdźmy do szczegółowego omówienia inforamcji i aproksymacji.
+
+    \textit{Operatorem informacji} nazywamy odwzorowanie
+    \begin{equation*}
+        N : F \rightarrow 2^{Y},
+    \end{equation*}
+    gdzie Y jest zbiorem skończonych ciągów liczb rzeczywistych, $ Y \subset \bigcup^{\infty}_{n=1} \R^{n}$. Czyli $N(f)$ jest pozbiorem $Y$. Zakładamy, że $N(f)$ jest niepuste dla wszystkich $f \in F$. Każdy element $y \in N(f)$ będziemy nazywać \textit{informacją o $f$}.
+    Zauważmy, że jeżeli zbiór $N(f)$ ma dokładnie jeden element dla wszystkich $f \in F$, to informacja $N$ jest \textit{dokładna}. W przypadku, gdy istnieje $f$ dla którego $N(f)$ ma przynajmniej dwa elementy, wtedy informacja jest \textit{zaburzona}.
+
+    Dodatkowo, informacje możemy rozróżniać ze względu na sposób wyboru kolejnych wartości funckji $f$. W przypadk, gdy kolejne wartości wybierane są niezależnie od $f$, to mówimy o informacji \textit{nieadaptacyjnej}. W przciwnym przypadku, to jest gdy kolejne wartości zależą zarówno od innych punktów, jak i wartości funkcji, to mówimy o informacji \textit{adaptacyjnej}.
+    Dla przykładu, dla informacji nieadaptacyjnej składającej się z zaburzonych ewaluacji funkcji $f$ w punktach $x_{1}, \dots, x_{n}$ z precyzją $\delta$, mamy:
+    \begin{equation*}
+        N(f) = \{y \in \R^{n} : \quad |y_{i} - f(x_{i})| \leq \delta, \quad 1 \leq i \leq n\}
+    \end{equation*}
+    
+    Znając informację $y$ o $f$ możemy wprowadzić aproksymację, a dokłanie algorytm, który ją wyprodukuję. \textit{Algorytmem} nazywamy odwzorowanie:
+    \begin{equation*}
+        \varphi : Y \rightarrow G
+    \end{equation*}
+    Algorytm na wejściu otrzymuje inforację jako dane, innymi słowy, aproksymacją $S(f)$ jest $\varphi(y)$, gdzie $y$ jest informacją o $f$. Błąd aproksymacji zdefiniownay jest jako róznica $\| S(f) - \varphi(y) \|$, gdzie $\|\cdot\|$ jest normą w przestrzeni $G$.
+
+    Dodatkowo, możemy wydzielić dwie klasy informacji ze względu na sposób wybóru kolejnych wartości funckji. Jeżeli informacja jest niezależna od $f$ \textit{inforamcja nieadaptacyjna} 
+
+
+\section{Model obliczeniowy}
+
+W ogólności, optymalność algorytmu oraz jego złożonść zależą od przyjętego modelu obliczeniowego. Model jest określony poprzez sposób w jaki błąd i koszt algorytmu są zdefiniowane. Jeżeli za błąd i koszt przyjmujemy wydajność na najtrudniejszym spośród wszystkich problemów w danej klasie, wtedy mówimy o \textit{modelu najgorszego przypadku}. Innymi często rozważanymi modelami są: probablistyczny, średni, mieszany, losowy czy asymptotyczny, jednak nimi nie będziemy zajmować się w tej pracy.
+
+Niech $N : R \rightarrow 2^{Y}$ będzie operatorem inforamcji. Poprzez \textit{błąd najgorszego przypadku} algorytmu $\varphi : Y \rightarrow G$ na zbiorze $E \subset F$ rozumiemy:
+\begin{equation*}
+    e^{wor}_{p}(\phi, N, E) = \sup_{f \in E} \sup_{y \in N(f)} \|f - \varphi(y) \|_{L^p}
+\end{equation*}
+
+Oznaczmy przez $\mathcal{N}(n, \delta)$ klasę wszystkich (adaptacyjnych) informacji $N$, które używają co najwyżej $n$ ewaluacji funkcji, z precyzją $\delta$ każda. Wtedy przez \textit{minimalany błąd najgorszego przykładu} w klasie $E$, który może zostać osiągnięty przez algorytm używający informacji o co najwyżej $n$ wartościach funkcji z precyzją $\delta$ rozumiemy:
+
+\begin{equation*}
+    r^{wor}_{p}(n, \delta, E) = \inf\{ e^{wor}_{p}(\varphi, N, E) : \; \varphi \; uzywa \; N \in \mathcal{N}(n, \delta) \}
+\end{equation*}
+
+W tej pracy porównujemy dwa algorytmy aprksymujęce funkcje z osobliwością, które osiągają to samo, optymalne organiczenie na minimalny błąd najgorszego przypadku, jednak tylko w przypadku jednego z nich w anaizie zostało uwzgędione zaburzenie. W celu dokładnego sprecyzowania ograniczeń algorytmów, w następnym rozdziale szczegółowo definiujemy interesującą nas klase funkcji.
+
+
+\mgrclosechapter
+
 
 \chapter{Definicje}
 
@@ -183,7 +235,6 @@ Oczywiście
 \end{equation*}
 
 Zauważmy, że zapis $y \in N(f)$ to formalny sposób powiedzenia, że $y$ jest informacją o $f$. Dla przykładu, dla informacji nieadaptacyjnej składającej się z zaburzonych ewaluacji funkcji $f$ w punktach $x_{1}, \dots, x_{n}$ z precyzją $\delta$, mamy:
-
 \begin{equation*}
     N(f) = \{y \in \R^{n} : \quad |y_{i} - f(x_{i}| \leq \delta, \quad 1 \leq i \leq n\}
 \end{equation*}
@@ -203,8 +254,8 @@ Poniższe ograniczenia dolne na $r^{wor}_{p}(n, \delta, \mathcal{F})$ są dość
 \label{stw1}
     Dla każdego $n$ i $\delta \geq 0$ mamy:
     \begin{enumerate}[label=(\roman*)]
-        \item \label{stw1_i} $r^{wor}_{p}(n, \delta, \mathcal{K}) \leq \delta T^{1/p}$
-        \item \label{stw1_ii} $r^{wor}_{p}(n, \delta, \mathcal{H}_{r,\varrho}) \leq a_{r,\varrho}n^{-(r + \varrho)}$ dla pewnego $a_{r,\varrho} > 0$
+        \item \label{stw1_i} $r^{wor}_{p}(n, \delta, \mathcal{K}) \geq \delta T^{1/p}$
+        \item \label{stw1_ii} $r^{wor}_{p}(n, \delta, \mathcal{H}_{r,\varrho}) \geq a_{r,\varrho}n^{-(r + \varrho)}$ dla pewnego $a_{r,\varrho} > 0$
         \item \label{stw1_iii} $r^{wor}_{p}(n, \delta, \mathcal{F}_{r,\varrho}) = \infty, \quad r \geq 1$
     \end{enumerate}
 \end{stw}
@@ -684,6 +735,10 @@ porównanie algorytmów
     \bibitem{AoP}
     P. M. Morkisz, L. Plaskota, 
     \emph{Approximation of piecewise Hölder functions from inexact information}, Journal of Complexity
+
+    \bibitem{Ibc}
+    J. F. Traub, H. Woźniakowski, G. W. Wasilkowski
+    \emph{Information-Based Complexity}, Academic Press, Inc.
 
 \end{thebibliography}
 
