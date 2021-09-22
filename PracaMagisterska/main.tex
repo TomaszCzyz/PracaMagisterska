@@ -157,7 +157,7 @@
 
     Niech $N : R \rightarrow 2^{Y}$ będzie operatorem inforamcji. Poprzez \textit{błąd najgorszego przypadku} algorytmu $\varphi : Y \rightarrow G$ na zbiorze $E \subset F$ rozumiemy:
     \begin{equation*}
-        e^{wor}_{p}(\phi, N, E) = \sup_{f \in E} \sup_{y \in N(f)} \|f - \varphi(y) \|_{L^p}
+        e^{wor}_{p}(\phi, N, E) = \sup_{f \in E} \sup_{y \in N(f)} \|S(f) - \varphi(y) \|
     \end{equation*}
 
     Oznaczmy przez $\mathcal{N}(n, \delta)$ klasę wszystkich (adaptacyjnych) informacji $N$, które używają co najwyżej $n$ ewaluacji funkcji, z precyzją $\delta$ każda. Wtedy przez \textit{minimalany błąd najgorszego przykładu} w klasie $E$, który może zostać osiągnięty przez algorytm używający informacji o co najwyżej $n$ wartościach funkcji z precyzją $\delta$ rozumiemy:

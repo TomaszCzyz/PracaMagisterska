@@ -37,7 +37,7 @@ class Alg2014:
         else:
             self.y = func.fun(self.t)
 
-        self.m_set = None
+        self.m_set = np.array(self.t)
 
     def run(self):
         temp1, temp2 = self.step1()
@@ -47,6 +47,11 @@ class Alg2014:
         return result
 
     def step1(self):
+        """
+        step 1 - detecting interval with the biggest A_test (with singularity)
+        1. check if exists interval with diameter greater than 4*d in initial mesh
+        2. if yes, find interval with the biggest A_test (A_test result has to be unique)
+        """
         max_diam = np.max([self.t[i + 1] - self.t[i] for i in range(len(self.t) - 1)])
 
         if max_diam <= 4 * self.d:
@@ -76,63 +81,73 @@ class Alg2014:
 
         return self.t[largest_result_index], self.t[largest_result_index + 1]
 
-    def step2(self, a, b):  # bisection
-        logger.info('a=%f b=%f', a, b)
+    def step2(self, a, b):
+        """
+        step 2(bisection) - create set of points that need to be added to initial mesh to make singularity harmless
+        bisection is based on A_test values
+        """
 
+        # logger.info('a=%f b=%f', a, b)
         if a == 0 and b == 0:
             return []
+
         a_new, b_new = a, b
         b_set = [a, b]
 
-        while True:
-            if b_new - a_new <= 4 * self.d:
-                return b_set
+        while b_new - a_new > 4 * self.d:
 
             v = (a_new + b_new) / 2
+            b_set.append(v)
             a1 = self.a_test(a_new, a_new + self.d, v - self.d, v)
             a2 = self.a_test(v, v + self.d, b_new - self.d, b_new)
-            b_set.append(v)
 
             # logger.info('step2 -> a1=%f a2=%f', a1, a2)
 
-            if math.isclose(a1, a2, rel_tol=1e-14):  # TODO: it should depend on precision
+            if math.isclose(a1, a2, rel_tol=1e-10):  # TODO: it should depend on precision
                 return b_set
-            elif a1 > a2:
+
+            if a1 > a2:
                 b_new = v
             else:
                 a_new = v
 
+        return b_set
+
     def step3(self, b_set):
-        m_set = np.concatenate((self.t, b_set))
-        m_set = np.sort(m_set)
+        """
+        step 3 - creating final approximation using initial mesh with appended points from step2
+        """
+        if b_set is not []:
+            b_set_sorted = np.sort(b_set)
+            index = np.searchsorted(self.t, b_set_sorted[1], side='right')
+            self.m_set = np.insert(self.m_set, index, b_set_sorted[1:-1])
 
         def adaptive_approximate(t):
             # locate knot that is smaller or equal to t (and it is closest to t)
-            i = np.searchsorted(m_set, t, side='right') - 1
+            i = np.searchsorted(self.m_set, t, side='right') - 1
             if i < 0:
                 logger.info('i was equal less than 0')
                 i = 0
 
-            if m_set[i + 1] - m_set[i] <= 4 * self.d:
-                return self.f(m_set[i])
+            if self.m_set[i + 1] - self.m_set[i] <= 4 * self.d:
+                return self.f(self.m_set[i])
             else:
-                if m_set[i] <= t < m_set[i] + self.d:
-                    return self.f(m_set[i])
-                if m_set[i] + self.d <= t < m_set[i + 1] - self.d:
-                    left, right = m_set[i] + self.d, m_set[i + 1] - self.d
+                if self.m_set[i] <= t < self.m_set[i] + self.d:
+                    return self.f(self.m_set[i])
+                if self.m_set[i] + self.d <= t < self.m_set[i + 1] - self.d:
+                    left, right = self.m_set[i] + self.d, self.m_set[i + 1] - self.d
                     knots = np.linspace(left, right, self.r + 1, endpoint=True)
                     values = np.array([self.f(x) for x in knots])
                     polynomial = interpolate.interp1d(knots, values)
                     return polynomial(t)
-                if m_set[i + 1] - self.d <= t < m_set[i + 1]:
-                    return self.f(m_set[i + 1] - self.d)
+                if self.m_set[i + 1] - self.d <= t < self.m_set[i + 1]:
+                    return self.f(self.m_set[i + 1] - self.d)
 
-            if math.isclose(t, m_set[-1]):
-                return self.f(m_set[-1])
+            if math.isclose(t, self.m_set[-1]):
+                return self.f(self.m_set[-1])
 
             return -1
 
-        self.m_set = m_set
         return adaptive_approximate
 
     def a_test(self, a0, a1, b1, b0):

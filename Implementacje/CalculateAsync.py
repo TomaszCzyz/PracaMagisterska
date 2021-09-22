@@ -118,17 +118,23 @@ def main():
     example_fun.f__r = 2
 
     # be careful with parameters bellow, e.g. too small m can break an algorithm
-    log10_m_array = np.linspace(1.8, 4.7, num=15)  # 10 ** 4.7 =~ 50118
+    log10_m_array = np.linspace(1.8, 4.0, num=15)  # 10 ** 4.7 =~ 50118
 
     n_runs = 20
-    noises = [None, 10e-6, 10e-4, 10e-2]  # [None, 10e-12, 10e-8, 10e-4]
+    noises = [None, 10e-4]  # [None, 10e-12, 10e-8, 10e-4]
     m_array = list(np.array(np.power(10, log10_m_array), dtype='int'))
 
+    alg = Alg2014(func=example_fun, n_knots=10000, noise=None)
+    results = worst_case_error_n(
+        alg=alg,
+        num=10
+    )
     # results = calculate(n_runs, m_array, noises, 'alg2014', example_fun)
-    results = calculate_async(n_runs, m_array, noises, 'alg2014', example_fun)+
+    # results = calculate_async(n_runs, m_array, noises, 'alg2014', example_fun)
 
+    logging.info("results: {}".format(results))
     logging.info('Finished')
-    return results
+    # return results
 
 
 if __name__ == '__main__':
