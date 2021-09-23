@@ -1,7 +1,9 @@
+import matplotlib.pyplot as plt
 import numpy as np
+from abc import ABC
 
 
-class ExampleFunction:
+class ExampleFunction(ABC):
     def __init__(self, f__a, f__b, f__r, f__rho):
         self.f__a = f__a
         self.f__b = f__b
@@ -10,6 +12,11 @@ class ExampleFunction:
 
     def fun(self, x):
         pass
+
+    def plot(self):
+        mesh = np.linspace(self.f__a, self.f__b, 50, dtype='float64')
+        plt.scatter(mesh, self.fun(mesh))
+        plt.show()
 
 
 class Example1(ExampleFunction):

@@ -1,8 +1,13 @@
-import numpy as np
+import logging
 import math
-from scipy.optimize import fminbound
+
+import numpy as np
 from scipy import interpolate
+from scipy.optimize import minimize_scalar
+
 from Examples import ExampleFunction
+
+logger = logging.getLogger(__name__)
 
 
 class Alg2015:
@@ -15,7 +20,7 @@ class Alg2015:
     """
 
     def __init__(self, func: ExampleFunction, n_knots, noise=None):
-        self.rng = np.random.default_rng()
+        self.rng = np.random.default_rng(4569)
 
         self.f = func.fun
         self.f__a = func.f__a
@@ -25,7 +30,8 @@ class Alg2015:
         self.m = n_knots
         self.noise = noise
         self.h = (self.f__b - self.f__a) / self.m
-        self.d = (self.r + 1) * self.h  # self.d = self.h ** (self.r + self.rho)
+        # self.d = (self.r + 1) * self.h
+        self.d = self.h ** (self.r + self.rho)
         self.t = np.linspace(self.f__a, self.f__b, self.m + 1, dtype='float64')
         if noise is not None:
             e = self.rng.uniform(-self.noise, self.noise, self.m + 1)
@@ -122,18 +128,23 @@ class Alg2015:
         v = self.v_2
 
         while True:
-            z_max = fminbound(
-                func=lambda x: -1 * np.abs(self.p_neg(x) - self.p_pos(x)),
+            # logger.info('u={}   v={}'.format(u, v))
+            res = minimize_scalar(
+                fun=lambda x: -1 * np.abs(self.p_neg(x) - self.p_pos(x)),
                 # "-1" because we are looking for maximum, not minimum
-                x1=u, x2=v)
-
-            if np.isclose(z_max, u) or np.isclose(z_max, v):  # => no local maximum
+                bounds=(u, v),
+                method='bounded'
+            )
+            if not res.success:
                 break
 
-            if self.noise is None:
-                f_value = self.f(z_max)
-            else:
-                f_value = self.f(z_max) + self.rng.uniform(-self.noise, self.noise)
+            z_max = res['x']
+
+            if math.isclose(z_max, u, rel_tol=1e-14) or math.isclose(z_max, v, rel_tol=1e-14):  # => no local maximum
+                logger.info('minimum was close ot interval edge')
+                break
+
+            f_value = self.f(z_max) if self.noise is None else self.f(z_max) + self.rng.uniform(-self.noise, self.noise)
 
             if np.abs(f_value - self.p_neg(z_max)) <= np.abs(f_value - self.p_pos(z_max)):
                 u = z_max
@@ -143,10 +154,15 @@ class Alg2015:
         u_3 = u
         v_3 = v
 
-        ksi = fminbound(
-            func=lambda x: np.abs(self.p_neg(x) - self.p_pos(x)),
-            x1=u_3, x2=v_3)
+        res = minimize_scalar(
+            fun=lambda x: np.abs(self.p_neg(x) - self.p_pos(x)),
+            bounds=(u_3, v_3),
+            method='bounded')
 
+        if not res.success:
+            raise Exception('could not minimize function form step 3')
+
+        ksi = res['x']
         self.u_3 = u_3
         self.v_3 = v_3
         self.ksi = ksi
