@@ -150,20 +150,18 @@ class Alg2014:
 
     def a_test(self, a0, a1, b1, b0):
         knots = np.linspace(b1, b0, self.r + 1, endpoint=True)
-        if self.noise is None:
-            values = np.array([self.f(x) for x in knots])
-        else:
-            values = np.array([self.f(x) + self.rng.uniform(-self.noise, self.noise) for x in knots])
+        values = np.array(self.f(knots))
+        if self.noise is not None:
+            values = np.add(values, self.rng.uniform(-self.noise, self.noise, len(values)))
         w1 = interpolate.interp1d(knots, values, fill_value="extrapolate")
 
         knots = np.linspace(a0, a1, self.r + 1, endpoint=True)
-        if self.noise is None:
-            values = np.array([self.f(x) for x in knots])
-        else:
-            values = np.array([self.f(x) + self.rng.uniform(-self.noise, self.noise) for x in knots])
+        values = np.array(self.f(knots))
+        if self.noise is not None:
+            values = np.add(values, self.rng.uniform(-self.noise, self.noise, len(values)))
         w2 = interpolate.interp1d(knots, values, fill_value="extrapolate")
 
         z_arr = np.linspace(a1, b1, self.r + 1, endpoint=True)  # "endpoint=True" is 100% good here
-        values = [(np.abs(w1(z_i) - w2(z_i))) / ((b0 - a0) ** (self.r + self.rho)) for z_i in z_arr]
+        test_values = [(np.abs(w1(z_i) - w2(z_i))) / ((b0 - a0) ** (self.r + self.rho)) for z_i in z_arr]
 
-        return np.max(values)
+        return np.max(test_values)

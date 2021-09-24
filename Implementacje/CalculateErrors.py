@@ -1,11 +1,12 @@
 import logging
 import multiprocessing as mp
+from datetime import datetime
+import os
 
 import matplotlib.pyplot as plt
 import numpy as np
-from datetime import datetime
 
-from Examples import Example1, Example2
+from Examples import Example1
 from Utilis import worst_case_error_n
 from alg2014.Alg2014_implementation import Alg2014
 from alg2015.Alg2015_implementation import Alg2015
@@ -14,8 +15,8 @@ from alg2015.Alg2015_implementation import Alg2015
 class MyCallback:
     def __init__(self, max_count, extra_data):
         self.algorithm_name = extra_data[0]
-        self.example_name = extra_data[1]
-        self.n_times = extra_data[2]
+        self.n_times = extra_data[1]
+        self.example_function = extra_data[2]
         self.finished_tasks = 0
         self.tasks_number = max_count
         self.log10_errors_for_noise = {}
@@ -37,15 +38,16 @@ class MyCallback:
 
         self.plot_results()
 
-    def plot_results(self):
-        if self.finished_tasks / self.tasks_number < 0.5:
+    def plot_results(self, save=None):
+        if self.finished_tasks / self.tasks_number < 0.75:
             return
 
         fig, axs = plt.subplots(2, 2, sharex='all', sharey='all')
         fig.text(0.5, 0.04, u'log\u2081\u2080m', ha='center')
         fig.text(0.04, 0.5, u'-log\u2081\u2080err', va='center', rotation='vertical')
-        plt.suptitle(
-            "{} for {}\nbased on {} sample functions".format(self.algorithm_name, self.example_name, self.n_times))
+        plt.suptitle("{} for {}(r={})\nbased on {} sample functions".format(
+            self.algorithm_name, type(self.example_function).__name__,
+            self.example_function.f__r, self.n_times))
 
         axs = axs.ravel()
         temp = 0
@@ -59,6 +61,9 @@ class MyCallback:
             axs[temp].legend(numpoints=1)
             axs[temp].grid()
             temp += 1
+
+        if save is not None:
+            plt.savefig(save)
         plt.show()
 
     def print_status(self, args=None):
@@ -68,11 +73,9 @@ class MyCallback:
 
 
 def calculate(n_times, array, deltas, algorithm_name, example_function):
-    example_name = type(example_function).__name__
-    extra_data = algorithm_name, example_name, n_times
+    extra_data = algorithm_name, n_times, example_function
     my_callback = MyCallback(len(array) * len(deltas), extra_data)
 
-    errors = {}
     for elem in reversed(array):
         for delta in deltas:
             print("running algorithm({} times) for m={}, noise={}".format(n_times, elem, delta))
@@ -88,19 +91,17 @@ def calculate(n_times, array, deltas, algorithm_name, example_function):
                 num=1 if delta is None else n_times
             )
             my_callback.callback_handler(result_tuple)
-            errors[(elem, delta)] = result_tuple[0]
 
-    return errors, my_callback
+    return my_callback
 
 
 def calculate_async(n_times, array, deltas, algorithm_name, example_function):
-    example_name = type(example_function).__name__
-    extra_data = algorithm_name, example_name, n_times
+    extra_data = algorithm_name, n_times, example_function
     my_callback = MyCallback(len(array) * len(deltas), extra_data)
 
-    errors = {}
-    with mp.Pool(processes=mp.cpu_count() - 1) as pool:
+    with mp.Pool(processes=mp.cpu_count() - 2) as pool:
 
+        apply_results = []
         for elem in reversed(array):
 
             for delta in deltas:
@@ -117,33 +118,35 @@ def calculate_async(n_times, array, deltas, algorithm_name, example_function):
                     args=(alg, 1 if delta is None else n_times),
                     callback=my_callback.callback_handler)
 
-                errors[(elem, delta)] = apply_result
+                apply_results.append(apply_result)
 
         my_callback.print_status()
-        for r in errors.values():
+        for r in apply_results:
             r.wait()
 
-        errors = {k: (v.get())[0] for k, v in errors.items()}
-
-    return errors, my_callback
+    return my_callback
 
 
 def main():
     example_fun = Example1()
     example_fun.plot()
-    example_fun.f__r = 3
+    example_fun.f__r = 4
 
     # be careful with parameters bellow, e.g. too small m can break an algorithm
-    log10_m_array = np.linspace(1.8, 4.7, num=20)  # 10 ** 4.7 =~ 50118
+    log10_m_array = np.linspace(1.8, 4.0, num=15)  # 10 ** 4.7 =~ 50118
 
-    n_runs = 10
+    n_runs = 50
     m_array = list(np.array(np.power(10, log10_m_array), dtype='int'))
-    noises = [None, 10e-7, 10e-5, 10e-4]
+    noises = [None, 10e-6, 10e-4, 10e-3]
     # [None, 10e-12, 10e-8, 10e-4] <- cannot take such small noise;
     # because of precision there is almost no difference in errors in such plot scale
 
+    # results = calculate(n_runs, m_array, noises, 'alg2014', example_fun)
+    results = calculate_async(n_runs, m_array, noises, 'alg2014', example_fun)
+
     # results = calculate(n_runs, m_array, noises, 'alg2015', example_fun)
-    results = calculate_async(n_runs, m_array, noises, 'alg2015', example_fun)
+    # results = calculate_async(n_runs, m_array, noises, 'alg2015', example_fun)
+
     # alg = Alg2015(func=example_fun, n_knots=1000, noise=10e-4)
     # worst_case_error_n(
     #     alg=alg,
@@ -154,24 +157,28 @@ def main():
 
 
 if __name__ == '__main__':
-    np.set_printoptions(precision=15)
+    plt.rcParams['figure.dpi'] = 150
+    plt.rcParams['savefig.dpi'] = 150
+
     start_datetime = datetime.now()
     logging.basicConfig(level=logging.INFO)
     logging.info('Started at %s', start_datetime.strftime("%d/%m/%Y %H:%M:%S"))
 
-    main_results, main_callback = main()
+    main_callback = main()
 
     end_datetime = datetime.now()
     diff_datetime = end_datetime - start_datetime
-    logging.info('Finished at %s (total: %s)',
+    logging.info('Finished at %s (execution time: %s)',
                  end_datetime.strftime("%d/%m/%Y %H:%M:%S"),
                  str(diff_datetime))
 
     # %%
 
-    # np.finfo(np.float64)
+    i = 0
+    while os.path.exists(f"data/plot{i}.jpg"):
+        i += 1
+    main_callback.plot_results(save='data/plot{}.jpg'.format(i))
 
-    main_callback.plot_results()
     # alg = Alg2014(func=example_fun, n_knots=102, noise=10e-4)
     # worst_case_error_n(
     #     alg=alg,
