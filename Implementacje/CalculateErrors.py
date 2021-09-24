@@ -6,7 +6,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-from Examples import Example1
+from Examples import *
 from Utilis import worst_case_error_n
 from alg2014.Alg2014_implementation import Alg2014
 from alg2015.Alg2015_implementation import Alg2015
@@ -38,7 +38,7 @@ class MyCallback:
 
         self.plot_results()
 
-    def plot_results(self, save=None):
+    def plot_results(self, save=False):
         if self.finished_tasks / self.tasks_number < 0.75:
             return
 
@@ -51,20 +51,33 @@ class MyCallback:
 
         axs = axs.ravel()
         temp = 0
-        for key_noise in self.log10_errors_for_noise.keys():
+        sorted_noises = sorted(self.log10_m_for_noise.keys(), key=lambda x: (x is not None, x))
+        for key_noise in sorted_noises:
             axs[temp].scatter(
                 self.log10_m_for_noise[key_noise], self.log10_errors_for_noise[key_noise],
                 c=self.colors[temp],
                 marker=self.markers[-1],
                 s=64,
-                label="noise='{}'".format(key_noise))
+                label="noise=" + "{:.0e}".format(key_noise) if key_noise is not None else "0"
+            )
             axs[temp].legend(numpoints=1)
             axs[temp].grid()
             temp += 1
 
-        if save is not None:
-            plt.savefig(save)
+        if save:
+            self.save_plt()
         plt.show()
+
+    def save_plt(self):
+        path = 'data/{}/'.format(self.algorithm_name)
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        plot_nr = 0
+        while os.path.exists("{}plot{}.jpg".format(path, plot_nr)):
+            plot_nr += 1
+
+        plt.savefig('{}plot{}.jpg'.format(path, plot_nr))
 
     def print_status(self, args=None):
         if args:
@@ -135,9 +148,9 @@ def main():
     # be careful with parameters bellow, e.g. too small m can break an algorithm
     log10_m_array = np.linspace(1.8, 4.0, num=15)  # 10 ** 4.7 =~ 50118
 
-    n_runs = 50
+    n_runs = 1000
     m_array = list(np.array(np.power(10, log10_m_array), dtype='int'))
-    noises = [None, 10e-6, 10e-4, 10e-3]
+    noises = [None, 1e-5, 1e-4, 1e-3]
     # [None, 10e-12, 10e-8, 10e-4] <- cannot take such small noise;
     # because of precision there is almost no difference in errors in such plot scale
 
@@ -174,10 +187,7 @@ if __name__ == '__main__':
 
     # %%
 
-    i = 0
-    while os.path.exists(f"data/plot{i}.jpg"):
-        i += 1
-    main_callback.plot_results(save='data/plot{}.jpg'.format(i))
+    main_callback.plot_results(save=True)
 
     # alg = Alg2014(func=example_fun, n_knots=102, noise=10e-4)
     # worst_case_error_n(

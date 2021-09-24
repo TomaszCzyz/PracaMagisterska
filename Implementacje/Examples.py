@@ -14,8 +14,9 @@ class ExampleFunction(ABC):
         pass
 
     def plot(self):
-        mesh = np.linspace(self.f__a, self.f__b, 50, dtype='float64')
-        plt.scatter(mesh, self.fun(mesh))
+        mesh = np.linspace(self.f__a, self.f__b, 200, dtype='float64')
+        plt.scatter(mesh, self.fun(mesh), s=7)
+        plt.title(type(self).__name__)
         plt.show()
 
 
