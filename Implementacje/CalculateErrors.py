@@ -1,12 +1,12 @@
 import logging
 import multiprocessing as mp
-from datetime import datetime
 import os
+from datetime import datetime
 
 import matplotlib.pyplot as plt
 import numpy as np
 
-from Examples import *
+from Examples import Example1
 from Utilis import worst_case_error_n
 from alg2014.Alg2014_implementation import Alg2014
 from alg2015.Alg2015_implementation import Alg2015
@@ -155,10 +155,10 @@ def main():
     # because of precision there is almost no difference in errors in such plot scale
 
     # results = calculate(n_runs, m_array, noises, 'alg2014', example_fun)
-    results = calculate_async(n_runs, m_array, noises, 'alg2014', example_fun)
+    # results = calculate_async(n_runs, m_array, noises, 'alg2014', example_fun)
 
     # results = calculate(n_runs, m_array, noises, 'alg2015', example_fun)
-    # results = calculate_async(n_runs, m_array, noises, 'alg2015', example_fun)
+    results = calculate_async(n_runs, m_array, noises, 'alg2015', example_fun)
 
     # alg = Alg2015(func=example_fun, n_knots=1000, noise=10e-4)
     # worst_case_error_n(
@@ -172,9 +172,9 @@ def main():
 if __name__ == '__main__':
     plt.rcParams['figure.dpi'] = 150
     plt.rcParams['savefig.dpi'] = 150
+    logging.basicConfig(level=logging.INFO, filename='myapp.log')
 
     start_datetime = datetime.now()
-    logging.basicConfig(level=logging.INFO)
     logging.info('Started at %s', start_datetime.strftime("%d/%m/%Y %H:%M:%S"))
 
     main_callback = main()

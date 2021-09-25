@@ -1,7 +1,7 @@
 ### Pytania o sprawy LaTeX-owe, formatowanie, tłumaczenia, itp.
 
 
-# czy tłumaczyć skróty w oznaczeniach matematycznych (np. e^{wor})
+# czy tłumaczyć skróty w oznaczeniach matematycznych (np. e^{wor}) -> NIE
 
 # czy stosować wcięcia przez lematami, tw., stw., itd.
 
