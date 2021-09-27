@@ -62,3 +62,6 @@ class Example2(ExampleFunction):
         elif isinstance(x, (float, np.float64)):
             return raw_f(x)
         raise Exception("x has to be list or float")
+
+# Barycentric interpolation of the function f(x) = |x| + x/2 − x2 in 21 and 101 Chebyshev
+# points of the second kind on [−1, 1]. The dots mark the interpolated values fj .

@@ -136,7 +136,7 @@ class Alg2014:
                     left, right = self.m_set[i] + self.d, self.m_set[i + 1] - self.d
                     knots = np.linspace(left, right, self.r + 1, endpoint=True)
                     values = np.array([self.f(x) for x in knots])
-                    polynomial = interpolate.interp1d(knots, values)
+                    polynomial = interpolate.lagrange(knots, values)
                     return polynomial(t)
                 if self.m_set[i + 1] - self.d <= t < self.m_set[i + 1]:
                     return self.f(self.m_set[i + 1] - self.d)
@@ -153,13 +153,13 @@ class Alg2014:
         values = np.array(self.f(knots))
         if self.noise is not None:
             values = np.add(values, self.rng.uniform(-self.noise, self.noise, len(values)))
-        w1 = interpolate.interp1d(knots, values, fill_value="extrapolate")
+        w1 = interpolate.lagrange(knots, values)
 
         knots = np.linspace(a0, a1, self.r + 1, endpoint=True)
         values = np.array(self.f(knots))
         if self.noise is not None:
             values = np.add(values, self.rng.uniform(-self.noise, self.noise, len(values)))
-        w2 = interpolate.interp1d(knots, values, fill_value="extrapolate")
+        w2 = interpolate.lagrange(knots, values)
 
         z_arr = np.linspace(a1, b1, self.r + 1, endpoint=True)  # "endpoint=True" is 100% good here
         test_values = [(np.abs(w1(z_i) - w2(z_i))) / ((b0 - a0) ** (self.r + self.rho)) for z_i in z_arr]

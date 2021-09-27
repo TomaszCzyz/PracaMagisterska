@@ -146,19 +146,19 @@ def main():
     example_fun.f__r = 4
 
     # be careful with parameters bellow, e.g. too small m can break an algorithm
-    log10_m_array = np.linspace(1.8, 4.0, num=15)  # 10 ** 4.7 =~ 50118
+    log10_m_array = np.linspace(1.8, 4.0, num=10)  # 10 ** 4.7 =~ 50118
 
-    n_runs = 1000
+    n_runs = 10
     m_array = list(np.array(np.power(10, log10_m_array), dtype='int'))
     noises = [None, 1e-5, 1e-4, 1e-3]
     # [None, 10e-12, 10e-8, 10e-4] <- cannot take such small noise;
     # because of precision there is almost no difference in errors in such plot scale
 
     # results = calculate(n_runs, m_array, noises, 'alg2014', example_fun)
-    # results = calculate_async(n_runs, m_array, noises, 'alg2014', example_fun)
+    results = calculate_async(n_runs, m_array, noises, 'alg2014', example_fun)
 
     # results = calculate(n_runs, m_array, noises, 'alg2015', example_fun)
-    results = calculate_async(n_runs, m_array, noises, 'alg2015', example_fun)
+    # results = calculate_async(n_runs, m_array, noises, 'alg2015', example_fun)
 
     # alg = Alg2015(func=example_fun, n_knots=1000, noise=10e-4)
     # worst_case_error_n(
