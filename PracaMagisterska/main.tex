@@ -109,7 +109,7 @@
 \begin{wstep}[Wprowadzenie]
     Aproksymacja funkcji oparta na dostępnej inforamcji jest problemem badanym od lat. Powstają coraz bardziej zaawansowane algorytmy, działające przy coraz słabszych założeniach o funkcji. Często jednak w rozważaniach teoretycznych pomijany jest czynnik zewnętrzny, który może powodować zaburzenia dostępych informacji. W tej pracy pokazujemy, jak znaczący wpływ na wyniki numeryczne może mieć zaniedbanie tego faktu.
 
-    W tym celu przedstawimy dwa algoytmy z artukułów \cite{AoP} i \cite{CoDF}. Pierwszy z nich bazuje na wielomianach Lagrnage'a i jego analiza nie uwzględnia zaburzenia danych wejściowych. Algorytm z \cite{AoP} dopuszcza informacje niedokładną, a kluczowy krok opiera się na różnicach dzielonych.
+    W tym celu przedstawimy dwa algoytmy z artukułów \cite{AoP} i \cite{CoDF}. Pierwszy z nich bazuje na wielomianach Lagrnage'a i jego analiza nie uwzględnia zaburzenia danych wejściowych. Algorytm z \cite{AoP} dopuszcza informacje niedokładną, a kluczowy krok opiera się na różnicach dzielonych. 
 
     Omwiane algorytmy aprkosymują funkcje kawałkami regularne. Mówimy, że funkcja skalarna $g$ jest $(r, \varrho)$-regularna na przedziale $[a,b]$, jeśli $g \in C^{r}([a,b])$ oraz $g^{r}$ jest Hölderowsko ciągła z wykładnikiem $\varrho \in (0,1]$. Rozważmy przestrzeń $F_{r,\varrho}$ $T$-okresowych funkcji $f$, które składają się z dwóch $(r,\varrho)$-regularnych części oddzielonych nieznanym punktem osobliwym $s_{f}$.
     
@@ -139,31 +139,57 @@
     \begin{equation*}
         S : F \rightarrow G
     \end{equation*}
-    nazywamy \textit{operatorem rozwiązania}. Naszym zadaniem jest aproksymacja elementów $S(f)$ dla $f$ należącego do $E \subset F$, bazując wyłącznie na informacji zaburzonej o $f$. Przejdźmy do szczegółowego omówienia inforamcji i aproksymacji.
+    nazywamy \textit{operatorem rozwiązania}. Dla każdego elementu $f$ z $F$ chcemy obliczyć aproksymację $S(f)$. Niech $U(f)$ będzie obliczoną aproksymacją.
 
-    \textit{Operatorem informacji} nazywamy odwzorowanie
+    Niech $\varepsilon \geq 0$. Mówimy, że $S(f)$ jest $\varepsilon$-aprkosymacją funkcji $f$ wtw, gdy $\| S(f) -  U(f)\| \leq \varepsilon$. Celem jest znalezienie takiej aproksymacji $U(f)$, że jest ona $\varepsilon$-aprkosymacją dla wszysktich elementów $f$ z $F$. Aby to zrobić potrzebujemy posiadać pewną wiedzę $f$.
+
+    \textit{Operatorem informacji (lub informacją)} nazywamy odwzorowanie
     \begin{equation*}
         N : F \rightarrow 2^{Y},
     \end{equation*}
-    gdzie Y jest zbiorem skończonych ciągów liczb rzeczywistych, $ Y \subset \bigcup^{\infty}_{n=1} \R^{n}$. Czyli $N(f)$ jest pozbiorem $Y$. Zakładamy, że $N(f)$ jest niepuste dla wszystkich $f \in F$. Każdy element $y \in N(f)$ będziemy nazywać \textit{informacją o $f$}.
-    Zauważmy, że jeżeli zbiór $N(f)$ ma dokładnie jeden element dla wszystkich $f \in F$, to informacja $N$ jest \textit{dokładna}. W przypadku, gdy istnieje $f$ dla którego $N(f)$ ma przynajmniej dwa elementy, wtedy informacja jest \textit{zaburzona}.
+    gdzie Y jest zbiorem skończonych ciągów liczb rzeczywistych, $ Y \subset \bigcup^{\infty}_{n=1} \R^{n}$, czyli $N(f)$ jest pozbiorem $Y$.
+    Na ogól nie mamy dostępu do pełnej wiedzy o funkcjii, dlatego musimy założyć, że możemy zbierać informacje o $f$ poprzez formę (?tłum?) $L(f)$, gdzie $L : F \rightarrow H$ dla pewnego zbioru $H$.
+    
+    Przez $\Lambda$ oznaczmy klasę dopuszczalnch operacji $L$, czyli $L \in \Lambda$ wtw, gdy $L(f)$ może zostać obliczone dla każdego elementu $f$ z $F$. Rozważmy teraz dwa sposoby doboru inforamcji. Jeśli informacja $N$ jest liczona dla każdego $f$ niezależnie, to taką informację nazywamy nieadaptacyjną. Innymi słowy, inforamcja $N$ jest nieadaptacyjna wtw, gdy istnieje $L_{1}, \ldots, L_{n} \in \Lambda$ takie, że
+    \begin{equation*}
+        N(f) = \left[ L_{1}(f), L_{2}(f), \ldots, L_{n}(f) \right] \; \forall f \in F.
+    \end{equation*}
+    Inna klasą inforamcji jest informacja adaptacyjna, w której możemy wybierać wartości bazując na poprzednich wynikach. Mówiąc dokłądniej, informacja $N$ jest adaptacyjna wtw, gdy
+    \begin{equation*}
+        N(f) = \left[ L_{1}(f), L_{2}(f; y_{1}), \ldots, L_{i}(f; y_{1}, \ldots, y_{n(f)-1}) \right],
+    \end{equation*}
+    gdzie $y_{1} = L(f_{1})$ i $y_{i} = L_{i}(f; y_{1}, y_{2}, \ldots, y_{i-1})$ dla $i=2,3,\ldots,n(f)$. Musimy również założyć, że $L_{i}(\cdot;y_{1}, \ldots, y_{i-1})$ należą do operacji dozwolonych. W przypadku informacji adaptacyjnej nie możemy z góry określić liczby operacji na problemie $f$, ponieważ jest to dynamicznie ustalne podczas procesu oblicznia kolejnych wartości $y_{i}$.
 
-    Dodatkowo, informacje możemy rozróżniać ze względu na sposób wyboru kolejnych wartości funckji $f$. W przypadk, gdy kolejne wartości wybierane są niezależnie od $f$, to mówimy o informacji \textit{nieadaptacyjnej}. W przciwnym przypadku, to jest gdy kolejne wartości zależą zarówno od innych punktów, jak i wartości funkcji, to mówimy o informacji \textit{adaptacyjnej}.
+    Warto zauważyć, że jeśli rozważany problem wymaga obliczenia bardzo dużej ilości informacji o funkcji w krótkim czasie, to zastosowanie informacji nieadaptacyjnej może przyśpieszyć oblicznienia, ze względu na możliwość zrównoleglenia obliczeń. W przypadku adaptacyjnym kolejność obliczeń ma znaczenie, więc informacje musimy pozyskiwać sekwencyjnie.
+
+    Możemy zapisać informacje nieadaptacyjną i adaptacyjną zakładając, że $f$ jest funkcją oraz $N(f) = \left[ f(t_{1}), f(t_{2}), \ldots, f(t_{n(f)}) \right]$. Jeżeli $n(f) = n$ i punkty $t_{i}$ otrzymujemy \textit{a priori}, wtedy $N$ jest nieadaptacyjna. Natomiast, jeżeli $n(f)$ różni się lub wybór punktów $t_{i}$ jest zależny od $f(t_{1}), f(t_{2}), \ldots, f(t_{i})$, to $N$ jest adaptacyjna.
+
+    Zakładamy, że $N(f)$ jest niepuste dla wszystkich $f \in F$. Każdy element $y \in N(f)$ będziemy nazywać \textit{informacją o $f$}.
+    Zauważmy, że jeżeli zbiór $N(f)$ ma dokładnie jeden element dla wszystkich $f \in F$, to informacja $N$ jest \textit{dokładna}. W przypadku, gdy istnieje $f$ dla którego $N(f)$ ma przynajmniej dwa elementy, wtedy informacja jest \textit{niedokładna(częściowa)}.
+
     Dla przykładu, dla informacji nieadaptacyjnej składającej się z zaburzonych ewaluacji funkcji $f$ w punktach $x_{1}, \dots, x_{n}$ z precyzją $\delta$, mamy:
     \begin{equation*}
         N(f) = \{y \in \R^{n} : \quad |y_{i} - f(x_{i})| \leq \delta, \quad 1 \leq i \leq n\}
     \end{equation*}
     
+
+    Naszym zadaniem jest aproksymacja elementów $S(f)$ dla $f$ należącego do $E \subset F$, bazując wyłącznie na informacji zaburzonej o $f$. 
+
+
     Znając informację $y$ o $f$ możemy wprowadzić aproksymację, a dokłanie algorytm, który ją wyprodukuję. \textit{Algorytmem} nazywamy odwzorowanie:
     \begin{equation*}
         \varphi : Y \rightarrow G
     \end{equation*}
-    Innymi słowy, aproksymacją $S(f)$ jest $\varphi(y)$, gdzie $y$ jest informacją o $f$. Błąd aproksymacji zdefiniownay jest jako róznica $\| S(f) - \varphi(y) \|$, gdzie $\|\cdot\|$ jest normą w przestrzeni $G$.
+    Innymi słowy, aproksymacją $S(f)$ jest $\varphi(y)$, gdzie $y$ jest informacją o $f$. Błąd aproksymacji zdefiniownay jest jako różnica $\| S(f) - \varphi(y) \|$, gdzie $\|\cdot\|$ jest normą w przestrzeni $G$.
 
 
 \section{Model obliczeniowy}
 
-    W ogólności, optymalność algorytmu oraz jego złożonść zależą od przyjętego modelu obliczeniowego. Model jest określony poprzez sposób w jaki błąd i koszt algorytmu są zdefiniowane. Jeżeli za błąd i koszt przyjmujemy wydajność na najtrudniejszym spośród wszystkich problemów w danej klasie, wtedy mówimy o \textit{modelu najgorszego przypadku}. Innymi często rozważanymi modelami są: probablistyczny, średni, mieszany, losowy czy asymptotyczny, jednak nimi nie będziemy zajmować się w tej pracy.
+    W ogólności, optymalność algorytmu oraz jego złożonść zależą od przyjętego modelu obliczeniowego. Model jest określony poprzez sposób w jaki błąd i koszt algorytmu są zdefiniowane. 
+    
+    %TODO: koszt def
+    
+    Jeżeli za błąd i koszt przyjmujemy wydajność na najtrudniejszym spośród wszystkich problemów w danej klasie, wtedy mówimy o \textit{modelu najgorszego przypadku}. Innymi często rozważanymi modelami są: probablistyczny, średni, mieszany, losowy czy asymptotyczny, jednak nimi nie będziemy zajmować się w tej pracy.
 
     Niech $N : R \rightarrow 2^{Y}$ będzie operatorem inforamcji. Poprzez \textit{błąd najgorszego przypadku} algorytmu $\varphi : Y \rightarrow G$ na zbiorze $E \subset F$ rozumiemy:
     \begin{equation*}
