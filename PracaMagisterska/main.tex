@@ -15,6 +15,8 @@
 \usepackage{amsmath}           % łatwiejszy skład matematyki
 \newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
 \DeclareMathOperator*{\esssup}{ess\,sup}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
 \usepackage{amssymb}
 \usepackage{bbm}
 \usepackage{latexsym}
@@ -65,6 +67,9 @@
 \newcommand{\F}{\mathcal{F}}
 \newcommand{\G}{G^{r,\varrho}([a,b])}
 \newcommand{\1}{\mathbbm{1}}
+\newcommand{\wor}{\mathrm{wor}}
+\newcommand{\cost}{\mathrm{cost}}
+\newcommand{\comp}{\mathrm{comp}}
 
 \makeatletter
 \newcommand*{\defeq}{\mathrel{\rlap{%
@@ -109,17 +114,17 @@
 \begin{wstep}[Wprowadzenie]
     Aproksymacja funkcji oparta na dostępnej inforamcji jest problemem badanym od lat. Powstają coraz bardziej zaawansowane algorytmy, działające przy coraz słabszych założeniach o funkcji. Często jednak w rozważaniach teoretycznych pomijany jest czynnik zewnętrzny, który może powodować zaburzenia dostępych informacji. W tej pracy pokazujemy, jak znaczący wpływ na wyniki numeryczne może mieć zaniedbanie tego faktu.
 
-    W tym celu przedstawimy dwa algoytmy z artukułów \cite{AoP} i \cite{CoDF}. Pierwszy z nich bazuje na wielomianach Lagrnage'a i jego analiza nie uwzględnia zaburzenia danych wejściowych. Algorytm z \cite{AoP} dopuszcza informacje niedokładną, a kluczowy krok opiera się na różnicach dzielonych. 
-
-    Omwiane algorytmy aprkosymują funkcje kawałkami regularne. Mówimy, że funkcja skalarna $g$ jest $(r, \varrho)$-regularna na przedziale $[a,b]$, jeśli $g \in C^{r}([a,b])$ oraz $g^{r}$ jest Hölderowsko ciągła z wykładnikiem $\varrho \in (0,1]$. Rozważmy przestrzeń $F_{r,\varrho}$ $T$-okresowych funkcji $f$, które składają się z dwóch $(r,\varrho)$-regularnych części oddzielonych nieznanym punktem osobliwym $s_{f}$.
+    W rozważaniach zakładamy, że mamy dostęp tylko do częściowej informacji o funkcji, a jedynym źródłem informacji jest tzw. \textit{wyrocznia}. To podejście ma praktyczne uzasadnienie w obliczeniach numerycznych, gdzie odwołania do wyroczni odpowiadają ewaluacjom funkcji. Na ogół wartości, które otrzymujemy są wynikiami pewnych pomiarów (np. fizycznych), które zawsze są obarczone pewnym błędem. Uwzględnienie zaburzenia danych jest więc intuicyjne.
     
-    Oba algorytmy osiągają ten sam minimalny błąd najgorszego przypadku proporcjonalny do $n^{-(r + \varrho)}$ dzięki zastosowaniu adaptacji. Adaptacyjny wybór punktów siatki jest niezbędny, aby otrzymać taki błąd. Ograniczenia związane z algorytmami nieadaptacyjmymi zostały omówione w \cite{UA}, \cite{PoA} oraz [?] (...).
+    Dodatkowo, najczęściej spotykane dane cechują się pewnym stopniem nieregularności. Z tego powodu powstaje wiele prac, w których przyjmuje się słabsze założenia na aproksymowaną funkcje. W tej pracy rozważać będziemy funkcje, które zawierają dokłanie jeden punkt osobliwy, w którym nie musi być zachowna ciągłości czy różniczkowalność.
 
-    %Poswstało już wiele prac dotyczących aproksymacji funkcji. Badano funkcje regularne i takie z osobliwościami. Niektóre z prac zakładały posiadnie kompletnej inforamcji o przybliżanej funkcji, niektóre tylko do ograniczonej libczy jej wartości. Rozważano zarówno algorytmy adaptacyjne, jak i nieadaptacyjne. Jednak znacznie mniej prac skupiało się na informacji niedokładnej
+    Mówimy, że funkcja skalarna $g$ jest $(r, \varrho)$-regularna na przedziale $[a,b]$, jeśli $g \in C^{r}([a,b])$ oraz $g^{(r)}$ jest Hölderowsko ciągła z wykładnikiem $\varrho \in (0,1]$. Rozważmy przestrzeń $F_{r,\varrho}$ $T$-okresowych funkcji $f$, które składają się z dwóch $(r,\varrho)$-regularnych części oddzielonych nieznanym punktem osobliwym $s_{f}$. Założenie o okresowości funkcji zostało wprowadzone, aby uprościć prezentacje problemu. Po kliku techniczych modufikacjach wszystkich wyniki działają dla funkcji nieokresowych.
 
-    % Celem niniejszej pracy jest analiza algorytmu aproksymującego funkcje kawałkami gładkie, który 
-    %Celem niniejszej pracy jest analiza zachowania różnych algorytmów aproksymujących funkcje kawałkami gładkie przy użyciu informacji dokładniej i niedokładniej.
-    % Pierwszy z analizowanych algorytmów został przedstawiony w pracy \cite{PoA}. Rozważane są w niej funkcje klasy $F^{\infty}_r$, o których zakładamy, że zarówno sama funkcja $f: [0,T] \longrightarrow \R$ może być nieciągła, jak i jej pochodna, począwszy od rzędu możliwe większego od pierwszego. Czyli, dla przykładu, $f$ może być dwa razy różniczkowalna na $[0, T]$ i $f^{(3)}(s)$ może nie istnieć w jakimś punkcie $s$. Ponadto, $f$ może mieć skończenie wiele punktów osobliwych; ich ilość i położenie jest nieznane. Dodatkowo, algorytm przedstawiony w \cite{PoA} używa $n$ wartości funkcji w punktach $x_1, \ldots x_n$ jako jedyne dostępne informacje o funkcji $f$, a w przypadku algorytmu adaptacyjnego dopuszczamy, że wybór $x_j$ zależy od $f(x_1), \ldots, f(x_{j-1})$.
+    W celu porównania wpływu zaburzenia informacji przedstawimy dwa algorytmy z artukułów \cite{AoP} i \cite{CoDF}. Pierwszy z nich bazuje na wielomianach Lagrnage'a i jego analiza nie uwzględnia zaburzenia danych wejściowych. Algorytm z \cite{AoP} dopuszcza informacje niedokładną, a kluczowy krok opiera się na różnicach dzielonych. 
+
+    Oba algorytmy stosują podejście adaptacyjne do wybierania dodatkowych ewaluacji funkcji, to znaczy, wybór kolejnych punktów jest uzależniony od wcześniej otrzymanych wartości. Skuteczność algorytów adaptacyjnych i nieadaptacyjnych została szeroko przeanalizowana dla wielu klas funkcji przy założeniu, że informacja jest dokładna. Użycie adaptacji w obu z omawianych algorytmów jest uzasadnione wynikami z m.in. \cite{PoA}, gdzie pokazano, że błąd $L_{p}$-aprkosymacji dla algorytmów nieadaptacyjnych używających $n$ ewaluacji funkcji dla funkcji z osobliwością nie może być lepszy niż $n^{1/p}$, przy czym algorytmy adaptacyjne osiągają optymalne tępo zbieżności $n^{-r}$.
+    
+    %Pierwszy z analizowanych algorytmów został przedstawiony w pracy \cite{PoA}. Rozważane są w niej funkcje klasy $F^{\infty}_r$, o których zakładamy, że zarówno sama funkcja $f: [0,T] \longrightarrow \R$ może być nieciągła, jak i jej pochodna, począwszy od rzędu możliwe większego od pierwszego. Czyli, dla przykładu, $f$ może być dwa razy różniczkowalna na $[0, T]$ i $f^{(3)}(s)$ może nie istnieć w jakimś punkcie $s$. Ponadto, $f$ może mieć skończenie wiele punktów osobliwych; ich ilość i położenie jest nieznane. Dodatkowo, algorytm przedstawiony w \cite{PoA} używa $n$ wartości funkcji w punktach $x_1, \ldots x_n$ jako jedyne dostępne informacje o funkcji $f$, a w przypadku algorytmu adaptacyjnego dopuszczamy, że wybór $x_j$ zależy od $f(x_1), \ldots, f(x_{j-1})$.
     % W wymienionej pracy do znalezienia optymalnego algorytmu nieadaptacyjnego i adaptacyjnego w najgorszym przypadku oraz w przypadku asymptotycznym do mierzenia błędu stosowana jest m.in. norma $L^p (1 \leq  p < \infty)$.
 
     % W artykule \cite{UA} rozszerzony jest wynik prac \cite{IaA} i \cite{PoA} poprzez skupienie się na klasie funkcji ciągłych globalnie r-regularnych z co najwyżej jednym punktem osobliwym. W podanej pracy przedstawiony jest algorytm nieadaptacyjny, który asymptotycznie poprawia ograniczenie błędu z \cite{AoP}.
@@ -135,7 +140,7 @@
 \section{Informacja, algorytm, aproksymacja}
 
 
-    W tym rozdziale wyjaśnijmy co rozumiemy przez aproksymacje i w jaki sposób ją otrzymujemy. W tym celu wprowadzimy fundamentalne pojęcia, takie jak operator rozwiązania, informacja zaburzona oraz algorytm. Szczególną uwagę poświęcimy informacji, która jest najważniejszym czynnikiem naszej analizy. Informacja, mowiąc w skrócie, jest tym co wiemy o problemie do rozwiązania. W niniejszej pracy kluczownym założeniem jest to, że informacja jest \textit{zaburzona}, to znaczy, nie jest dokładna, czyli ma jakiś błąd.
+    W tym rozdziale wyjaśnijmy co rozumiemy przez aproksymacje i w jaki sposób ją otrzymujemy. W tym celu wprowadzimy fundamentalne pojęcia, takie jak operator rozwiązania, informacja zaburzona oraz algorytm. Szczególną uwagę poświęcimy informacji która, mowiąc w skrócie, jest tym co wiemy o problemie do rozwiązania. W niniejszej pracy kluczownym założeniem jest to, że informacja jest \textit{niedokładna}, innymi słowy, zaburzona, z jakimś błądem.
 
     Niech $F$ będzie przestrznią liniową a $G$ przestrzenią unormowaną, obie nad ciałem liczb rzeczywistych. Odwzorowanie 
     \begin{equation*}
@@ -143,37 +148,38 @@
     \end{equation*}
     nazywamy \textit{operatorem rozwiązania}. Dla każdego elementu $f$ z $F$ chcemy obliczyć aproksymację $S(f)$. Niech $U(f)$ będzie obliczoną aproksymacją.
 
-    Niech $\varepsilon \geq 0$. Mówimy, że $S(f)$ jest $\varepsilon$-aprkosymacją funkcji $f$ wtw, gdy $\| S(f) -  U(f)\| \leq \varepsilon$. Celem jest znalezienie takiej aproksymacji $U(f)$, że jest ona $\varepsilon$-aprkosymacją dla wszysktich elementów $f$ z $F$. Aby to zrobić potrzebujemy posiadać pewną wiedzę $f$.
+    Niech $\varepsilon \geq 0$. Mówimy, że $S(f)$ jest $\varepsilon$-aprkosymacją funkcji $f$ wtedy i tylko wtedy, gdy $\| S(f) -  U(f)\| \leq \varepsilon$. Celem jest znalezienie takiej aproksymacji $U(f)$, że jest ona $\varepsilon$-aprkosymacją dla wszysktich elementów $f$ z $F$. Aby to zrobić potrzebujemy posiadać pewną wiedzę $f$.
 
     \textit{Operatorem informacji (lub informacją)} nazywamy odwzorowanie
     \begin{equation*}
         N : F \rightarrow 2^{Y},
     \end{equation*}
     gdzie Y jest zbiorem skończonych ciągów liczb rzeczywistych, $ Y \subset \bigcup^{\infty}_{n=1} \R^{n}$, czyli $N(f)$ jest pozbiorem $Y$.
-    Na ogól nie mamy dostępu do pełnej wiedzy o funkcjii, dlatego musimy założyć, że możemy zbierać informacje o $f$ poprzez formę (?tłum?) $L(f)$, gdzie $L : F \rightarrow H$ dla pewnego zbioru $H$.
+    Na ogól nie mamy dostępu do pełnej wiedzy o funkcjii, dlatego musimy założyć, że możemy zbierać informacje o $f$ poprzez funkcjonał $L(f)$, gdzie $L : F \rightarrow \R$ dla pewnego zbioru $\R$.
     
-    Przez $\Lambda$ oznaczmy klasę dopuszczalnch operacji $L$, czyli $L \in \Lambda$ wtw, gdy $L(f)$ może zostać obliczone dla każdego elementu $f$ z $F$. Rozważmy teraz dwa sposoby doboru inforamcji. Jeśli informacja $N$ jest liczona dla każdego $f$ niezależnie, to taką informację nazywamy nieadaptacyjną. Innymi słowy, inforamcja $N$ jest nieadaptacyjna wtw, gdy istnieje $L_{1}, \ldots, L_{n} \in \Lambda$ takie, że
+    Przez $\Lambda$ oznaczmy klasę dopuszczalnch operacji $L$, czyli $L \in \Lambda$ wtedy i tylko wtedy, gdy $L(f)$ może zostać obliczone dla każdego elementu $f$ z $F$. Rozważmy teraz dwa sposoby doboru inforamcji. Inforamcje $N$ nazywamy nieadaptacyjną wtedy i tylko wtedy, gdy istnieje $L_{1}, \ldots, L_{n} \in \Lambda$ takie, że
     \begin{equation*}
         N(f) = \left[ L_{1}(f), L_{2}(f), \ldots, L_{n}(f) \right] \; \forall f \in F.
     \end{equation*}
-    Inna klasą inforamcji jest informacja adaptacyjna, w której możemy wybierać wartości bazując na poprzednich wynikach. Mówiąc dokłądniej, informacja $N$ jest adaptacyjna wtw, gdy
+    W tym przypadku poszczególne informacje zależą tylko od funkcji $f$ i są obliczane niezależnie.
+    Inną klasą inforamcji jest informacja adaptacyjna, w której możemy wybierać wartości bazując na poprzednich wynikach. Mówiąc dokłądniej, informacja $N$ jest adaptacyjna wtedy i tylko wtedy, gdy
     \begin{equation*}
         N(f) = \left[ L_{1}(f), L_{2}(f; y_{1}), \ldots, L_{i}(f; y_{1}, \ldots, y_{n(f)-1}) \right],
     \end{equation*}
     gdzie $y_{1} = L(f_{1})$ i $y_{i} = L_{i}(f; y_{1}, y_{2}, \ldots, y_{i-1})$ dla $i=2,3,\ldots,n(f)$. Musimy również założyć, że $L_{i}(\cdot;y_{1}, \ldots, y_{i-1})$ należą do operacji dozwolonych. W przypadku informacji adaptacyjnej nie możemy z góry określić liczby operacji na problemie $f$, ponieważ jest to dynamicznie ustalne podczas procesu oblicznia kolejnych wartości $y_{i}$.
 
-    Warto zauważyć, że jeśli rozważany problem wymaga obliczenia bardzo dużej ilości informacji o funkcji w krótkim czasie, to zastosowanie informacji nieadaptacyjnej może przyśpieszyć oblicznienia, ze względu na możliwość zrównoleglenia obliczeń. W przypadku adaptacyjnym kolejność obliczeń ma znaczenie, więc informacje musimy pozyskiwać sekwencyjnie.
+    Warto zauważyć, że jeśli rozważany problem wymaga obliczenia bardzo dużej ilości informacji o funkcji w krótkim czasie, to zastosowanie informacji nieadaptacyjnej może przyśpieszyć proces, ze względu na możliwość zrównoleglenia obliczeń. W przypadku adaptacyjnym kolejność obliczeń ma znaczenie, więc informacje musimy pozyskiwać sekwencyjnie, co zazwyczaj jest wolniejsze.
 
-    Możemy zapisać informacje nieadaptacyjną i adaptacyjną zakładając, że $f$ jest funkcją oraz $N(f) = \left[ f(t_{1}), f(t_{2}), \ldots, f(t_{n(f)}) \right]$. Jeżeli $n(f) = n$ i punkty $t_{i}$ otrzymujemy \textit{a priori}, wtedy $N$ jest nieadaptacyjna. Natomiast, jeżeli $n(f)$ różni się lub wybór punktów $t_{i}$ jest zależny od $f(t_{1}), f(t_{2}), \ldots, f(t_{i})$, to $N$ jest adaptacyjna.
+    W niniejszej pracy zakładamy, że $f$ jest funkcją, a jedynymi dostępnymi funkcjonałami informacji są wartości funkcji w punktach. Informację nieadaptacyjną oraz adaptacyjną możemy więc zapisać w postaci $N(f) = \left[ f(t_{1}), f(t_{2}), \ldots, f(t_{n(f)}) \right]$. Jeżeli $n(f) = n$ i punkty $t_{i}$ otrzymujemy \textit{a priori}, wtedy $N$ jest nieadaptacyjna. Natomiast, jeżeli $n(f)$ różni się lub wybór punktów $t_{i}$ jest zależny od $f(t_{1}), f(t_{2}), \ldots, f(t_{i-1})$, to $N$ jest adaptacyjna.
 
-    Kolejnym kluczowym założeniem jest fakt, że informacje o funkcji zazwyczaj uzyskujemy z pewnym błędem. Mówiąc dokłądniej, inforamcje o funkcji przyjmują postać $y_{i} = f(x_{i}) + e_{i}$, dla $1 \leq i \leq n$, gdzie $e_{i} \leq \delta$ nazywamy \textit{szumem}.
+    Kolejnym kluczowym założeniem jest fakt, że informacje o funkcji uzyskujemy z pewnym błędem. Mówiąc dokłądniej, inforamcje o funkcji przyjmują postać $y_{i} = f(x_{i}) + e_{i}$, dla $1 \leq i \leq n$, gdzie $e_{i} \leq \delta$ to tak zwany \textit{szum}.
     
     Dla przykładu, dla informacji nieadaptacyjnej składającej się z zaburzonych ewaluacji funkcji $f$ w punktach $x_{1}, \dots, x_{n}$ z precyzją $\delta$, mamy:
     \begin{equation*}
         N(f) = \{y \in \R^{n} : \quad |y_{i} - f(x_{i})| \leq \delta, \quad 1 \leq i \leq n\}
     \end{equation*}
     
-    Każdy element $y \in N(f)$ będziemy nazywać \textit{informacją o $f$}. Zauważmy, że dla $\delta = 0$, zbiór $N(f)$ ma dokładnie jeden element dla wszystkich $f \in F$, tzn. informacja $N$ jest \textit{dokładna}. Zakładamy, że $N(f)$ jest niepuste dla wszystkich $f \in F$. W przypadku, gdy istnieje $f$ dla którego $N(f)$ ma przynajmniej dwa elementy, wtedy informacja jest \textit{niedokładna(częściowa)}.
+    Każdy element $y \in N(f)$ będziemy nazywać \textit{informacją o $f$}. Zauważmy, że dla $\delta = 0$, zbiór $N(f)$ ma dokładnie jeden element dla wszystkich $f \in F$, tzn. informacja $N$ jest \textit{dokładna}. Zakładamy, że $N(f)$ jest niepuste dla wszystkich $f \in F$. W przypadku, gdy istnieje $f$ dla którego $N(f)$ ma przynajmniej dwa elementy, wtedy informacja jest \textit{niedokładna (częściowa)}.
 
     Naszym zadaniem jest aproksymacja elementów $S(f)$ dla $f$ należącego do $E \subset F$, bazując wyłącznie na informacji zaburzonej o $f$. 
 
@@ -181,7 +187,7 @@
     \begin{equation*}
         \varphi : Y \rightarrow G
     \end{equation*}
-    Innymi słowy, aproksymacją $S(f)$ jest $\varphi(y)$, gdzie $y$ jest informacją o $f$. Błąd aproksymacji zdefiniownay jest jako różnica $\| S(f) - \varphi(y) \|$, gdzie $\|\cdot\|$ jest normą w przestrzeni $G$.
+    Innymi słowy, aproksymacją $S(f)$ jest $\varphi(y)$, gdzie $y$ jest informacją o $f$. Błąd aproksymacji zdefiniownay jest jako różnica $\| S(f) - \varphi(y) \|$, gdzie $\|\cdot\|$ jest normą w przestrzeni~$G$.
 
 
 \section{Model obliczeniowy}
@@ -189,26 +195,42 @@
 
     W ogólności, optymalność algorytmu oraz jego złożonść zależą od przyjętego modelu obliczeniowego. Model jest określony poprzez sposób w jaki błąd i koszt algorytmu są zdefiniowane. 
     
-    %TODO: koszt def
-    
     Jeżeli za błąd i koszt przyjmujemy wydajność na najtrudniejszym spośród wszystkich problemów w danej klasie, wtedy mówimy o \textit{modelu najgorszego przypadku}. Innymi często rozważanymi modelami są: probablistyczny, średni, mieszany, losowy czy asymptotyczny, jednak nimi nie będziemy zajmować się w tej pracy.
 
-    Niech $N : R \rightarrow 2^{Y}$ będzie operatorem inforamcji. Poprzez \textit{błąd najgorszego przypadku} algorytmu $\varphi : Y \rightarrow G$ na zbiorze $E \subset F$ rozumiemy:
+    Niech $N : R \rightarrow 2^{Y}$ będzie operatorem inforamcji a $S: F \rightarrow G$ operatorem rozwiązania. Poprzez \textit{błąd najgorszego przypadku} algorytmu $\varphi : Y \rightarrow G$ na zbiorze $E \subset F$ rozumiemy:
     \begin{equation*}
-        e^{wor}_{p}(\phi, N, E) = \sup_{f \in E} \sup_{y \in N(f)} \|S(f) - \varphi(y) \|
+        e^{\wor}(\varphi, N, E) = \sup_{f \in E} \sup_{y \in N(f)} \|S(f) - \varphi(y) \|
     \end{equation*}
 
-    Oznaczmy przez $\mathcal{N}(n, \delta)$ klasę wszystkich (adaptacyjnych) informacji $N$, które używają co najwyżej $n$ ewaluacji funkcji, z precyzją $\delta$ każda. Wtedy przez \textit{minimalany błąd najgorszego przykładu} w klasie $E$, który może zostać osiągnięty przez algorytm używający informacji o co najwyżej $n$ wartościach funkcji z precyzją $\delta$ rozumiemy:
+    Celem jest znalezienia algorytmu, który minimalizuje błąd najgorszego przypadku względem wszystkich algorytmów w danej klasie. Algortym osiągający taki minimalny błąd nazywamy \textit{optymalnym}.
+
+    W praktyce rozważania dotyczą algorytmów, które wykorzystując określoną liczbę wartości funkcji. Oznaczmy przez $\mathcal{N}(n, \delta)$ klasę wszystkich (adaptacyjnych) informacji $N$, które używają co najwyżej $n$ ewaluacji funkcji, z precyzją $\delta$ każda. Wtedy przez \textit{minimalany błąd najgorszego przypadku} w klasie $E$, który może zostać osiągnięty przez algorytm używający informacji o co najwyżej $n$ wartościach funkcji z precyzją $\delta$ rozumiemy:
 
     \begin{equation*}
-        r^{wor}_{p}(n, \delta, E) = \inf\{ e^{wor}_{p}(\varphi, N, E) : \; \varphi \; uzywa \; N \in \mathcal{N}(n, \delta) \}
+        r^{\wor}_{p}(n, \delta, E) = \inf\{ e^{\wor}_{p}(\varphi, N, E) : \; \varphi \text{ używa } N \in \mathcal{N}(n, \delta) \}
     \end{equation*}
 
-    W tej pracy porównujemy dwa algorytmy aprksymujęce funkcje z osobliwością, które osiągają to samo, optymalne organiczenie na minimalny błąd najgorszego przypadku, jednak tylko w przypadku jednego z nich w analizie zostało uwzgędione zaburzenie.
+
+    W tej pracy porównujemy dwa algorytmy aproksymujęce funkcje z osobliwością, które osiągają błąd na takim samym, optymalnym, poziomie błędu najgorszego przypadku, jednak tylko w przypadku jednego z nich w analizie zostało uwzgędione zaburzenie informacji.
+
+    Drugą kluczową metryką jest koszt algorytmu. Na koszt może się składać zarówno koszt uzyskania informacji o wartości funkcji, jak i koszt operacji arytmetycznych potrzebnych do obliczenia algorytmu. W tej pracy przyjmujemy, że koszt algorytmu $\varphi$ jest równy tylko kosztowi uzyskania informacji o wartości funkcji $f$, czyli
+    \begin{equation*}
+        \cost(\varphi, f) = n,
+    \end{equation*}
+    Koszt algorytmu w całej klasie $F$ ma postać
+    \begin{equation*}
+        \cost(\varphi, F) = \sup_{f \in F} \cost(\varphi, f)
+    \end{equation*}
+    Niech $\varepsilon > 0$. $\varepsilon$-złożoność najgorszego przypadku klasy $F$ mierzymy w następujący sposób
+    \begin{equation*}
+        \comp(\varepsilon, F) = \inf \{\cost(\varphi, F), | \text{ $\varphi$ - algorytm oraz } \sup_{f \in F} \sup_{t \in [a,b]} \|f(t) - \varphi(t)\| \leq \varepsilon.
+    \end{equation*}
+    Celem jest otrzymanie ścisłych granic na $\comp(\varphi, F)$, gdy $\varepsilon \rightarrow 0$.
 
 
 \section{Klasy funkcji}
 
+    W tej pracy będziemy rozważać problem, w którym opertor rozwiązania $S$ jest odwzorowaniem identycznościowym prowadzącym w przestrzeń $L^{p}$. Wprowadzimy teraz klasy funkcji, na których operują algorytmy.
 
     Dla liczby całkowitej $ r \geq 0$, $\varrho \in (0,1]$ oraz $a < b$, przez $H_{r, \varrho}(a,b)$ oznaczamy przestrzeń funkcji $g: [a,b] \rightarrow \R$ takich, że $g \in C^r([a, b])$ i $g^{(r)}$ jest Hölderowsko ciągła z wykładnikiem $\varrho$, tzn.
     \begin{equation*}
@@ -225,7 +247,7 @@
         \Delta_f^{(j)} = f^{(j)}(s_f^+) - f^{(j)}(s_f^-) = g_f^{(j)}(0) - g_f^{(j)}(T) \quad 0 \leq j \leq r,
     \end{equation*}
 
-    W tej pracy będziemy rozpatrywać rózne aproksymacje $\varphi : Y \rightarrow L^p(0, T)$ funkcji $f \in F_{r, \varrho}$ względem normy $L^p$, gdzie $1 \leq p \leq \infty$. Czyli z definicji normy $L_{p}$, błąd aproksymcji funkcji $f$ dla informacji $y$ wynosi:
+    W tej pracy będziemy rozpatrywać aproksymacje $\varphi : Y \rightarrow L^p(0, T)$ funkcji $f \in F_{r, \varrho}$ względem normy $L^p$, gdzie $1 \leq p \leq \infty$. Czyli z definicji normy $L_{p}$, błąd aproksymcji funkcji $f$ dla informacji $y$ wynosi:
     \begin{equation*}
         \|f-\varphi(y)\|_{L^p} = \left( \int_{0}^{T} |(f-\varphi(y))(x)|^p \,dx  \right)^{1/p} \qquad dla \; 1 \leq p < \infty
     \end{equation*}
@@ -238,7 +260,7 @@
     \begin{equation*}
         \begin{split}
             \mathcal{K} & = \{f = c \1_{\R}, c \in \R \}, \\
-            \mathcal{H}_{r, \varrho} & = \{ f \in F_{r, \varrho}: c(g_{f}) \leq 1, \Delta_{f}^{(j)} = 0 \; for\; all\; 0 \leq j \leq r\} \\
+            \mathcal{H}_{r, \varrho} & = \{ f \in F_{r, \varrho}: c(g_{f}) \leq 1, \Delta_{f}^{(j)} = 0 \text{ dla każdego } 0 \leq j \leq r\} \\
             \mathcal{F}_{r, \varrho}^{C} & = \{ f \in F_{r, \varrho}: c(g_{f}) \leq 1, \Delta_{f}^{(0)} = 0 \} \\
             \mathcal{F}_{r, \varrho}^{D} & = \{ f \in F_{r, \varrho}: c(g_{f}) \leq 1, | \Delta_{f}^{(0)} | \leq 1 \} \\
             \mathcal{F}_{r, \varrho} & = \{ f \in F_{r, \varrho}: c(g_{f}) \leq 1 \} \\
@@ -250,30 +272,33 @@
     \end{equation*}
 
 
-    Algorytm $\mathcal{A}^{KP}$ przedstawiony w pracy \cite{CoDF}, orginalnie bazuje na lekko zmodyfikowanej klasie funkcji, co wynika z innej natury problemu rozważanego w pracy. Dla spójności i lepszego przedstawiania problem, wprowadzimy orginalnie rozważaną klase funkcji i sprecyzujemy różnice między klasami przedstawionymi wcześniej. 
+    Algorytm przedstawiony w pracy \cite{CoDF}, orginalnie bazuje na lekko zmodyfikowanych klasach funkcji, co wynika z innej natury problemu rozważanego w pracy. Dla spójności i lepszego przedstawiania problemu wprowadzimy orginalnie rozważane klasy funkcji i sprecyzujemy różnice między klasami przedstawionymi wcześniej.
+
+    Niech $L_{0}, L_{r}, D_{0}, D_{1}, \ldots, D_{r}$ będą dodatnimi stałymi.
 
     \begin{equation*}
         \begin{aligned}
-        G_{reg}^{r, \varrho}([a, b])= &\left\{g:[a, b] \rightarrow \R^{d} \mid g \in C^{(r)}([a, b]),\left\|g^{(j)}(t)\right\| \leq D_{j}, j=0,1, \ldots, r\right. \\
-                                      &\left.\left\|g^{(r)}(t)-g^{(r)}(s)\right\| \leq L_{r}|t-s|^{\varrho},\|g(s)-g(t)\| \leq L_{0}|s-t|, t, s \in [a, b]\right\}
+        G_{reg}^{r, \varrho}([a, b])= &\left\{g:[a, b] \rightarrow \R^{d} \mid g \in C^{(r)}([a, b]),\left\|g^{(j)}(x)\right\| \leq D_{j}, j=0,1, \ldots, r\right. \\
+                                      &\left.\left\|g^{(r)}(x)-g^{(r)}(y)\right\| \leq L_{r}|x-y|^{\varrho},\|g(y)-g(x)\| \leq L_{0}|y-x|, x,y \in [a, b]\right\}
         \end{aligned}
     \end{equation*}
 
-    Rozważmy następującą klasę $G^{r, \varrho}([a, b])$ funkcji $g:[a, b] \rightarrow \R^{d}$ z co najwyżej jednym (nieznanym) punktem osobliwym $\hat{t}_{g}$. Funkcja $g:[a, b] \rightarrow \R^{d}, g=\left[g^{1}, g^{2}, \ldots, g^{d}\right]^{T}$, należy do $G^{r, \varrho}([a, b])$, jeśli istnieje punkt $\hat{t}_{g} \in (a, b)$ taki, że 
+    Rozważmy następującą klasę $G^{r, \varrho}([a, b])$ funkcji $g:[a, b] \rightarrow \R^{d}$ z co najwyżej jednym (nieznanym) punktem osobliwym $s_{g}$. Funkcja $g:[a, b] \rightarrow \R^{d}, g=\left[g^{1}, g^{2}, \ldots, g^{d}\right]^{T}$, należy do $G^{r, \varrho}([a, b])$, jeśli istnieje punkt $s_{g} \in (a, b)$ taki, że 
     $$
-    g \in G_{reg}^{r, \varrho}\left(\left[a, \hat{t}_{g}\right)\right) \cap G_{reg}^{r, \varrho}\left(\left[\hat{t}_{g}, b\right]\right)
+    g \in G_{reg}^{r, \varrho}\left(\left[a, s_{g}\right)\right) \cap G_{reg}^{r, \varrho}\left(\left[s_{g}, b\right]\right)
     $$
-    oraz lewostronna granica każdej składowej pochdnej $\left(g^{k}\right)^{(j)}$ istnieje w $\hat{t}_{g}$. W punkcie osobliwym $\hat{t}_{g}$, pochodne są rozumiana jako prawostronne.
+    oraz lewostronna granica każdej składowej pochdnej $\left(g^{k}\right)^{(j)}$ istnieje w $s_{g}$. W punkcie osobliwym $s_{g}$, pochodne są rozumiana jako prawostronne.
     
-    Dla $g \in G^{r, \varrho}([a, b])$, definiujemy wektor skoków
-    $$
-    \Delta_{g}^{j}=g^{(j)}\left(\hat{t}_{g}+\right)-g^{(j)}\left(\hat{t}_{g}-\right), \quad j=0,1, \ldots, r
-    $$
-    oraz wielomian
-    $$
-    s_{g}(t)=\sum_{j=0}^{r} \frac{1}{j !} \Delta_{g}^{j}\left(t-\hat{t}_{g}\right)^{j}, \quad t \in[\alpha, \beta]
-    $$
-    Jeżeli $\Delta_{g}^{j}=0$ dla wszystkich $j=0,1, \ldots, r$, wtedy $g$ kest regularna, czyli $g \in G_{reg}^{r, \varrho}([a, b])$. Jeżeli $g \in G^{r}, \varrho([a, b])$ and $\Delta_{g}^{0}=0$, wtedy $g$ jest Lipschitzowsko ciągła w $[a, b]$.
+    Dla funkcji $g \in G^{r,\varrho}([a,b])$ definiujemy wielomian
+    \begin{equation} \label{eq:26}
+        l_{g}(x)=\sum_{j=0}^{r} \frac{1}{j !} \Delta_{g}^{j}\left(x-s_{g}\right)^{j}, \quad x \in [a, b],        
+    \end{equation}
+    gdzie $\Delta_{g}^{(j)}$ jest wektorem skoków w punkcie osobliwym zdefiniowanym jak wcześniej.
+
+    Jeżeli $\Delta_{g}^{j}=0$ dla wszystkich $j=0,1, \ldots, r$, wtedy $g$ kest regularna, czyli $g \in G_{reg}^{r, \varrho}([a, b])$. Jeżeli $g \in G^{r, \varrho}([a, b])$ i $\Delta_{g}^{0}=0$, wtedy $g$ jest Lipschitzowsko ciągła w $[a, b]$.
+
+    Definicja klasy $G^{r, \varrho}$ różni się od definicji  $F_{r, \varrho}$ dopuszczeniem wielowymiarowości funkcji $g$ oraz bardziej ogólnym podejściem do parametrów klasy. Pierwsza z różnic ma na celu uproszczenie rozważań (głównie testów numerycznych), jednak wyniki teoretyczne mogą łatwo zostać uogólnione. W przypadku drugiej różnicy, ponieważ w tej pracy skupiamy się na wynikach praktycznych, przyjęcie za jedyny parametr klasy $c(g_{f}) = 1$ jest uzasadnionym uproszczeniem. Funkcje z rozważanych klasy zawsze możemy przemnożyć przez stałą, aby otrzymać odpowiedni parameter.
+    
 
 
 \mgrclosechapter
@@ -285,34 +310,36 @@
 \section{Ograniczenie z dołu}
 
 
-    Do określania błędu będziemy używać notacji $\varOmega$, $\varTheta$, $\mathcal{O}$, $\textit{o}$ (wersji Knutha). Gdy dwie funkcje $f$ i $g$ zdefiniowane na $\R_{+}$ i przyjmują wartości nieujemne, to piszemy $f(x) = \Omega\left( g(x) \right)$ wtedy, gdy istnieją dodatnie stałe $c_{1}$ i $c_{2}$ takie, że $f(x) \geq c_{1} g(x)$ dla $x \in [0, c_{2}]$. Przez $f(x) = \Theta\left( g(x) \right)$ rozumiemy $f(x) = \Omega\left( g(x) \right)$ and $g(x) = \Omega\left( f(x) \right)$, czyli istnieją takie stałe $c_{1}$, $c_{2}$ i $c_{3}$, że $c_{1} g(x) \leq f(x) \leq c_{2} g(x)$ dla $x \in [0, c_{3}]$. Natomiast przez $f(x) = \mathcal{O}(g(x))$ rozumiemy, że $g(x) = \Omega(f(x))$, a przez $f(x) = \textit{o}(g(x))$ rozumiemy, że $\displaystyle \lim_{x \rightarrow 0} \frac{f(x)}{g(x)} = 0$.
+    Do określania błędu będziemy używać notacji $\varOmega$, $\varTheta$, $\mathcal{O}$, $\textit{o}$ (wersji Knutha). Gdy dwie funkcje $f$ i $g$ zdefiniowane na $\R_{+}$ i przyjmują wartości nieujemne, to piszemy $f(x) = \varOmega\left( g(x) \right)$ wtedy, gdy istnieją dodatnie stałe $c_{1}$ i $c_{2}$, takie że $f(x) \geq c_{1} g(x)$ dla $x \in [0, c_{2}]$. Przez $f(x) = \varTheta\left( g(x) \right)$ rozumiemy $f(x) = \varOmega\left( g(x) \right)$ and $g(x) = \varOmega\left( f(x) \right)$, czyli istnieją takie stałe $c_{1}$, $c_{2}$ i $c_{3}$, że $c_{1} g(x) \leq f(x) \leq c_{2} g(x)$ dla $x \in [0, c_{3}]$. Natomiast przez $f(x) = \mathcal{O}(g(x))$ rozumiemy, że $g(x) = \varOmega(f(x))$, a przez $f(x) = \textit{o}(g(x))$ rozumiemy, że $\displaystyle \lim_{x \rightarrow 0} \frac{f(x)}{g(x)} = 0$.
 
     Na początku przytoczymy znane wyniki dotyczące ogranieczeń z dołu dla informacji dokładnej, które uzasadniają użycie algorytmów adaptacyjnych. Wiadomo, że w klasie funkcji $r$-regularnych, najlepszym tępem zbieżności dla błędu jest $n^{-r}$. W pracy \cite{PoA} udowodniono, że wprowadzenie osobliwości, powoduje pogorszenie się tej własności dla algorytmów nieadaptacyjnych do $n^{1/p}$. Pokazuje to następnujące twierdzenie.
 
     \begin{thm}
-        Niech $\mathcal{A}_{n}$ będzie dowolnym algorytmem nieadaptacyjnym oraz niech $\Delta > 0$. Istnieje kawałkami stała funkcja $f \in F_{r, 1}^{1}$ taka, że $|\Delta_{1}^{(0)}| \leq \Delta$ oraz
+        Niech $\mathcal{A}_{n}$ będzie dowolnym algorytmem nieadaptacyjnym korzystającym z n ewaluacji funkcji oraz niech $\Delta > 0$. Istnieje kawałkami stała funkcja $f \in F_{r, 1}$ taka, że $|\Delta_{f}^{(0)}| \leq \Delta$ oraz
         \begin{equation*}
             \left\| f - \mathcal{A}_{n}f \right\|_{L^{p}} \geq \frac{1}{2}\Delta \left( \frac{T}{n+1} \right)^{1/p}
         \end{equation*}
     \end{thm}
     \begin{proof}
-        Załóżmy, że $\mathcal{A}_{n}$ oblicza $f$ w punktach $x_{0} < \ldots < x_{n}$. Niech $x_{0} = 0$ i $x_{n} = T$. Istnieją $0 < a < b < T$ takie, że $b-a \geq T/(n+1)$ i $[a,b] \subset [x_{k}, x_{k+1}]$ dla pewnego $0 \leq k \leq n$. Weźmy teraz funkcje $g_{1} = \Delta\1_{(a, T]}$ oraz $g_{2} = \Delta\1_{(b, T]}$. Ponieważ $g_{1}$ i $g_{2}$ używają tej samej informacji, tj. $g_{1}(x_{i}) = g_{2}(x_{i})$ dla wszystkich $1 \leq i \leq n$ i $\| g_{1} - g_{2} \|_{L^{p}} \geq \Delta(T / (n+1))^{1/p}$, to błąd algorytmu nie może być mniejszy niż $\Delta(T/(n+1))^{1/p} / 2$ dla przynajmniej jednej z funkcji $g_{i}$. Co dowodzi tezę.
+        Załóżmy, że $\mathcal{A}_{n}$ oblicza $f$ w punktach $x_{0} < \ldots < x_{n}$. Niech $x_{0} = 0$ i $x_{n} = T$. Istnieją $0 < a < b < T$ takie, że $b-a \geq T/(n+1)$ i $[a,b] \subset [x_{k}, x_{k+1}]$ dla pewnego $0 \leq k \leq n-1$. Weźmy teraz funkcje $g_{1} = \Delta\1_{(a, T]}$ oraz $g_{2} = \Delta\1_{(b, T]}$. Ponieważ $g_{1}$ i $g_{2}$ używają tej samej informacji, tj. $g_{1}(x_{i}) = g_{2}(x_{i})$ dla wszystkich $1 \leq i \leq n$ i $\| g_{1} - g_{2} \|_{L^{p}} \geq \Delta(T / (n+1))^{1/p}$, to błąd algorytmu nie może być mniejszy niż $\Delta(T/(n+1))^{1/p} / 2$ dla przynajmniej jednej z funkcji $g_{i}$. Co dowodzi tezę.
     \end{proof}
 
-    Wiemy już jakie minimalne błędy mogą zostać osiągnięte przez algorytmy aproksymujące bazujące na informacji dokładnej. Poniższe stwierdzenie wprowadza kilka własności wynikających z znanych rezultatów przy obecności zaburzenia danych.
+    W celu uzasadnienia dlaczego interesują nas klasa funkcji z tylko jednym punktem osobliwym, przytoczymy jeszcze jeden wynik z \cite{PoA}. Najpierw wprowadźmy kilka uogólnionych oznaczeń. Przez 
+
+    Wiemy już jakie minimalne błędy mogą zostać osiągnięte przez algorytmy aproksymujące bazujące na informacji dokładnej. Poniższe stwierdzenie, przedstawione w \cite{AoP}, wprowadza kilka własności wynikających z znanych rezultatów przy obecności zaburzenia danych.
 
     \begin{stw} \label{stw1}
         Dla każdego $n$ i $\delta \geq 0$ mamy:
         \begin{enumerate}[label=(\roman*)]
-            \item \label{stw1_i} $r^{wor}_{p}(n, \delta, \mathcal{K}) \geq \delta T^{1/p}$
-            \item \label{stw1_ii} $r^{wor}_{p}(n, \delta, \mathcal{H}_{r,\varrho}) \geq a_{r,\varrho}n^{-(r + \varrho)}$ dla pewnego $a_{r,\varrho} > 0$
-            \item \label{stw1_iii} $r^{wor}_{p}(n, \delta, \mathcal{F}_{r,\varrho}) = \infty, \quad r \geq 1$
+            \item \label{stw1_i} $r^{\wor}_{p}(n, \delta, \mathcal{K}) \geq \delta T^{1/p}$
+            \item \label{stw1_ii} $r^{\wor}_{p}(n, \delta, \mathcal{H}_{r,\varrho}) \geq a_{r,\varrho}n^{-(r + \varrho)}$ dla pewnego $a_{r,\varrho} > 0$
+            \item \label{stw1_iii} $r^{\wor}_{p}(n, \delta, \mathcal{F}_{r,\varrho}) = \infty, \quad r \geq 1$
         \end{enumerate}
     \end{stw}
     \begin{proof}
-        W celu udowodnienia \ref{stw1_i} wystarczy zauważyć, że $y = (0, \ldots, 0)$ jest informacją o funkcji stałej postaci $f_{\pm} \!=\! \pm \delta$ dla każdego $N$ z precyzją $\delta$. Wynika z tego, że error dowlonego algorytmu używającego $N$ jest równy conajmniej $\| f_{+\delta} - f_{-\delta} \|_{L^{p}} / 2 = \delta T^{1/p}$.
+        W celu udowodnienia \ref{stw1_i} wystarczy zauważyć, że $y = (0, \ldots, 0)$ jest informacją o funkcji stałej postaci $f_{\pm} \!=\! \pm \delta$ dla każdego $N$ z precyzją $\delta$. Wynika z tego, że błąd dowlonego algorytmu używającego $N$ jest równy conajmniej $\| f_{+\delta} - f_{-\delta} \|_{L^{p}} / 2 = \delta T^{1/p}$.
 
-        Nierówność \ref{stw1_ii} wynika z znanych rezultatów dotyczących minimalnego błędu aproksymacji dla informacji dokładnej, zobacz [?].
+        Nierówność \ref{stw1_ii} wynika z znanych rezultatów dotyczących minimalnego błędu aproksymacji dla informacji dokładnej, zobacz [ref].
 
         Aby pokazać \ref{stw1_iii}, użyjemy rozumowania podobnego do \cite{PoA} [sekcja, 5.2], gdzie przeprowadzono dowód dla $\varrho = 1$ i $\delta = 0$. Niech $S(M) \subset \F_{r, \varrho}$ będzie rodziną funkcji $f_{s}$ dla $s \in [0, T)$
         \begin{equation*}
@@ -325,10 +352,10 @@
 
     Podsumowując, z stwierdzenia \ref{stw1} \textit{\ref{stw1_i}-\ref{stw1_ii}} otrzymujemy ogranicznia z dołu
     \begin{equation*}
-        r^{wor}_{p}(n, \delta, \mathcal{F}^{D}_{r,\varrho}) \geq r^{wor}_{p}(n, \delta, \mathcal{F}^{C}_{r,\varrho}) \geq \max(\delta T^{1/p}, a_{r,\varrho} n^{-(r+\varrho)})
+        r^{\wor}_{p}(n, \delta, \mathcal{F}^{D}_{r,\varrho}) \geq r^{\wor}_{p}(n, \delta, \mathcal{F}^{C}_{r,\varrho}) \geq \max(\delta T^{1/p}, a_{r,\varrho} n^{-(r+\varrho)})
     \end{equation*}
 
-    W dalszej części pracy udowodnimy, że te nierówności są ostre, z wyjątkiem pierwszej dla $p=\infty$. To jest główny wyniki artykułu \cite{AoP}.
+    W dalszej części pracy udowodnimy, że te nierówności są ostre, z wyjątkiem pierwszej dla $p=\infty$. Jest to główny wynik artykułu \cite{AoP}.
 
 
 \section{Ograniczenia z góry}
@@ -338,45 +365,60 @@
 
     Górne ograniczenia na błąd otrzymujemy poprzez analizę skonstruowanych algorytmów, szczegóły w rodziale \ref{rozdzial_analiza_alg}.
     
-    Omawiane algorytmy osiągają te same ogranieczenia z góry, jednak jak wspomnieliśmy, algorytm przedstawiony w pracy \cite{CoDF} bazuje na informacji dokładnej, w przeciwieństwie do algorytmu z pracy \cite{AoP}, który uwzględnia zaburzenie danych. Ta różnica wpłynęła na to, że do uzyskania tych samych wyników autorzy doszli w odmienny sposób. Aby lepiej przedstawić przebieg rozumowania, nie uogólniamy wyników, które są bardziej szczegółowe niż załóżenia tej pracy wymagają. Tyczy się to przede wszystkim algorytmu $\mathcal{A}^{KP}$, ponieważ jest on tylko częścią rozwiązania innego problemu, który jest tematem pracy \cite{CoDF}. Analiza błędu algtymu $\mathcal{A}^{MP}$ opiera się na badaniu właściowści jego poszczególnych kroków. Oszacowanie błędu dla $\mathcal{A}^{KP}$ wynika z dokładnej analizy własności wiolomianów Lagrange'a i testu na nich opartego.
+    Omawiane algorytmy osiągają te same ogranieczenia z góry z dokładnością do stałej, jednak jak wspomnieliśmy, algorytm przedstawiony w pracy \cite{CoDF} bazuje na informacji dokładnej, w przeciwieństwie do algorytmu z pracy \cite{AoP}, który uwzględnia zaburzenie danych. Ta różnica wpłynęła na to, że do uzyskania tych samych wyników autorzy doszli w odmienny sposób. Aby lepiej przedstawić przebieg rozumowania, nie uogólniamy wyników, które są bardziej szczegółowe niż załóżenia tej pracy wymagają. Tyczy się to przede wszystkim algorytmu $\mathcal{A}^{KP}$, ponieważ jest on tylko częścią rozwiązania innego problemu, który jest tematem pracy \cite{CoDF}. Analiza błędu algtymu $\mathcal{A}^{MP}$ opiera się na badaniu właściowści jego poszczególnych kroków. Oszacowanie błędu dla $\mathcal{A}^{KP}$ wynika z dokładnej analizy własności wiolomianów Lagrange'a i testu na nich opartego.
 
-    Poniższe twierdzenia prezentują główne właściwości algorytmów.
+    Poniższe twierdzenie łączy wyniki artykułów \cite{CoDF} i \cite{AoP} dotyczące górnych ograniczeń na błąd algorytmów.
     
-    \begin{thm}[Błąd algorytmu $\mathcal{A}^{MP}$] \label{AoP_tw1} ~%
-        \begin{enumerate}
-            \item $r^{wor}_{p}(n, \delta, \mathcal{F}^{D}_{r,\varrho}) = \Theta(\max(\delta, n^{-(r+\varrho)})) \quad dla \: 1 \leq p \leq \infty$
-            \item $r^{wor}_{\infty}(n, \delta, \mathcal{F}^{C}_{r,\varrho}) = \Theta(\max(\delta, n^{-(r+\varrho)}))$
+    \begin{thm}~%
+        Niech $r+\varrho \geq 1$ oraz niech $\mathcal{G}^{r,\varrho} = \mathcal{G}^{r,\varrho}([a,b])$ z $\Delta_{g}^{0} = 0$. Wtedy zachodzi
+        \begin{enumerate}[label=(\roman*)]
+            \item $e_{p}^{\wor}(\varphi^{MP},N,\mathcal{F}_{r,\varrho}^{D}) = \mathcal{O}(\max(\delta, n^{-(r+\varrho)})) \quad dla \: 1 \leq p \leq \infty$
+            \item $e_{\infty}^{\wor}(\varphi^{MP},N,\mathcal{F}_{r,\varrho}^{C}) = \mathcal{O}(\max(\delta, n^{-(r+\varrho)}))$
+            \item $e_{\infty}^{\wor}(\varphi^{KP},N,\mathcal{G}^{r,\varrho}) = \mathcal{O}(n^{-(r+\varrho)})$
         \end{enumerate}
     \end{thm}
 
-    \begin{thm}[Błąd algorytmu $\mathcal{A}^{KP}$]
-        \label{2014_tw1}
-        Niech $r+\varrho \geq 1$. Istnieją stałe $C$ i $m_{0}$ takie, że dla $m>m_{0}$, przedziału $[a,b]$ oraz wszystkich $g \in \G$ z $\Delta_{g}^{0} = 0$ zachodzi:
-        \begin{equation*}
-            \sup_{t \in [a,b]} \| g(t) - q(t) \| \leq Cm^{-(r+\varrho)}
-        \end{equation*}        
-    \end{thm}
-    \vspace{10pt}
-    
-    \begin{uw}
-        Oba algorytmy używają $\mathcal{O}(m)$ ewaluacji wartości aproksymowanej funkcji. Dodatkowo w przypadku $\mathcal{A}^{MP}$ otrzymujemy również informacje o progu dla $m$, którego przekroczenie nie zwiększy dokładności otrzymanego przybliżenia, $m_{max} = \varTheta(\delta^{-(r+\varrho)})$. Ta informacja jest istotna ze wzdlędu na precyzję reprezentacji liczb na komputerze. Wspomniane własności są wyprowadzone w rodziale \ref{rozdzial_analiza_alg}.    
-    \end{uw}
-    \vspace{10pt}
+    Dodatkowo pokażemy(zobacz rodzial \ref{rozdzial_analiza_alg}), że koszty algorytmów zachowują się następująco
 
+    \begin{stw}~%
+        \begin{enumerate}
+            \item $\cost(\varphi^{MP}, \mathcal{F}_{r,\varrho}^{D}) = \cost(\varphi^{MP}, \mathcal{F}_{r,\varrho}^{C}) = \mathcal{O}(n)$
+            \item $\cost(\varphi^{KP}, \mathcal{G}^{r,\varrho}) = \mathcal{O}(n)$
+        \end{enumerate}
+    \end{stw}
+
+    Z powyższych wyników oraz przytoczonych wcześniej rezultatów o ograniczeniach z dołu wynikają wnioski dotyczące minimalnych błędów najgorszego przypadku.
+
+    \begin{cor}~
+        \begin{enumerate}[label=(\roman*)]
+            \item $r^{\wor}_{p}(n, \delta, \mathcal{F}^{D}_{r,\varrho}) = \varTheta(\max(\delta, n^{-(r+\varrho)})) \quad dla \: 1 \leq p \leq \infty$
+            \item $r^{\wor}_{\infty}(n, \delta, \mathcal{F}^{C}_{r,\varrho}) = \varTheta(\max(\delta, n^{-(r+\varrho)}))$
+            \item $r^{\wor}_{\infty}(n, 0, \mathcal{G}^{r,\varrho}) = \varTheta(n^{-(r+\varrho)})$
+        \end{enumerate}
+    \end{cor}
     
 \mgrclosechapter
 
 
 \chapter{Algorytmy}
 
+    Oba algortmy na wejściu otrzymują siatkę o $m+1$ równoodległych punktach $t_{j} = a+(b-a) / m$. Algorytm $\mathcal{A}^{KP}$ dopuszcza dowolny podział przedziału $[a,b]$, który spełania $\max_{0\leq i \leq m-1} (t_{i+1}-t_{i}) = \mathcal{O}(h)$, jednak dla ujednolicenia oznaczeń pomijamy tą właściwość.
 
 \section{Algorytm oparty na wielomianach Lagrange'a}
 
+    Wprowadźmy postać wielomianów Lagrange'a używanych w algorytmie. Niech $g: [a, b] \rightarrow \R$. Przez $w_{g}^{s}([a,b])$ oznaczamy interpolacyjny wielomian Lagrange'a o rzędzie co najwyżej $s$, oparty na $s+1$ równoodległych węzłach $x_{j} = a+(b-a)j / s$, dla $j=0,1,\ldots, s$.
+    \begin{equation} \label{eq:25}
+        w_{g}^{s}([a, b])(x)=\sum_{i=0}^{s} g\left(x_{i}\right) \Phi_{i}(x), \quad x \in \R
+    \end{equation}
+    gdzie
+    \begin{equation*}
+        \Phi_{i}(x)=\prod_{k=0, k \neq i}^{s} \frac{x-x_{k}}{x_{i}-x_{k}}, \quad i=0,1, \ldots, s
+    \end{equation*}
 
-    Algorytm przedstawiony w pracy \cite{CoDF} lokalizuje osobliwość przy pomocy wielomianów Lagrange'a $w_{g}^{r}$. Na wejściu algorytm otrzymuje $g \in \G$, przedział $[a,b]$, regularność $r$ oraz współczynnik Höldera $\varrho$. Kluczowym elementem algorytmu jest zdefiniowana poniżej wielkość (\textit{test}), która jest użyta do wykrycie punktu osobliwego.
+    Algorytm przedstawiony w pracy \cite{CoDF} lokalizuje osobliwość przy pomocy wielomianów Lagrange'a $w_{g}^{r}$. Na wejściu algorytm otrzymuje $g \in \G$, przedział $[a,b]$, regularność $r$ oraz współczynnik Höldera $\varrho$. Kluczowym elementem algorytmu jest zdefiniowana poniżej wielkość (\textit{test}), która jest użyta do wykrycia punktu osobliwego.
     \begin{equation}
         \label{eqn:test}
-        A_{g}(a, \bar{a}, \bar{b}, b)=\max _{0 \leq j \leq r} \frac{\left\|w_{g}^{r}([\bar{b}, b])\left(z_{j}\right)-w_{g}^{r}([a, \bar{a}])\left(z_{j}\right)\right\|}{\bar{h}^{r+e}},
+        A_{g}(a, \bar{a}, \bar{b}, b)=\max _{0 \leq j \leq r} \frac{\left\|w_{g}^{r}([\bar{b}, b])\left(z_{j}\right)-w_{g}^{r}([a, \bar{a}])\left(z_{j}\right)\right\|}{\bar{h}^{r+\varrho}},
     \end{equation}
     gdzie $a<\bar{a}<\bar{b}<b$, $z_{j} = \bar{a} + (\bar{b} - \bar{a})j/r$, dla $j=0,1,\dots,r$ oraz $\bar{h} = b - a$ jest długością przedziału, na którym \textit{test} jest zdefiniowany.
 
@@ -387,17 +429,16 @@
     \noindent
     \begin{tabular}{p{0.045\linewidth} p{0.85\linewidth}}
         \textit{K1:}    & Niech $\omega \coloneqq h^{r+\varrho}$, $B \coloneqq \{a, b\}$ \\
-                        & \textbf{jeżeli} \(\displaystyle \max_{0 \leq i \leq p-1} (c_{i+1} - c_{i}) \leq 4\omega \) \textbf{wtedy} \\
-                        & $\quad$ idź do \textit{Krok 3} \\
+                        & \textbf{jeżeli} \(\displaystyle \max_{0 \leq i \leq p-1} (t_{i+1} - t_{i}) \leq 4\omega \) \textbf{wtedy} \\
+                        & $\quad$ idź do \textit{K3} \\
                         & \textbf{w p.p.} \\
-                        & $\quad$ Niech, dla $j=0,1, \ldots, p-1$, \\
-                        & $\quad$ $A=\max \left\{A_{g}\left(c_{j}, c_{j}+\omega, c_{j+1}-\omega, c_{j+1}\right) \mid c_{j+1}-c_{j}>4 \omega\right\}$ \\
-                        & $\quad$ Niech $A_{g}^{i} = A_{g}\left(c_{i}, c_{i}+\omega, c_{i+1}-\omega, c_{i+1}\right)$ \\
-                        & $\quad$ \textbf{jeżeli} istnieją różne $k$ i $l$ takie, że $A = A^{k} \land A = A^{l}$ \textbf{wtedy} \\
+                        & $\quad$ Niech $A_{g}^{i} = A_{g}\left(t_{i}, t_{i}+\omega, t_{i+1}-\omega, t_{i+1}\right)$ \\
+                        & $\quad$ $A\coloneqq\max \left\{A_{g}^{i} \mid t_{j+1}-t_{j}>4 \omega,\; j=0,1, \ldots, p-1 \right\}$ \\
+                        & $\quad$ \textbf{jeżeli} istnieją różne $k$ i $l$ takie, że $A = A_{g}^{k} \land A = A_{g}^{l}$ \textbf{wtedy} \\
                         & $\quad\quad$ idź do \textit{K3} \\
                         & \\
 
-        \textit{K2:}    & Niech $[c_{k}, c_{k+1}]$ - przedział otrzymany w \textit{K1} oraz niech $[a_{1}, b_{1}] = [a, b]$ \\
+        \textit{K2:}    & Niech $[t_{k}, t_{k+1}]$ - przedział otrzymany w \textit{K1} oraz niech $[a_{1}, b_{1}] = [a, b]$ \\
                         & \textbf{dopóki} $b_{1} - a_{1} > \omega$ \textbf{wykonuj}: \\
                         & $\quad$Oblicz $v = (a_{1} + b_{1}) / 2$ oraz $B = B \cup \{v\}$ \\
                         & $\quad$\textbf{jeżeli} $A_{g}(a_{1}, a_{1} + \omega, v - \omega, v) = A_{g}(v, v + \omega, b_{1} - \omega, b_{1})$ \textbf{wtedy} \\
@@ -407,15 +448,15 @@
                         & $\quad$$\quad$dla którego wartość testu była większa \\
                         &  \\
 
-        \textit{K3:}    & Niech $\bar{M} = \left\{ c_{0}, \dots, c_{p} \right\} \cap B$ \\
-                        & $q(t)= \begin{cases}
-                            g\left(c_{i}\right)                                                 &\text{gdy } t \in \left[c_{i}, c_{i+1}\right) \land c_{i+1}-c_{i} \leq 4 \omega \\ 
-                            g\left(c_{i}\right)                                                 &\text{gdy } t \in \left[c_{i}, c_{i}+\omega\right) \land c_{i+1}-c_{i}>4 \omega, \\ 
-                            w_{g}^{r}\left(\left[c_{i}+\omega, c_{i+1}-\omega\right]\right)(t)  &\text{gdy } t \in\left[c_{i}+\omega, c_{i+1}-\omega\right) \land c_{i+1}-c_{i}>4 \omega \\ 
-                            g\left(c_{i+1}-\omega\right)                                        &\text{gdy } t \in\left[c_{i+1}-\omega, c_{i+1}\right) \land c_{i+1}-c_{i}>4 \omega
+        \textit{K3:}    & Niech $\bar{M} = \left\{ t_{0}, \dots, t_{p} \right\} \cup B$ \\
+                        & $\varphi^{KP}(x)= \begin{cases}
+                            g\left(t_{i}\right)                                                 &\text{gdy } x \in \left[t_{i}, t_{i+1}\right) \land t_{i+1}-t_{i} \leq 4 \omega \\ 
+                            g\left(t_{i}\right)                                                 &\text{gdy } x \in \left[t_{i}, t_{i}+\omega\right) \land t_{i+1}-t_{i}>4 \omega, \\ 
+                            w_{g}^{r}\left(\left[t_{i}+\omega, t_{i+1}-\omega\right]\right)(x)  &\text{gdy } x \in\left[t_{i}+\omega, t_{i+1}-\omega\right) \land t_{i+1}-t_{i}>4 \omega \\ 
+                            g\left(t_{i+1}-\omega\right)                                        &\text{gdy } x \in\left[t_{i+1}-\omega, t_{i+1}\right) \land t_{i+1}-t_{i}>4 \omega
                             \end{cases}$ \vspace{3pt} \\
-                        & dla $i=0,1,\dots,k-1$ z $q(b) = $ zdefiniowanym przez ciągłość na ostatnim przedziale \\
-                        & $B \coloneqq B \cup \left\{ c_{i} + \omega, c_{i+1} - \omega \mid c_{i+1} - c_{i} > 4\omega,\; i=0,\dots,k-1 \right\}$ \\
+                        & dla $i=0,1,\dots,k-1$ z $\varphi^{KP}(b) $ zdefiniowanym przez ciągłość na ostatnim przedziale \\
+                        & $B \coloneqq B \cup \left\{ t_{i} + \omega, t_{i+1} - \omega \mid t_{i+1} - t_{i} > 4\omega,\; i=0,\dots,k-1 \right\}$ \\
 
     \end{tabular} \vspace{10pt}
 
@@ -425,31 +466,31 @@
 
     W tym rozdziale opiszemy algorytm bazujący na informacji zaburzonej przedstawiony w artykule \cite{AoP}. Analizowany algorytm używa co najwyżej $n$ wartości funkcji z precyzją $\delta $ oraz w najgorszym przypadku ma błąd proporcjonalny do $\max{(\delta, n^{-1 / r + \varrho })}$ w klasie funkcji $\F^D_{r,\varrho }$ dla $p < \infty$ oraz w klasie $\F^C_{r,\varrho }$ dla $p \leq \infty$. Kluczowym parametrem algorytmu jest
     $$
-        h = T / m \quad with \quad  m \geq 2r + 1,
+        h = T / m \quad dla \quad  m \geq 2r + 1,
     $$
     gdzie $m$ jest początkową gęstością siatki. Dodatkowo, niech $\omega  = \omega(h)$ spełnia $0 < \omega < (r + 1)h $.
 
-    Na początku algorytm aproksymuje punkt osobliwy $s_f$. Jest to realizowane w trzech krokach. W kroku 1. przy pomocy siatki rozmiarze o długości $h$ i różnic dzielonych lokalizowany jest punkt $s_f$ na przedziale $[u_1, v_1]$ o długości $(r + 1)h$. W kroku 2. używamy wielomianów interpolujących $\tilde{p}_+$ i $\tilde{p}_-$ do zwężenia tego przedziału do $[u_2, v_2]$. Krok 3. produkuje przedział $[u_3, v_3] \subseteq [u_2, v_2]$, w którym różnica $|\tilde{p}_{+} - \tilde{p}_{-}|$ jest nierosnąca na $[u_3, \xi]$ i niemalejąca na $[\xi, v_3]$, gdzie $\xi$ jest finalną aproksymacją $s_f$.
+    Na początku algorytm aproksymuje punkt osobliwy $s_f$. Jest to realizowane w trzech krokach. W kroku 1. przy pomocy siatki o rozmiarze długości $h$ i różnic dzielonych lokalizowany jest punkt $s_f$ na przedziale $[u_1, v_1]$ o długości $(r + 1)h$. W kroku 2. używamy wielomianów interpolujących $\tilde{p}_+$ i $\tilde{p}_-$ do zwężenia tego przedziału do $[u_2, v_2]$. Krok 3. produkuje przedział $[u_3, v_3] \subseteq [u_2, v_2]$, w którym różnica $|\tilde{p}_{+} - \tilde{p}_{-}|$ jest nierosnąca na $[u_3, \xi]$ i niemalejąca na $[\xi, v_3]$, gdzie $\xi$ jest finalną aproksymacją $s_f$.
 
-    Powyższe kroki mogą być zapisane następująco; dla $t_i = ih \; \forall i$. \vspace{10pt}
+    Oznaczenia $\argmax_{j} \psi_{j}$ oraz $\argmin_{j} \psi_{j}$ użyte w algorytmie oznaczają argument $j$ maksymalizujący oraz minimalizujący $\psi_{j}$ względem $j$.
+    Powyższe kroki mogą być zapisane następująco. \vspace{10pt}
 
     \newpage
     \textbf{Algorytm oparty na różnicach dzielonych}
 
     \vspace{10pt}
     \noindent
-    \begin{tabular}{p{0.10\linewidth} p{0.85\linewidth}}
-        
-        \textit{Krok 1} & Oblicz różnice dzielone $\tilde{d}_i = \tilde{f}[t_i, \ldots, t_{i+r+1}]$ for $1 \leq i \leq m $ oraz znajdź \\
-                        & \(\displaystyle \qquad i^* = arg \max_{1 \leq i \leq m }|\tilde{d}_i| \)  \\
+    \begin{tabular}{p{0.045\linewidth} p{0.85\linewidth}}        
+        \textit{K1} & Oblicz różnice dzielone $\tilde{d}_i = \tilde{f}[t_i, \ldots, t_{i+r+1}]$ for $1 \leq i \leq m $ oraz znajdź \\
+                        & \(\displaystyle \qquad i^* = \argmax_{1 \leq i \leq m }|\tilde{d}_i| \)  \\
                         & Niech $u_1 = t_{i^*}$ i $v_1 = t_{i^* + r + 1}$. \\
                         & \\
 
-        \textit{Krok 2} & Oznaczymy przez $\tilde{p}_+$ i $\tilde{p}_-$ wielomiany stopnia $ \leq r$, które interpolują węzły $(t_j, \tilde{f}(t_j))$ odpowiednio dla $i^* - r \leq j \leq i^*$ oraz dla $i^* + r + 1 \leq j \leq i^* + 2r + 1$. Następnie wykonaj iterację: \\
+        \textit{K2} & Oznaczymy przez $\tilde{p}_+$ i $\tilde{p}_-$ wielomiany stopnia $ \leq r$, które interpolują węzły $(t_j, \tilde{f}(t_j))$ odpowiednio dla $i^* - r \leq j \leq i^*$ oraz dla $i^* + r + 1 \leq j \leq i^* + 2r + 1$. Następnie wykonaj iterację: \\
                         & $u := u_1$, $v := v_1$ \\
                         & \textbf{dopóki} $v-u > \omega$ \textbf{wykonuj}: \\
                         & $\quad$$z_j := u + j(v-u) / (r+2), \qquad j = 1, 2, \ldots, r + 1$ \\
-                        & $\quad$\(\displaystyle j^* := arg \max_{1 \leq j \leq r + 1}|\tilde{p}_{+}(z_j) - \tilde{p}_{-}(z_j)| \) \\
+                        & $\quad$\(\displaystyle j^* := \argmax_{1 \leq j \leq r + 1}|\tilde{p}_{+}(z_j) - \tilde{p}_{-}(z_j)| \) \\
                         & $\quad$\textbf{jeżeli} $|\tilde{f}(z_{j^*}) - \tilde{p}_{-}(z_j)| \leq |\tilde{f}(z_{j^*}) - \tilde{p}_{+}(z_j)|$ \textbf{wtedy} \\
                         & $\quad\quad$$u:= z_{j^*}$ \\
                         & $\quad$\textbf{w p.p.} \\
@@ -458,7 +499,7 @@
                         & Niech $u_2 = u$ i $v_2 = v$. \\
                         & \\
 
-        \textit{Krok 3} & Wykonaj iterację: \\
+        \textit{K3} & Wykonaj iterację: \\
                         & $u := u_2$, $v := v_2$ \\
                         & \textbf{dopóki} istnieje maksimum lokalne $|\tilde{p}_{+} - \tilde{p}_{-}|$ na $(u,v)$ \textbf{wykonuj} \\
                         & $\quad$$z :=$ największe maksimum lokalne $|\tilde{p}_{+} - \tilde{p}_{-}|$ na $(u,v)$ \\
@@ -472,7 +513,7 @@
 
     Finalną aproksymacją $s_f$ jest
     \begin{equation*}
-            \xi := arg \max_{u_3 \leq x \leq v_3}|\tilde{p}_{+} - \tilde{p}_{-}| \hspace{200pt}
+            \xi := \argmax_{u_3 \leq x \leq v_3}|\tilde{p}_{+} - \tilde{p}_{-}| \hspace{200pt}
     \end{equation*}
 
     Przedstawiony algorytm używa $m$ wartości funkcji w kroku 1 oraz jedyną wartość funkcji w każdej iteracji w krokach 2 i 3. Czyli w kroku 2 używamy co najwyżej
@@ -492,95 +533,258 @@
 \section{Analiza algorytmu opartego o wielomiany Lagrange'a}
 
 
-    Zacznijmy od wyjaśnienia własności testu \ref{eqn:test} służącego do wykrywania osobliwości. Rozważmy błąd interpolacji Lagrange'a dla nieciągłej funkcji $g \in \G$. Błąd jest ograniczony za względu na wielomian $s^{g}$ (TODO: reference).
+    Zacznijmy od wyjaśnienia własności testu \eqref{eqn:test} służącego do wykrywania osobliwości. Rozważmy błąd interpolacji Lagrange'a dla nieciągłej funkcji $g \in \G$. Błąd jest ograniczony za względu na wielomian $l_{g}$ \eqref{eq:26}.
 
-    \begin{lemma}
+    \begin{lemma} \label{lem:1}
         Istnieje stała $C$ taka, że dla wszystkich $[a,b]$, wszystkich $g \in \G$ oraz $s=0,1,\dots,r$, mamy
         \begin{equation*}
-            \sup _{t \in[a, b]}\left\|g(t)-w_{g}^{s}([a, b])(t)\right\| \leq C\left(\min \left\{\sup_{t \in[a, \hat{t}_{g})}\left\|s_{g}(t)\right\|, \sup _{t \in [\hat{t}_{g}, b]}\left\|s_{g}(t)\right\|\right\}+\bar{h}^{\min \{s+1, r+\varrho\}}\right)
+            \sup _{t \in[a, b]}\left\|g(t)-w_{g}^{s}([a, b])(t)\right\| \leq C\left(\min \left\{\sup_{t \in[a, s_{g})}\left\|s_{g}(t)\right\|, \sup _{t \in [s_{g}, b]}\left\|s_{g}(t)\right\|\right\}+\bar{h}^{\min \{s+1, r+\varrho\}}\right)
         \end{equation*}
     \end{lemma}
     \begin{proof}
-        $(\dots)$
+        Najpierw pokażemy, że
+        \begin{equation} \label{eq:7}
+            \sup _{t \in[a, b]}\left\|g(t)-w_{g}^{s}([a, b])(t)\right\| \leq C\left(\sup _{t \in\left[s_{g}, b\right]}\left\|s_{g}(t)\right\|+\bar{h}^{\min (s+1, r+\varrho\}}\right)
+        \end{equation}
+        Niech
+        \begin{equation} \label{eq:8}
+            \tilde{g}(t)= \begin{cases}
+                g(t)            & \text { gdy } t \in\left[a, s_{g}\right) \\ 
+                g(t)-s_{g}(t)   & \text { gdy } t \in\left[s_{g}, b\right]\end{cases}
+        \end{equation}
+        wtedy $\tilde{g} \in G_{reg}^{r, \varrho}([a, b])$. Niech $t_{k}=a+(b-a) k / s$, $k=0,1, \ldots, s$ będą węzłami dla interpolacji $w_{g}^{s}([a, b])$ na przedziale $[a, b]$. Zdefinujmy
+        \begin{equation} \label{eq:9}
+            j^{*}=\min \left\{k=1,2, \ldots, s \mid t_{k} \geq s_{g}\right\}            
+        \end{equation}
+        wtedy otrzymujemy
+        \begin{equation} \label{eq:10}
+            w_{\tilde{g}}^{s}([a, b])(t)=\sum_{i=0}^{j^{*}-1} g\left(t_{i}\right) \Phi_{i}(t)+\sum_{i=j^{*}}^{s}\left(g\left(t_{i}\right)-s_{g}\left(t_{i}\right)\right) \Phi_{i}(t)            
+        \end{equation}
+        gdzie
+        \begin{equation*}
+            \Phi_{i}(t)=\prod_{k=0, k \neq i}^{s} \frac{t-t_{k}}{t_{i}-t_{k}}
+        \end{equation*}
+        czyli
+        \begin{equation*} \label{eq:11}
+            w_{\tilde{g}}^{S}([a, b])(t)=w_{g}^{s}([a, b])(t)-\sum_{i=j^{*}}^{s} s_{g}\left(t_{i}\right) \Phi_{i}(t)
+        \end{equation*}
+        Z \eqref{eq:8} i \eqref{eq:10} otrzymujemy, że dla $t \in [a, b]$ mamy
+        \begin{equation*} \label{eq:12}
+            \begin{aligned}
+                g(t)-w_{g}^{s}([a, b])(t)=&(g(t)-\tilde{g}(t))+\left(\tilde{g}(t)-w_{\tilde{g}}^{s}([a, b])(t)\right) \\
+                &+\left(w_{\tilde{g}}^{S}([a, b])(t)-w_{g}^{s}([a, b])(t)\right) \\
+                =& \mathbf{1}_{\left[s_{g}, b\right]}(t) s_{g}(t)+\left(\tilde{g}(t)-w_{\tilde{g}}^{S}([a, b])(t)\right)-\sum_{i=j^{*}}^{s} s_{g}\left(t_{i}\right) \Phi_{i}(t)
+            \end{aligned}
+        \end{equation*}
+        a ponieważ $\tilde{g}$ jest funkcją regularną dla $t \in[a, b]$ zachodzi
+        \begin{equation*}
+            \left\|g(t)-w_{g}^{s}([a, b])(t)\right\| \leq \sup _{t \in[\hat{t}, b]}\left\|s_{g}(t)\right\|+\max _{j * \leq i \leq s}\left\|s_{g}\left(t_{i}\right)\right\| \sum_{i=j^{*}}^{s}\left|\Phi_{i}(t)\right|+C \bar{h}^{\min \{s+1, r+\varrho\}}            
+        \end{equation*}
+        gdzie $C$ zależny tylko od parametrów klasy $G^{r, \varrho}([a, b])$. W związku z powyższym, istnieje stała $\bar{C}$, zależna jedynie od $s$ taka, że dla wszystkich $t \in[a, b]$ zachodzi
+        \begin{equation} \label{eq:13}
+            \sum_{i=j^{*}}^{s}\left|\Phi_{i}(t)\right| \leq \bar{C}            
+        \end{equation}
+        Co dowodzi nierówność \eqref{eq:7}
+
+        Teraz musimy pokazać, że
+        \begin{equation} \label{eq:14}
+            \sup _{t \in[a, b]}\left\|g(t)-w_{g}^{s}([a, b])(t)\right\| \leq C\left(\sup _{t \in\left[a, s_{g}\right)}\left\|s_{g}(t)\right\|+\bar{h}^{\min \{s+1, r+\varrho\}}\right)
+        \end{equation}
+        Postępujemy jak wyżej używając regularnej funkcji
+        \begin{equation} \label{eq:15}
+            \tilde{g}(t)= \begin{cases}g(t)+s_{g}(t), & \text { if } t \in\left[a, s_{g}\right) \\ g(t), & \text { if } t \in\left[s_{g}, b\right]\end{cases}
+        \end{equation}
+        oraz $j^{*}$ zdefiniowanym jak w \eqref{eq:9}.
+        Z nierówności \eqref{eq:7} i \eqref{eq:14} udowadniają tezę lematu.
     \end{proof}
 
+    Poniższy wniosek jest następstwem \eqref{lem:1} i mówi o tym, jeśli punkt osobliwy znajduję się na blisko brzegu przedzialu $[a,b]$, to nie powoduję to znaczącego wzrostu błędu.
+
     \begin{cor}
-        Istnieje stała $C$ taka, że dla wszystkich $[a,b]$, wszystkich $g \in \G$ z $\delta_{g}^{0} = 0$, $0 \leq \delta \leq \min{1, \bar{h}}$ oraz $s=0,1,\dots,r$, mamy
+        Istnieje stała $C$ taka, że dla wszystkich $[a,b]$, wszystkich $g \in \G$ z $\Delta_{g}^{0} = 0$, $0 \leq \delta \leq \min \{1, \bar{h}\}$ oraz $s=0,1,\dots,r$, mamy
         \begin{equation*}
-            \hat{t}_{g} \in(a, a+\delta] \cup[b-\delta, b) \Longrightarrow  \sup_{t \in[a, b]}\left\|g(t)-w_{g}^{s}([a, b])(t)\right\| \leq C\left(\delta+\bar{h}^{\min \{s+1, r+\varrho\}}\right)
+            s_{g} \in(a, a+\delta] \cup[b-\delta, b) \Longrightarrow  \sup_{t \in[a, b]}\left\|g(t)-w_{g}^{s}([a, b])(t)\right\| \leq C\left(\delta+\bar{h}^{\min \{s+1, r+\varrho\}}\right)
         \end{equation*}
     \end{cor}
     \begin{proof}
-        $(\dots)$
+        Wiemy, że $s_{g}(t)=\sum_{j=1}^{r} \frac{1}{j !} \Delta_{g}^{j}\left(t-s_{g}\right)^{j}$. Jeżeli $s_{g} \in(a, a+\delta]$, wtedy $\left\|s_{g}(t)\right\|=O(\delta)$ dla $t \in\left[a, s_{g}\right) .$ To samo zachodzi dla $t \in\left[s_{g}, b\right]$, jeśli $s_{g} \in[b-\delta, b)$. Z lematu \eqref{lem:1} otrzymujemy szukaną nierówność
     \end{proof}
 
-    \begin{lemma}
+    \begin{lemma} \label{lem:2}
         Istnieje stała $C$ zależna od $r$ i $L_{r}$ taka, że dla wszystkich $[a,b]$, $\bar{a} \in (a,b)$, wszystkich $g \in \G$, mamy
         \begin{equation*}
-            \hat{t}_{g} \in(\bar{a}, b) \Longrightarrow g(t)-w_{g}^{r}([a, \bar{a}])(t)=s_{g}(t) \1_{\left[\hat{t}_{g}, b\right]}(t)+R_{g}(t), \quad t \in[\bar{a}, b],
+            s_{g} \in(\bar{a}, b) \Longrightarrow g(t)-w_{g}^{r}([a, \bar{a}])(t)=s_{g}(t) \1_{\left[s_{g}, b\right]}(t)+R_{g}(t), \quad t \in[\bar{a}, b],
         \end{equation*}
         gdzie $\| R_{g}(t) \| \leq C\bar{h}^{r+\varrho}$, dla $t \in [\bar{a}, b]$
     \end{lemma}
     \begin{proof}
-        $(\dots)$
+        Niech $\tilde{g} \in G_{reg}^{r, \varrho}([a, b])$ będzie dane jak w \eqref{eq:8}. Ponieważ $s_{g}>\bar{a}$, otrzymujemy, że $\tilde{g}(t)=g(t)$ dla wszystkich $t \in[a, \bar{a}]$ oraz
+        \begin{equation*}
+            w_{g}^{r}([a, \bar{a}])(t)=w_{\tilde{g}}^{r}([a, \bar{a}])(t), \quad t \in[a, b]
+        \end{equation*}
+        Dlatego, dla $t \in[\bar{a}, b]$ mamy
+        \begin{equation}
+            g(t)-w_{g}^{r}([a, \bar{a}])(t)=g(t)-\tilde{g}(t)+\tilde{g}(t)-w_{\tilde{g}}^{r}([a, \bar{a}])(t)=s_{g}(t) \mathbf{1}_{\left[s_{g}, b\right]}(t)+R_{g}(t)
+        \end{equation}
+        gdzie $R_{g}(t)=\tilde{g}(t)-w_{\tilde{g}}^{r}([a, \bar{a}])(t) .$ The desired bound on $R_{g}$ follows from the regularity of $\tilde{g}$.    
     \end{proof}
+
+    Poniższy wniosek jest symetryczna wersją \eqref{lem:2}.
 
     \begin{cor}
         Istnieje stała $\bar{C}$ zależna od $r$ i $L_{r}$ taka, że dla wszystkich $[a,b]$, $\bar{a} \in (a,b)$, wszystkich $g \in \G$, mamy
         \begin{equation*}
-            \hat{t}_{g} \in (a,\bar{a}) \Longrightarrow g(t)-w_{g}^{r}([\bar{a},a])(t)=s_{g}(t) \1_{\left[a,\hat{t}_{g}\right]}(t)+R_{g}(t), \quad t \in[a,\bar{a}],
+            s_{g} \in (a,\bar{a}) \Longrightarrow g(t)-w_{g}^{r}([\bar{a},a])(t)=s_{g}(t) \1_{\left[a,s_{g}\right]}(t)+R_{g}(t), \quad t \in[a,\bar{a}],
         \end{equation*}
         gdzie $\| R_{g}(t) \| \leq \bar{C}\bar{h}^{r+\varrho}$, dla $t \in [a,\bar{a}]$
     \end{cor}
     \begin{proof}
-        $(\dots)$
+        Niech $\tilde{g} \in G_{reg}^{r, Q}([a, b])$ będzie dana jak w \eqref{eq:15}. Ponieważ $s_{g} \leq \bar{a}$, to zachodzi $\tilde{g}(t)=g(t)$ dla $t \in[\bar{a}, b]$ oraz
+        \begin{equation*}
+            w_{g}^{r}([\bar{\alpha}, \beta])(t)=w_{\tilde{g}}^{r}([\bar{\alpha}, \beta])(t), \quad t \in[\alpha, \beta]
+        \end{equation*}
+        Reszta dowodu analogicznie jak w \eqref{lem:2}
     \end{proof}
 
-    \begin{stw}
-        \label{2014_stw1}
+    Lematy \eqref{lem:1} i \eqref{lem:2} uasadniają definicję testu $A_{g}(a, \bar{a}, \bar{b}, b)$ w następujący sposób.
+
+    Niech $g \in G^{r, \varrho}([a,b]), a<\bar{a}<\bar{b}<b$ $\bar{h}=b-a$. Załóżmy, że $s_{g} \in(\bar{a}, \bar{b}]$. Z \eqref{lem:1} i \eqref{lem:2} otrzymujemy
+    \begin{equation*}
+        \begin{aligned}
+            &g(t)-w_{g}^{r}([\alpha, \bar{\alpha}])(t)=s_{g}(t) \mathbf{1}_{\left[s_{g}, \beta\right]}(t)+R_{g}(t), \quad t \in[\bar{\alpha}, \beta] \\
+            &g(t)-w_{g}^{r}([\bar{\beta}, \beta])(t)=-s_{g}(t) \mathbf{1}_{[\alpha, \hat{t g})}(t)+\bar{R}_{g}(t), \quad t \in[\alpha, \bar{\beta}]
+        \end{aligned}
+    \end{equation*}
+    Odejmując równania stronami dostajemy
+    \begin{equation} \label{eq:16}
+        w_{g}^{r}([\bar{b}, b])(t)-w_{g}^{r}([a, \bar{a}])(t)=s_{g}(t)+R_{g}(t)-\bar{R}_{g}(t) \quad \text{ dla }t \in[\bar{a}, \bar{b}]
+    \end{equation}
+    gdzie $\left\|R_{g}(t)\right\| \leq \operatorname{Ch}^{r+\varrho}$ oraz $\left\|\bar{R}_{g}(t)\right\| \leq \bar{C} \bar{h}^{r+\varrho}$ dla $t \in[\bar{a}, \bar{b}]$.
+
+    Z tego wynika, że gdy $s_{g} \in (a,b]$ wtedy możemy "recover" nieznany wielomian $s_{g}(t)$ na przedziale $[a,b]$ w graniach błędu $\mathcal{O}(\hat{h}^{r+\varrho})$ poprzez wyznaczenie wielomianów Lagrange'a $w_{g}^{r}([\hat{b}, b])$ i $w_{g}^{r}([a, \hat{a}])$.
+
+    Teraz pokażemy główne właściwości testu $A_{g}(a, \bar{a}, \bar{b}, b)$. Zaczniemy od nierówności dla przypadku regularnego.
+
+    \begin{stw} \label{2014_stw1}
         Istnieje stała $C^{*}$ zależna od $r$ i $L_{r}$ taka, że dla wszystkich $a < \bar{a} < \bar{b} < b$ i $[a,b]$ oraz wszystich $g \in \G$, mamy
         \begin{equation*}
-            \hat{t}_{g} \text{ z niezerowym wielomianem } s_{g} \text{ nie jest w } (a,b) \Longrightarrow A_{g}(a, \bar{a}, \bar{b}, b) \leq C^{*}
+            s_{g} \text{ z niezerowym wielomianem } s_{g} \text{ nie jest w } (a,b) \Longrightarrow A_{g}(a, \bar{a}, \bar{b}, b) \leq C^{*}
         \end{equation*}
     \end{stw}
     \begin{proof}
-        $(\dots)$
+        Skoro $s_{g} \notin (a, b)$, to funkcja $g$ jets regularna na $[a, b]$. Stąd dla $t \in[a,b]$ mamy
+        \begin{equation*}
+            \begin{aligned}
+                \left\|w_{g}^{r}([\bar{b}, b])(t)-w_{g}^{r}([a, \bar{a}])(t)\right\| & \leq\left\|w_{g}^{r}([\bar{b}, b])(t)-g(t)\right\|+\left\|g(t)-w_{g}^{r}([a, \bar{a}])(t)\right\| \\
+                & \leq C^{*} \bar{h}^{r+\varrho}
+            \end{aligned}
+        \end{equation*}
+    gdzie $C^{*}$ jest stałą.
     \end{proof}
 
     \begin{uw}
-        Stwierdzenie \ref{2014_stw1} pokazuje, że procedura LOCATE-APPROXIMATE wraz z zprocedurą BISECTION, sukcesywnie wybiera przedziały bazując a wartościach testu. Zauważmy, że jeżeli $\hat{t}_{g}$ jest unikalna, to wtedy dla jakiegokolwiek przedziału $[a,b]$, który nie został wybrany, mamy $A_{g}(a, \bar{a}, \bar{b}, b) \leq C^{*}$
+        Stwierdzenie \eqref{2014_stw1} pokazuje, że algorytm $\mathcal{A}^{KP}$, sukcesywnie wybiera przedziały bazując a wartościach testu. Zauważmy, że jeżeli $s_{g}$ jest unikalna, to wtedy dla jakiegokolwiek przedziału $[a,b]$, który nie został wybrany, mamy $A_{g}(a, \bar{a}, \bar{b}, b) \leq C^{*}$
     \end{uw}
 
-    \begin{stw}
-        \label{2014_stw2}
+    Następna właściwość pokazuje, że w pojedyńczym przypadku, górne ograniczenie na błąd interpolacji może być wyrażone za pomocą $A_{g}(a, \bar{a}, \bar{b}, b)$.
+
+    \begin{stw} \label{2014_stw2}
         Niech $D > 0$. Istnieją stałe $C$ i $\bar{N}$, zależne tylko od parametrów klast $\G$ i $D$, takie, że dla wszystkich $[a,b]$, $[\bar{a}, \bar{b}] \subset (a,b)$, $g \in \G$ oraz $s=0,1,\dots,r$, mamy
         \begin{equation*}
-            \hat{t}_{g} \in (\bar{a}, \bar{b}] \land b-a \leq D(\bar{b}-\bar{a}) \Longrightarrow \text{dla } [\gamma, \omega]=[a, b] \vee [\gamma, \omega]=[\bar{a}, \bar{b}] \text{ zachodzi }
+            s_{g} \in (\bar{a}, \bar{b}] \land b-a \leq D(\bar{b}-\bar{a}) \Longrightarrow \text{dla } [\gamma, \omega]=[a, b] \vee [\gamma, \omega]=[\bar{a}, \bar{b}] \text{ zachodzi }
         \end{equation*}
-        \begin{equation*}
+        \begin{equation} \label{eq:19}
             \sup _{t \in[\gamma, \omega]}\left\|g(t)-w_{g}^{s}([\gamma, \omega])(t)\right\| \leq C\left(1+A_{g}(a, \bar{a}, \bar{b}, b)\right) \bar{h}^{\min \{s+1, r+\varrho\}}
-        \end{equation*}
+        \end{equation}
         oraz ponadto
-        \begin{equation*}
+        \begin{equation*} \label{eq:20}
             \sup _{t \in[\gamma, \omega]}\left\|\left(w_{g}^{s}([\gamma, \omega])\right)^{(j)}(t)\right\| \leq \bar{N}\left(1+\bar{h}^{\min \{s+1-j, r+\rho-j\}}+\left(1+A_{g}(a, \bar{a}, \bar{b}, b)\right) \bar{h}^{r+\varphi-j}\right)
         \end{equation*}
         dla $j=0,1,\dots,s$.
     \end{stw}
     \begin{proof}
-        $(\dots)$
+        Załóżmy, że $[\gamma, \omega] = [\hat{a}, \hat{b}]$. Dowód jest analogiczny dla $[\gamma, \omega] = [a,b]$.
+        Z \eqref{eq:16} mamy
+        \begin{equation}
+            \left\|s_{g}\left(z_{j}\right)\right\| \leq\left(A_{g}(a, \bar{a}, \bar{b}, b)+C+\bar{C}\right) \bar{h}^{r+\varrho}            
+        \end{equation}
+        gdzie $z_{j}$ są z definicji $A_{g}(a, \bar{a}, \bar{b}, b)$, a $C, \bar{C}$ zależą wyłącznir od $r$ i $L_{r}$. Wielomian $s_{\mathrm{g}}$ możemy wyrazić jako
+        \begin{equation} \label{eq:17}
+            s_{g}(t)=\sum_{j=0}^{r} s_{g}\left(z_{j}\right) \bar{\Phi}_{j}(t), \quad \text { where } \bar{\Phi}_{j}(t)=\prod_{k=0, k \neq j}^{r} \frac{t-z_{k}}{z_{j}-z_{k}}, t \in \R
+        \end{equation}
+        Ponieważ $b-a \leq D(\bar{b}-\bar{a})$, to istnieje stała $\bar{K}$ zależna tylko od $r$ i $D$ taka, że
+        \begin{equation} \label{eq:18}
+            \sum_{j=0}^{r}\left|\bar{\Phi}_{j}(t)\right| \leq \bar{K}, \quad t \in[a, b]            
+        \end{equation}
+        stąd,
+        \begin{equation} \label{eq:22}
+            \left\|s_{g}(t)\right\|=\mathcal{O}\left(\left(1+A_{g}(a, \bar{a}, \bar{b}, b)\right) \bar{h}^{r+\varrho}\right), \quad t \in[a, b]            
+        \end{equation}
+        Widzimy, że \eqref{eq:19} wynika z \eqref{lem:1} dla $[a,b]=[\hat{a},\hat{b}]$. Pokażemy teraz \eqref{eq:20}.
+
+        Dla $g \in G^{r, \varrho}([a, b])$ rozważmy odwzrowanie $\tilde{g}$ zdefiniowane jak w \eqref{eq:15}, która jest regularną funkcją z $G_{reg}^{r, \varrho}([a, b])$ (z możliwie innymi globalnymi stałymi w porównaniu do $G^{r, \varrho}([a, b])$). Poprzez wielokrotne zastosowanie zastosowanie twierdzenia Rolle'a, w przypadku regularnym otrzymujemy
+        \begin{equation} \label{eq:21}
+            \left\|\tilde{g}^{(j)}(t)-\left(w_{\tilde{g}}^{S}([\bar{a}, \bar{b}])\right)^{(j)}(t)\right\| \leq M \bar{h}^{\min \{s+1-j, r+\varrho-j\}}, \quad t \in[a, b], j=0,1, \ldots, s
+        \end{equation}
+        gdzie $M$ zależy tylko od globalnycg parametrów $G_{reg}^{r, \varrho}([a, b])$. Co więcej, używając form Lagrange'a $w_{g}^{s}([\bar{a}, \bar{b}])$ i $w_{\tilde{g}}^{s}([\bar{a}, \bar{b}])$ na przdziale $[\bar{a}, \bar{b}]$, otrzymujemy dla wszystich $j=0,1, \ldots, s$ i $t \in[a, b]$, że
+        \begin{equation*}
+            \begin{aligned}
+                &\left\|\left(w_{g}^{s}([\bar{a}, \bar{b}])\right)^{(j)}(t)-\left(w_{\tilde{\mathrm{g}}}^{s}([\bar{a}, \bar{b}])\right)^{(j)}(t)\right\| \leq \sup _{t \in[\bar{a}, \bar{b}]}\left\|s_{g}(t)\right\| \sum_{k=0}^{s}\left|\Phi_{k}^{(j)}(t)\right| \\
+                &\quad \leq \sup _{t \in[a, b]}\left\|s_{g}(t)\right\| \sum_{k=0}^{s}\left|\Phi_{k}^{(j)}(t)\right|
+                \end{aligned}
+        \end{equation*}
+        Granice $\sup _{t \in[a, b]}\left\|s_{g}(t)\right\|$ są dane w \eqref{eq:21}. 
+        Dodatowo, ponieważ $\sum_{k=0}^{s}\left|\Phi_{k}^{(j)}(t)\right|=O\left(\bar{h}^{-j}\right)$ dla $t \in[a, b]$, to
+        \begin{equation} \label{eq:23}
+            \left\|\left(w_{g}^{s}([\bar{a}, \bar{b}])\right)^{(j)}(t)-\left(w_{\tilde{g}}^{S}([\bar{a}, \bar{b}])\right)^{(j)}(t)\right\| \leq K\left(1+A_{g}(a, \bar{a}, \bar{b}, b)\right) \bar{h}^{r+\varrho-j}, \quad t \in[a, b]            
+        \end{equation}
+        gdzie $K$ zależy tylko od parametrów klasy i $D$. Z tego, że $\tilde{g}^{(j)}$ jest ograniczone oraz z \eqref{eq:22} i \eqref{eq:23} wynika nierówność \eqref{eq:20}
+    \end{proof}
+
+    \begin{lemma} \label{lem:3}
+        Istnieje stała $C$ taka, że dla wszysktich $[a, b] \subset[a, b], 0 \leq \delta \leq \min \{1, \bar{h}\}$ i $g \in$ $G^{r, \varrho}([a, b])$ z $\Delta_{g}^{0}=0$ dla $j=0,1, \ldots, s$ i $s=0,1, \ldots, r:$ zachodzi
+        \begin{equation*}
+            s_{g} \in(a, a+\delta] \cup[b-\delta, b) \longrightarrow \sup _{t \in[a, b]}\left\|\left(w_{g}^{s}([a, b])\right)^{(j)}(t)\right\| \leq C\left(1+\delta \cdot \bar{h}^{-j}\right)
+        \end{equation*}
+    \end{lemma}
+    \begin{proof}
+        Załóżmy, że $s_{g} \in (a, a+\delta]$. Weżmy $\tilde{g}$ zdefiniowaną jak w \eqref{eq:15}. Wtedy dla $t \in[a, b]$ zachodzi
+        \begin{equation} \label{eq:24}
+            \left\|\left(w_{\tilde{g}}^{s}([a, b])\right)^{(j)}(t)-\left(w_{g}^{s}([a, b])\right)^{(j)}(t)\right\| \leq \max _{0 \leq k \leq j^{*}-1}\left\|s_{g}\left(t_{k}\right)\right\| \sum_{k=0}^{j^{*}-1}\left|\Phi_{k}^{(j)}(t)\right| \leq \bar{C} \delta \bar{h}^{-j}
+        \end{equation}
+        gdzie $j^{*}$ jest zdefiniowana jak w \eqref{eq:9} i $\bar{C}$  zależy tylko od parametrów klasy $G^{r, \varrho}([a, b])$. Teza wynika z \eqref{eq:22} i \eqref{eq:23}. Jeżeli $s_{g} \in[d-\delta, d)$, wtedy bierzemy $\tilde{g}$ zdefiniowaną w \eqref{eq:15} i postępujemy analogicznie.
+    \end{proof}
+
+    Za pomocą wprowadzonych lematów możemy teraz udowodnić ograniczenie górne dla $\mathcal{A}^{KP}$.
+
+    \begin{proof}[\textbf{Dowód twierdzenia \eqref{2014_tw1}}]
+        Niech $g \in G^{r, \varrho}([a,b])$ i $\Delta_{g}^{0} = 0$. W kroku 3. algorytmu $\mathcal{A}^{KP}$, aprokysmacja $q(t)$ jest zdefiniowana jako funkcja kawałkami regularna na siatce $c_{0} < c_{1} < \ldots < c_{k}$ (włączamy brzegowe przedziały). W każdym podprzedziale, gdzie $q(t)$ jets zdefiniowana jako funkcja stała mamy, że $\|g(t) - q(t)\| = \mathcal{O}(h^{r+\varrho})$. Wynika to z Lipschitzowskiej ciągłości $g$ na $[c_{i}, c_{i+1})$ oraz faktu, że długośc takiego przedziału jest $\mathcal{O}(h^{r+\varrho})$.
+        W takim razie wystarczy rozważyć przedziały $[c_{i} + h^{r+\varrho}, c_{i+1} - h^{r+\varrho})$, gdy $c_{i+1}-c_{i} > 4h^{r+\varrho}$. Na takim przedziale aproksymajca ma postać:
+        \begin{equation*}
+            q(t)=w_{g}^{r}\left(\left[c_{i}+h^{r+\varrho}, c_{i+1}-h^{r+\varrho}\right]\right)(t)            
+        \end{equation*}
+        Jeżeli $s_{g} \in\left(c_{i}+h^{r+\varrho}, c_{i+1}-h^{r+\varrho}\right]$ wtedy z właściwości [ref] mamy dla $t \in\left[c_{i}+h^{r+\varrho}, c_{i+1}-h^{r+\varrho}\right)$, że
+        \begin{equation*}
+            \begin{aligned}
+                &\left\|g(t)-w_{g}^{r}\left(\left[c_{i}+h^{r+\varrho}, c_{i+1}-h^{r+\varrho}\right]\right)(t)\right\| \\
+                &\quad=0\left(\left(1+A_{g}\left(c_{i}, c_{i}+h^{r+\varrho}, c_{i+1}-h^{r+\varrho}, c_{i+1}\right)\right)\left(c_{i+1}-c_{i}\right)^{r+\varrho}\right)
+            \end{aligned}                            
+        \end{equation*}
+        Natomiast z definicji algorytmu $\mathcal{A}^{KP}$ oraz z uwagi [ref] wynika
+        \begin{equation*}
+            A_{g}\left(c_{i}, c_{i}+h^{r+\varrho}, c_{i+1}-h^{r+\varrho}, c_{i+1}\right) \leq C^{*}
+        \end{equation*}
+        gdzie $C^{*}$ jest dane jak w właściwości [ref]. Dodatkowo, z uwagi [ref] oraz jednoznaczności $s_{g}$ z niezerowym skokiem w pochdnych, jęsli takie istnieje, wiemy, że to zachodzi dla każdego podprzedziału $[c_{i}, c_{i+1}]$ o długości $c_{i+1} - c_{1} > 4h^{r+\varrho}$, który wyprowadzamy z własności [ref].
+        Stąd
+        \begin{equation*}
+            \left\|g(t)-w_{g}^{r}\left(\left[c_{i}+h^{r+\varrho}, c_{i+1}-h^{r+\varrho}\right]\right)(t)\right\|=O\left(h^{r+\varrho}\right), \quad t \in\left[c_{i}+h^{r+\varrho}, c_{i+1}-h^{r+\varrho}\right)
+        \end{equation*}
+        To dowodzi ograniczeni na błąd przedstawione w twierdzeniu. Zauważmy, że liczba ewaluacji funkcji $g$ jest proporcjonalna do liczby przedziałów końcowej siatki, a konkretnej jest $\mathcal{O}(p + \log m)$
+
     \end{proof}
 
     \begin{uw}
-        Stwierdzenie \ref{2014_stw2} pokazuje, że w przypadku z osobliwością, ograniczenie górne na błąd interpolacji możemy wyrazić za pomocą $A_{g}(a, \bar{a}, \bar{b}, b)$
-    \end{uw}
-
-    Poniższy lemat dotyczy przypadku, gdy osobliwość znajduje się na brzegu przdziału $[a,b]$\\
-    \textit{(lemat... dowod...)}
-
-    \textit{(Dowód tw1 z 2014)}
-
-    \begin{uw}
-        Twierdzenie \ref{2014_tw1} zachodzi również dla funkcji $g$, która ma skok w punkcie $c_{i}$ początkowego podziału $M$ oraz ma niezerowy wielomian $s_{g}$ dla co najwyżej jednego nieznanego punktu $t_{g}$, $t_{g} \neq c_{i} \; \forall_{i}$.
+        Twierdzenie \eqref{2014_tw1} zachodzi również dla funkcji $g$, która ma skok w punkcie $c_{i}$ początkowego podziału $M$ oraz ma niezerowy wielomian $s_{g}$ dla co najwyżej jednego nieznanego punktu $t_{g}$, $t_{g} \neq c_{i} \; \forall_{i}$.
     \end{uw}
 
     Dodatkowo, obliczenie $q$ wymaga $O(p+\log m)$ ewaluacji fun $g$, gdzie $p$ jest liczbą przedziałów w początkowym podziale $M$ przedziału $[a,b]$. Czyli, aby otrzymać optymalną aproksymację $g \in \G$ na przedziale $[a,b]$, wystarcza wiąźć podział $M$ z $m+1$ równoodległymi punktami $x_{i} = a+(b-a)i/m$, dla $i=0,1,\dots,m$. wtedy obliczenie $q$ wymaga $O(m)$ ewaluacji funkcji $g$.
@@ -593,12 +797,12 @@
 
     Niech $m \geq 2r + 1$, $h + \frac{T}{m}$ oraz $t_{i} = ih$ dla każdego $i$. Przez $d_{i}$ oznaczmy różnicę dzieloną stopnia $r+1$ bazującą na wartościach $f(t_{i})$:
     \begin{equation*}
-        d_{i} = f[t_{i}, \dots, t_{i+r+1}] = \sum_{j = 1}^{i+r+1} \gamma_{j} \prod_{k=1 \land k \neq j}^{i+r+1}(t_{k}-t_{j})^{-1}
+        d_{i} = f[t_{i}, \dots, t_{i+r+1}] = \sum_{j = 1}^{i+r+1} f(t_{j}) \prod_{k=1 \land k \neq j}^{i+r+1}(t_{k}-t_{j})^{-1}
     \end{equation*}
 
-    Następnie oznaczmy przez $\tilde{d_i}$ (niedokładną) różnicę dzieloną stopnia $r+1$ bazującą na wartościach $y_{j} = F(t_{j}) + e_{j}$, gdzie $|e_{j}| \leq \delta$
+    Następnie oznaczmy przez $\tilde{d_i}$ (niedokładną) różnicę dzieloną stopnia $r+1$ bazującą na wartościach $y_{j} = f(t_{j}) + e_{j}$, gdzie $|e_{j}| \leq \delta$
     \begin{equation*}
-        \tilde{d_{i}} = \tilde{f}[t_{i}, \dots, t_{i+r+1}] = \sum_{j = 1}^{i+r+1} \gamma_{j} \prod_{\substack{k=1 \\ k \neq j}}^{i+r+1}(t_{k}-t_{j})^{-1}
+        \tilde{d_{i}} = \tilde{f}[t_{i}, \dots, t_{i+r+1}] = \sum_{j = 1}^{i+r+1} y_{j} \prod_{\substack{k=1 \\ k \neq j}}^{i+r+1}(t_{k}-t_{j})^{-1}
     \end{equation*}
 
     \begin{lemma} \label{lem:algMP_1}
@@ -625,10 +829,10 @@
             & \leq \delta h^{-(r+1)} \sum_{i=0}^{r+1} \prod_{\ell=0 \atop \ell \neq i}^{r+1}|\ell-j|^{-1}=\delta \frac{2^{r+1}}{(r+1) !} h^{-(r+1)}
             \end{aligned}
         \end{equation}
-        co dowodzi lemta.
+        co dowodzi lemat.
     \end{proof}
 
-    Teraz oszacujemy błąd interpolacji i ekstrapolacji w obecności zaburzenia wartości funkcji. Niech $p_{i}$ i $\tilde{p_{i}}$ odpowiadają wielomianom stopnia co najwyżej $r$ interpolujących $f$ opartych na dokładnych i niedokładnych wartościach funkcji $f$ w punktach $t_{i}, t_{i+1}, \dots, t_{i+r}$. Dla $r \geq 1$, wprowadźmy oznaczenia:
+    Teraz oszacujemy błąd interpolacji i ekstrapolacji w obecności zaburzenia wartości funkcji. Niech $p_{i}$ i $\tilde{p_{i}}$ odpowiadają wielomianom stopnia co najwyżej $r$ interpolujących $f$ opartych na dokładnych i niedokładnych wartościach funkcji $f$ w punktach $t_{i}, t_{i+1}, \dots, t_{i+r}$. Dla $r \geq 1$, wprowadźmy oznaczenia: 
     \begin{equation*}
         \beta_{r} = \max_{0 \leq t \leq r} \left|\prod_{k=0}^{r} (t-k)\right|, \quad
         \Lambda_{r} = \max_{0 \leq t \leq r} \sum_{k=0}^{r} \prod_{\substack{l=0 \\ l \neq k}}^{r} \left| \frac{t-l}{k-l} \right| \quad
@@ -643,7 +847,7 @@
         \end{equation*}
         $dla \; x \in [t_{i-1}, t_{i - \frac{1}{2}}) \cup (t_{i + \frac{1}{2}}, t_{i+1}]  :$
         \begin{equation*}
-            |f(x) - \tilde{p}_{i}(x)| \leq \overline{C} _{0, \varrho}(f) h^{\varrho}  + \delta, \quad \overline{C} _{0, \varrho}(f) = c(g_{f}) \\
+            |f(x) - \tilde{p}_{i}(x)| \leq \ {C} _{0, \varrho}(f) h^{\varrho}  + \delta, \quad \overline{C} _{0, \varrho}(f) = c(g_{f}) \\
         \end{equation*}
         Niech $f \in H_{r, \varrho}$ i $r \geq 1$, wtedy: \\
         $dla \; x \in [t_{i}, t_{i + r}] : $
@@ -718,7 +922,7 @@
         \begin{equation*}
             \left|f(x)-p_{j}(x)\right| \leq c\left(g_{f}\right) \beta_{r} h^{r+1} \frac{1}{r !} \frac{\left(t_{j+r}-t_{j-1}\right)^{\varrho}}{t_{j+r}-t_{j}}=C_{r, \varrho}(f)\left(1+\frac{1}{r}\right)^{\varrho} h^{r+\varrho}
         \end{equation*}
-        Tak jak w równaniu \ref{eq:1}, mamy
+        Tak jak w równaniu \eqref{eq:1}, mamy
         \begin{equation*}
             \left|p_{j}(x)-\tilde{p}_{j}(x)\right| \leq \delta \Lambda_{r}            
         \end{equation*}
@@ -730,12 +934,12 @@
         \begin{equation} \label{eq:4}
             \left|\left(\tilde{f}-\tilde{p}_{i}\right)\left[t_{i}, \ldots, t_{i+r}, t_{k}\right]\right|=\left|\tilde{f}\left[t_{i}, \ldots, t_{i+r}, t_{k}\right]\right| \leq \max _{i \leq \ell \leq k-r-1}\left|\tilde{d}_{\ell}\right| \leq B h^{Q-1}            
         \end{equation}
-        gdzie pierwsza nie równość wynika z \cite{UA}(Lemat 1), natomiast druga z \ref{eq:2}. Biorąc \ref{eq:3} oraz \ref{eq:4}, otrzymujemy:
+        gdzie pierwsza nie równość wynika z \cite{UA}(Lemat 1), natomiast druga z \eqref{eq:2}. Biorąc \eqref{eq:3} oraz \eqref{eq:4}, otrzymujemy:
         \begin{equation} \label{eq:5}
             \left|y_{k}-\tilde{p}_{i}\left(t_{k}\right)\right| \leq \frac{(2 r) !}{(r-1) !} B h^{r+\varrho}
         \end{equation}
 
-        Także ostatni człon nierówności \ref{eq:6} możemy oszacować następująco
+        Także ostatni człon nierówności \eqref{eq:6} możemy oszacować następująco
 
         \begin{equation*}
             \begin{aligned}
@@ -743,7 +947,7 @@
                 & \leq\left(\max _{j \leq k \leq j+r}\left|y_{k}-\tilde{p}_{i}\left(t_{k}\right)\right|\right)\left(\max _{0 \leq t \leq r+1} \sum_{k=0}^{r} \prod_{\ell=0 \atop \ell \neq k}^{r}\left|\frac{t-\ell}{k-\ell}\right|\right)
             \end{aligned}                
         \end{equation*}
-        Pierwsze maksimum z powyższego równania jest oszacowane poprzez \ref{eq:5}. Natomiast drugie maksimum jest osiągane dla $t=r+1$ i jest równe
+        Pierwsze maksimum z powyższego równania jest oszacowane poprzez \eqref{eq:5}. Natomiast drugie maksimum jest osiągane dla $t=r+1$ i jest równe
         \begin{equation*}
             \sum_{k=0}^{r} \prod_{\ell=0 \atop \ell \neq k}^{r}\left|\frac{r+1-\ell}{k-\ell}\right|=\sum_{k=0}^{r}\left(\begin{array}{c} r+1 \\ k\end{array}\right)=2^{r+1}-1
         \end{equation*}
@@ -765,20 +969,20 @@
     Uzasadnienie tego wyjaśnimy poźniej [ref].
 
     \textit{Przypadek I}: $s_{f} \notin (u_{1}, v_{1}]$.
-    Przy takich założeniach, z lematu \ref{lem:algMP_1} oraz z \ref{eq:algMP_7} mamy, że
+    Przy takich założeniach, z lematu \eqref{lem:algMP_1} oraz z \eqref{eq:algMP_7} mamy, że
     \begin{equation*}
         |\tilde{d}_{i}| \leq B_{r}(b, f) h^{e-1} \quad \text{z} B_{r}(b, f)=\frac{c\left(g_{f}\right)(r+1)^{\varrho}+b 2^{r+1}}{(r+1) !}
     \end{equation*}
 
-    Przypuśćmy, że $\varphi_{h}^{*}(y)(x) = \tilde{p}_{i}(x)$ dla pewnego $i$. Jeżeli $x \notin [u_{1}, v_{1})$ (albo $x \notin [t_{i-1/2}, t_{i+1/2})$ dla $r=0$) oraz $[t_{i}, t_{i+r}] \cap (u_{1}, v_{1}) = \emptyset$. Wtedy z lematu \ref{lem:algMP_2} i \ref{lem:algMP_3} wiemy, że błąd aproksymacji w punkcie $x$ jest ograniczony z góry przez $C_{r,\varrho}(f)h^{r+\varrho} + \delta \Lambda_{r}$ dla pewnego $s_{d} \notin (t_{i}, t_{i+r}]$ (albo $s_{f} \notin [x_{i-1/2}, x_{i+1/2})$ dla $r=0$) lub przez $E_{r}(f)h^{r+\varrho} + \delta \Lambda_{r}$ w przeciwnym przypadku, gdzie $E_{r}(f) = D_{r}(B_{r}(b, f), f)$.
-    Z drugiej strony, jeżeli $x \in [u_{1}, v_{1})$, wtedy znów z \ref{lem:algMP_3} wiem, że błąd jest ograniczony przez $\bar{C}_{r, \varrho} h^{r+\varrho}+\delta \bar{\Lambda}_{r}$ dla $s_{f} \notin \left(t_{i}, t_{i+r}\right]\left(\right.$ albo $s_{f} \notin\left(t_{i-1 / 2}, t_{i+1 / 2}\right]$ dla $\left.r=0\right)$, lub przez $E_{r}(f) h^{r+\varrho}+\delta \Lambda_{r}$ w przeciwnym przypadku.
+    Przypuśćmy, że $\varphi_{h}^{*}(y)(x) = \tilde{p}_{i}(x)$ dla pewnego $i$. Jeżeli $x \notin [u_{1}, v_{1})$ (albo $x \notin [t_{i-1/2}, t_{i+1/2})$ dla $r=0$) oraz $[t_{i}, t_{i+r}] \cap (u_{1}, v_{1}) = \emptyset$. Wtedy z lematu \eqref{lem:algMP_2} i \eqref{lem:algMP_3} wiemy, że błąd aproksymacji w punkcie $x$ jest ograniczony z góry przez $C_{r,\varrho}(f)h^{r+\varrho} + \delta \Lambda_{r}$ dla pewnego $s_{d} \notin (t_{i}, t_{i+r}]$ (albo $s_{f} \notin [x_{i-1/2}, x_{i+1/2})$ dla $r=0$) lub przez $E_{r}(f)h^{r+\varrho} + \delta \Lambda_{r}$ w przeciwnym przypadku, gdzie $E_{r}(f) = D_{r}(B_{r}(b, f), f)$.
+    Z drugiej strony, jeżeli $x \in [u_{1}, v_{1})$, wtedy znów z \eqref{lem:algMP_3} wiem, że błąd jest ograniczony przez $\bar{C}_{r, \varrho} h^{r+\varrho}+\delta \bar{\Lambda}_{r}$ dla $s_{f} \notin \left(t_{i}, t_{i+r}\right]\left(\right.$ albo $s_{f} \notin\left(t_{i-1 / 2}, t_{i+1 / 2}\right]$ dla $\left.r=0\right)$, lub przez $E_{r}(f) h^{r+\varrho}+\delta \Lambda_{r}$ w przeciwnym przypadku.
 
     \textit{Przypadek II}: $s_{f} \in (u_{1}, v_{1}]$.
     Bez straty ogólności załóżmy, że
     \begin{equation*}
         u_{1} < s_{f} \leq \xi \leq v_{1}
     \end{equation*}
-    Z \ref{lem:algMP_2} dla $x \notin [u_{1}, v_{1})$ wiem, że error jest ograniczony z góry przez $C_{r, \varrho}(f) h^{r+\varrho}+\delta \Lambda_{r}$ a dla $x \in [u_{1}, s_{f}) \cap [\xi, v_{1})$ przez $\bar{C}_{r, \varrho} h^{r+\varrho}+\delta \bar{\Lambda}_{r}$. Z tego powodu możemy założyć, że $x \in [s_{f}, \xi)$, co jest najbardziej interesujący przypadek. Mamy trzy możliwości:
+    Z \eqref{lem:algMP_2} dla $x \notin [u_{1}, v_{1})$ wiem, że error jest ograniczony z góry przez $C_{r, \varrho}(f) h^{r+\varrho}+\delta \Lambda_{r}$ a dla $x \in [u_{1}, s_{f}) \cap [\xi, v_{1})$ przez $\bar{C}_{r, \varrho} h^{r+\varrho}+\delta \bar{\Lambda}_{r}$. Z tego powodu możemy założyć, że $x \in [s_{f}, \xi)$, co jest najbardziej interesujący przypadek. Mamy trzy możliwości:
 
     \textit{Przypadek IIa}: $s_{f} \in (u_{1}, v_{1}] \backslash (u_{2}, v_{2}]$.
     Z przyjętych założeń wynika, że w kroku 2. algorytmu, w pewnej iteracji musi zachodzić
@@ -811,7 +1015,7 @@
     \begin{equation*}
         \left|\tilde{p}_{+}(x)-\tilde{p}_{-}(x)\right| \leq \max \left(\left|\tilde{p}_{+}(z)-\tilde{p}_{-}(z)\right|,\left|\tilde{p}_{+}\left(s_{f}\right)-\tilde{p}_{-}\left(s_{f}\right)\right|\right)        
     \end{equation*}
-    a ponieważ  wprzeciwnym przypadku $z$ nie byłoby największym lokalnym maksimum wyrażenia $\left|\tilde{p}_{+}-\tilde{p}_{-}\right|$ na przedziale interval $(u, v)$. Następnie otrzymujemy
+    a ponieważ  w przeciwnym przypadku $z$ nie byłoby największym lokalnym maksimum wyrażenia $\left|\tilde{p}_{+}-\tilde{p}_{-}\right|$ na przedziale interval $(u, v)$. Następnie otrzymujemy
     \begin{equation*}
         \begin{aligned}
             \left|\tilde{p}_{+}\left(s_{f}\right)-\tilde{p}_{-}\left(s_{f}\right)\right| & \leq\left|f\left(s_{f}^{+}\right)-\tilde{p}_{+}\left(s_{f}\right)\right|+\left|f\left(s_{f}^{-}\right)-\tilde{p}_{-}\left(s_{f}\right)\right|+\left|f\left(s_{f}^{+}\right)-f\left(s_{f}^{-}\right)\right| \\
@@ -822,7 +1026,7 @@
     \begin{equation*}
         \left|\tilde{p}_{+}(z)-\tilde{p}_{-}(z)\right| \leq 2\left|\tilde{f}(z)-\tilde{p}_{+}(z)\right| \leq 2\left(\bar{C}_{r, \varrho}(f) h^{r+\varrho}+\delta \bar{\Lambda}_{r}\right)
     \end{equation*}
-    Końcowo otrzymujemy
+    Ostatecznie otrzymujemy
     \begin{equation*}
         \begin{aligned}
             \left|f(x)-\varphi_{h}^{*}(\mathbf{y})(x)\right| &=\left|f(x)-\tilde{p}_{-}(x)\right| \leq\left|f(x)-\tilde{p}_{+}(x)\right|+\left|\tilde{p}_{+}(x)-\tilde{p}_{-}(x)\right| \\
@@ -857,22 +1061,22 @@
         \label{stw2}
         Niech $1 \leq p \leq \infty$. Jeżeli $\delta \leq bh^{r+\varrho}$ oraz $\omega(h) = h^{(r+\varrho)p + 1}$, wtedy
         \begin{equation*}
-            e_{\mathrm{p}}^{wor}\left(\varphi_{h}^{*}, N_{h}^{*} ; \mathcal{F}_{r, \varrho}^{D}\right)=\mathcal{O}\left(n^{-(r+\varrho)}\right)
+            e_{\mathrm{p}}^{\wor}\left(\varphi_{h}^{*}, N_{h}^{*} ; \mathcal{F}_{r, \varrho}^{D}\right)=\mathcal{O}\left(n^{-(r+\varrho)}\right)
         \end{equation*}
     \end{stw}
 
-    Przypomnijmy, że powyższe ograniczenia górne nie może zostać spełnione przez algorytmy nieadaptacyjne, co zostało pokazane w \cite{PoA}. Pokazano tam również, że dla $p=\infty$ nie istnieje algorytm z błędem zbiegającym do zera, dlatego założenia $p < \infty$ jest niezbędne. Dodatkowo, gdy rozważymy klasę $\mathcal{F}_{r, \varrho}^{C} \subset \mathcal{F}_{r, \varrho}^{D}$, to możemy uprościć algorytm biorąc $\omega(h) = (r+1)h$ i unikając iteracji w kroku 2. Otrzymujemy w ten sposób algorytm, który dla $r=0,1$ jest nieadaptacyjny, a dla $r \geq 2$ używa co najwyżej $r-1$ dodatkowych punktów, niezależnie od tego jak małe jest $h$. Co więcej, organiczenie górne zachodzi dla $p = \infty$
+    Przypomnijmy, że powyższe ograniczenia górne nie może zostać spełnione przez algorytmy nieadaptacyjne, co zostało pokazane w \cite{PoA}. Pokazano tam również, że dla $p=\infty$ nie istnieje algorytm z błędem zbiegającym do zera, dlatego założenia $p < \infty$ jest niezbędne. Dodatkowo, gdy rozważymy klasę $\mathcal{F}_{r, \varrho}^{C} \subset \mathcal{F}_{r, \varrho}^{D}$, to możemy uprościć algorytm biorąc $\omega(h) = (r+1)h$ i unikając iteracji w kroku 2. Otrzymujemy w ten sposób algorytm, który dla $r=0,1$ jest nieadaptacyjny, a dla $r \geq 2$ używa co najwyżej $r-1$ dodatkowych punktów, niezależnie od tego jak małe jest $h$. Co więcej, organiczenie górne zachodzi dla $p = \infty$.
     Stosując powyższą modyfikację możemy sformułować następujące stwierdzenie.
 
     \begin{stw}
         \label{stw3}
         Jeżeli $\delta \leq bh^{r+\varrho}$ i $\omega(h) = (r+1)h$, wtedy:
         \begin{equation}
-            \mathrm{e}_{\infty}^{\mathrm{wor}}\left(\varphi_{h}^{*}, N_{h}^{*} ; \mathcal{F}_{r, \varrho}^{C}\right)=\mathcal{O}\left(n^{-(r+\varrho)}\right) .
+            \mathrm{e}_{\infty}^{\mathrm{\wor}}\left(\varphi_{h}^{*}, N_{h}^{*} ; \mathcal{F}_{r, \varrho}^{C}\right)=\mathcal{O}\left(n^{-(r+\varrho)}\right) .
         \end{equation}
     \end{stw}
 
-    Ponownie, dla $r \geq 2$ użycie informacji adaptacyjnej jest konieczne. Łącząc wyniki \ref{stw2}, \ref{stw3} i \ref{stw1}\ref{stw1_i} otrzymujemy \ref{AoP_tw1}.
+    Ponownie, dla $r \geq 2$ użycie informacji adaptacyjnej jest konieczne. Łącząc wyniki \eqref{stw2}, \eqref{stw3} i \eqref{stw1}\eqref{stw1_i} otrzymujemy \eqref{AoP_tw1}.
     Faktycznie, dla ustalonego $\delta$ i $n$ możemy wybrać $h = \frac{T}{m}$ takie, że
     \begin{equation}
         m = m(n, \delta)=\left\lfloor\min \left(\beta n, \frac{1}{T}\left(\frac{b}{\delta}\right)^{\frac{1}{r+\varrho}}\right)\right\rfloor=\varTheta\left(\min \left(n, \delta^{-1 /(r+\varrho)}\right)\right),
