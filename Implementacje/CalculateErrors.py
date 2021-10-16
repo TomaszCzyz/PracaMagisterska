@@ -6,7 +6,7 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
 
-from Examples import Example2
+from Examples import Example2, Example1
 from Utilis import worst_case_error_n
 from alg2014.Alg2014_implementation import Alg2014
 from alg2015.Alg2015_implementation import Alg2015
@@ -95,12 +95,14 @@ def calculate(n_times, array, deltas, algorithm_name, example_function):
     my_callback = MyCallback(len(array) * len(deltas), extra_data)
 
     for elem in reversed(array):
+
         for delta in deltas:
             print("running algorithm({} times) for m={}, noise={}".format(n_times, elem, delta))
+            example_function.f__noise = delta
             if algorithm_name == 'alg2015':
-                alg = Alg2015(func=example_function, n_knots=elem, noise=delta)
+                alg = Alg2015(func=example_function, n_knots=elem)
             elif algorithm_name == 'alg2014':
-                alg = Alg2014(func=example_function, n_knots=elem, noise=delta)
+                alg = Alg2014(func=example_function, n_knots=elem)
             else:
                 raise Exception("incorrect algorithm name")
 
@@ -113,8 +115,15 @@ def calculate(n_times, array, deltas, algorithm_name, example_function):
     return my_callback
 
 
-def calculate_async(n_times, array, deltas, algorithm_name, example_function):
-    extra_data = algorithm_name, n_times, example_function
+def calculate_async(n_times, array, deltas, algorithm_name, example_fun_name):
+    if example_fun_name == 'example1':
+        temp_example_function = Example1()
+    elif example_fun_name == 'example2':
+        temp_example_function = Example2()
+    else:
+        raise Exception("incorrect algorithm name")
+
+    extra_data = algorithm_name, n_times, temp_example_function
     my_callback = MyCallback(len(array) * len(deltas), extra_data)
 
     with mp.Pool(processes=mp.cpu_count() - 2) as pool:
@@ -124,10 +133,18 @@ def calculate_async(n_times, array, deltas, algorithm_name, example_function):
 
             for delta in deltas:
                 print("starting processing algorithm({} times) for m={} and delta={}...".format(n_times, elem, delta))
+
+                if example_fun_name == 'example1':
+                    example_function = Example1(delta)
+                elif example_fun_name == 'example2':
+                    example_function = Example2(delta)
+                else:
+                    raise Exception("incorrect algorithm name")
+
                 if algorithm_name == 'alg2015':
-                    alg = Alg2015(func=example_function, n_knots=elem, noise=delta)
+                    alg = Alg2015(func=example_function, n_knots=elem)
                 elif algorithm_name == 'alg2014':
-                    alg = Alg2014(func=example_function, n_knots=elem, noise=delta)
+                    alg = Alg2014(func=example_function, n_knots=elem)
                 else:
                     raise Exception("incorrect algorithm name")
 
@@ -148,24 +165,24 @@ def calculate_async(n_times, array, deltas, algorithm_name, example_function):
 def main():
     example_fun = Example2()
     example_fun.plot()
-    example_fun.f__r = 4
 
     # be careful with parameters bellow, e.g. too small m can break an algorithm
     log10_m_array = np.linspace(1.8, 4.0, num=15)  # 10 ** 4.7 =~ 50118
 
-    n_runs = 1
+    n_runs = 100
     m_array = list(np.array(np.power(10, log10_m_array), dtype='int'))
     noises = [None, 1e-5, 1e-4, 1e-3]
     # [None, 10e-12, 10e-8, 10e-4] <- cannot take such small noise;
     # because of precision there is almost no difference in errors in such plot scale
 
-    results = calculate(n_runs, m_array, noises, 'alg2014', example_fun)
-    # results = calculate_async(n_runs, m_array, noises, 'alg2014', example_fun)
+    # results = calculate(n_runs, m_array, noises, 'alg2014', example_fun)
+    results = calculate_async(n_runs, m_array, noises, 'alg2014', 'example2')
 
     # results = calculate(n_runs, m_array, noises, 'alg2015', example_fun)
     # results = calculate_async(n_runs, m_array, noises, 'alg2015', example_fun)
 
-    # alg = Alg2015(func=example_fun, n_knots=100, noise=None)
+    # example_fun.f__noise = 1e-5
+    # alg = Alg2014(func=example_fun, n_knots=100)
     # worst_case_error_n(
     #     alg=alg,
     #     num=3

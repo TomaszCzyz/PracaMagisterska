@@ -1,23 +1,10 @@
-# from abc import ABCMeta, abstractmethod, abstractproperty
 from scipy import integrate
 import numpy as np
 import warnings
 import copy
 
 
-# class ApproxAlg(ABCMeta):
-#     def __init__(self):
-#         super().__init__()
-#         self.f__a = None
-#
-#     @abstractmethod
-#     def run(self):
-#         pass
-
-
 def worst_case_error(alg, p=2):
-    warnings.filterwarnings("ignore")
-
     approximation = alg.run()
 
     result = integrate.quad(
@@ -28,13 +15,15 @@ def worst_case_error(alg, p=2):
 
 
 def worst_case_error_n(alg, num, p=2):
+    warnings.filterwarnings("ignore")
+
     errors = []
     for n in range(num):
         errors.append(worst_case_error(alg, p))
 
     alg_m = copy.copy(alg.m)
-    alg_noise = copy.copy(alg.noise)
-    return np.max(errors), alg_m, alg_noise
+    fun_noise = copy.copy(alg.f__noise)
+    return np.max(errors), alg_m, fun_noise
 
 
 def interp_newton(xvals, yvals):

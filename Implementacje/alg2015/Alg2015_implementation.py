@@ -21,7 +21,7 @@ class Alg2015:
     """
 
     def __init__(self, func: ExampleFunction, n_knots, noise=None):
-        self.rng = np.random.default_rng(4569)
+        self.rng = np.random.default_rng()
 
         self.f = func.fun
         self.f__a = func.f__a
