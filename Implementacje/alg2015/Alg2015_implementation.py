@@ -6,6 +6,7 @@ from scipy import interpolate
 from scipy.optimize import minimize_scalar
 
 from Examples import ExampleFunction
+from Utilis import interp_newton
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +40,8 @@ class Alg2015:
         else:
             self.y = func.fun(self.t)
 
+        # following values could be local, but they are defined as class values
+        # to make easier monitoring of algorithm
         self.u_1 = None
         self.v_1 = None
         self.i_max = None
@@ -83,22 +86,21 @@ class Alg2015:
         return final_approximation
 
     def step1(self):
-        # i_max = np.argmax([self.divided_diff(i) for i in range(0, self.m - self.r)])
         i_max = np.argmax(self.divided_diff_2())
         self.u_1 = self.t[i_max]
         self.v_1 = self.t[i_max + self.r + 1]
         self.i_max = i_max
 
     def step2(self):
-        p_neg = interpolate.interp1d(
+        p_neg = interp_newton(
             self.t[self.i_max - self.r:self.i_max + 1],
-            self.y[self.i_max - self.r:self.i_max + 1],
-            fill_value="extrapolate"
+            self.y[self.i_max - self.r:self.i_max + 1]
+            # fill_value="extrapolate"
         )
-        p_pos = interpolate.interp1d(
+        p_pos = interp_newton(
             self.t[self.i_max + self.r + 1: self.i_max + 2 * self.r + 1 + 1],
-            self.y[self.i_max + self.r + 1: self.i_max + 2 * self.r + 1 + 1],
-            fill_value="extrapolate"
+            self.y[self.i_max + self.r + 1: self.i_max + 2 * self.r + 1 + 1]
+            # fill_value="extrapolate"
         )
 
         u = self.u_1

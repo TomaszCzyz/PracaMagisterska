@@ -6,7 +6,7 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
 
-from Examples import Example1
+from Examples import Example2
 from Utilis import worst_case_error_n
 from alg2014.Alg2014_implementation import Alg2014
 from alg2015.Alg2015_implementation import Alg2015
@@ -60,6 +60,11 @@ class MyCallback:
                 s=64,
                 label="noise=" + "{:.0e}".format(key_noise) if key_noise is not None else "0"
             )
+            m_original = np.array(np.floor(np.power(10, self.log10_m_for_noise[None])), dtype='float64')
+            theoretical_error = np.power(m_original, -(self.example_function.f__r + 1))
+            reference_line = -np.log10(theoretical_error)
+            axs[temp].plot(self.log10_m_for_noise[None], reference_line)
+
             axs[temp].legend(numpoints=1)
             axs[temp].grid()
             temp += 1
@@ -141,30 +146,35 @@ def calculate_async(n_times, array, deltas, algorithm_name, example_function):
 
 
 def main():
-    example_fun = Example1()
+    example_fun = Example2()
     example_fun.plot()
     example_fun.f__r = 4
 
     # be careful with parameters bellow, e.g. too small m can break an algorithm
-    log10_m_array = np.linspace(1.8, 4.0, num=10)  # 10 ** 4.7 =~ 50118
+    log10_m_array = np.linspace(1.8, 4.0, num=15)  # 10 ** 4.7 =~ 50118
 
-    n_runs = 10
+    n_runs = 1
     m_array = list(np.array(np.power(10, log10_m_array), dtype='int'))
     noises = [None, 1e-5, 1e-4, 1e-3]
     # [None, 10e-12, 10e-8, 10e-4] <- cannot take such small noise;
     # because of precision there is almost no difference in errors in such plot scale
 
-    # results = calculate(n_runs, m_array, noises, 'alg2014', example_fun)
-    results = calculate_async(n_runs, m_array, noises, 'alg2014', example_fun)
+    results = calculate(n_runs, m_array, noises, 'alg2014', example_fun)
+    # results = calculate_async(n_runs, m_array, noises, 'alg2014', example_fun)
 
     # results = calculate(n_runs, m_array, noises, 'alg2015', example_fun)
     # results = calculate_async(n_runs, m_array, noises, 'alg2015', example_fun)
 
-    # alg = Alg2015(func=example_fun, n_knots=1000, noise=10e-4)
+    # alg = Alg2015(func=example_fun, n_knots=100, noise=None)
     # worst_case_error_n(
     #     alg=alg,
     #     num=3
     # )
+    # approximate = alg.run()
+
+    # temp = np.linspace(example_fun.f__a, example_fun.f__b, num=500, endpoint=False)
+    # for elem in temp:
+    #     print(approximate(elem))
 
     return results
 
@@ -180,14 +190,14 @@ if __name__ == '__main__':
     main_callback = main()
 
     end_datetime = datetime.now()
-    diff_datetime = end_datetime - start_datetime
+    processing_time = end_datetime - start_datetime
     logging.info('Finished at %s (execution time: %s)',
                  end_datetime.strftime("%d/%m/%Y %H:%M:%S"),
-                 str(diff_datetime))
+                 str(processing_time))
 
     # %%
 
-    main_callback.plot_results(save=True)
+    # main_callback.plot_results(save=False)
 
     # alg = Alg2014(func=example_fun, n_knots=102, noise=10e-4)
     # worst_case_error_n(

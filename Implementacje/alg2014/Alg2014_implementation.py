@@ -5,17 +5,18 @@ import numpy as np
 from scipy import interpolate
 
 from Examples import ExampleFunction
+from Utilis import interp_newton
 
 logger = logging.getLogger(__name__)
 
 
 class Alg2014:
     """
-        f - approximated function
-        r, rho - smoothness constants
-        f__a, f__b - interval
-        n_knots - initial mesh resolution
-        noise - None lub 1/2 noise amplitude
+    f - approximated function
+    r, rho - smoothness constants
+    f__a, f__b - interval
+    n_knots - initial mesh resolution
+    noise - None lub 1/2 noise amplitude
     """
 
     def __init__(self, func: ExampleFunction, n_knots, noise=None):
@@ -34,11 +35,13 @@ class Alg2014:
         self.d = self.h ** (self.r + self.rho)
         self.t = np.linspace(self.f__a, self.f__b, self.m + 1, dtype='float64')
 
+        self.lagrangePoly = None
         self.step1_interval = None
         self.b_set = None
         self.m_set = np.array(self.t)
 
     def run(self):
+        logger.info("executing alg2014 dla m={}".format(self.m))
         self.step1()
         self.step2()
         return self.step3()
@@ -52,7 +55,8 @@ class Alg2014:
         max_diam = np.max([self.t[i + 1] - self.t[i] for i in range(len(self.t) - 1)])
 
         if max_diam <= 4 * self.d:
-            return 0, 0
+            self.step1_interval = 0, 0
+            return
         else:
             largest_result = 0
             second_largest_result = 0
@@ -75,7 +79,8 @@ class Alg2014:
 
             # largest_result, second_largest_result are big, e.g. 15303122.893 ?= 14954412.219, 33271.187 ?= 131.721
             if math.isclose(largest_result, second_largest_result, rel_tol=1e-14):
-                return 0, 0
+                self.step1_interval = 0, 0
+                return
 
         self.step1_interval = (self.t[largest_result_index], self.t[largest_result_index + 1])
         logger.info('interval located in step1: {}'.format(self.step1_interval))
@@ -114,36 +119,51 @@ class Alg2014:
         """
         step 3 - creating final approximation using initial mesh with appended points from step2
         """
-        if len(self.b_set) >= 2:
+        if self.b_set is not None and len(self.b_set) >= 2:
             b_set_sorted = np.sort(self.b_set)
             index = np.searchsorted(self.t, b_set_sorted[1], side='right')
             self.m_set = np.insert(self.m_set, index, b_set_sorted[1:-1])
 
+        approx_intervals = []
+        approx_values = []
+
+        current_knot = self.m_set[0]
+        for i in range(len(self.m_set) - 1):
+
+            next_knot = self.m_set[i + 1]
+
+            approx_intervals.append(current_knot)
+            approx_values.append(self.f(current_knot))
+
+            if next_knot - current_knot < 4 * self.d:
+                continue  # interval is small... no need for extra points
+
+            knot1, knot2 = current_knot + self.d, next_knot - self.d
+
+            knots = np.linspace(knot1, knot2, self.r + 1, endpoint=True)
+            values = np.array([self.f(x) for x in knots])  # NOISE
+            polynomial = interp_newton(knots, values)
+
+            # extra knot with approximating polynomial on interval [knot1, knot2)
+            approx_intervals.append(knot1)
+            approx_values.append(polynomial)
+
+            # extra knot with constant function on interval [knot2, next_knot)
+            approx_intervals.append(knot2)
+            approx_values.append(self.f(knot2))
+
+            current_knot = next_knot
+
+        approx_intervals.append(self.m_set[-1])
+        approx_values.append(self.f(self.m_set[-1]))
+        qqq = 1
+
         def adaptive_approximate(t):
-            # locate knot that is smaller or equal to t (and it is closest to t)
-            i = np.searchsorted(self.m_set, t, side='right') - 1
-            if i < 0:
-                logger.info('i was equal less than 0')
-                i = 0
-
-            if self.m_set[i + 1] - self.m_set[i] <= 4 * self.d:
-                return self.f(self.m_set[i])
-            else:
-                if self.m_set[i] <= t < self.m_set[i] + self.d:
-                    return self.f(self.m_set[i])
-                if self.m_set[i] + self.d <= t < self.m_set[i + 1] - self.d:
-                    logger.info("interval with interpolation ({}, {})".format(self.m_set[i], self.m_set[i + 1]))
-                    left, right = self.m_set[i] + self.d, self.m_set[i + 1] - self.d
-                    knots = np.linspace(left, right, self.r + 1, endpoint=True)
-                    values = np.array([self.f(x) for x in knots])
-                    polynomial = interpolate.lagrange(knots, values)
-                    return polynomial(t)
-                if self.m_set[i + 1] - self.d <= t < self.m_set[i + 1]:
-                    return self.f(self.m_set[i + 1] - self.d)
-
-            if math.isclose(t, self.m_set[-1], rel_tol=1e-14):
-                return self.f(self.m_set[-1])
-
+            i = np.searchsorted(approx_intervals, t, side='right') - 1
+            if isinstance(approx_values[i], (float, np.float64)):
+                return approx_values[i]
+            elif callable(approx_values[i]):
+                return approx_values[i](t)
             return -1
 
         return adaptive_approximate
@@ -153,13 +173,13 @@ class Alg2014:
         values = np.array(self.f(knots))
         if self.noise is not None:
             values = np.add(values, self.rng.uniform(-self.noise, self.noise, len(values)))
-        w1 = interpolate.lagrange(knots, values)
+        w1 = interp_newton(knots, values)
 
         knots = np.linspace(a0, a1, self.r + 1, endpoint=True)
         values = np.array(self.f(knots))
         if self.noise is not None:
             values = np.add(values, self.rng.uniform(-self.noise, self.noise, len(values)))
-        w2 = interpolate.lagrange(knots, values)
+        w2 = interp_newton(knots, values)
 
         z_arr = np.linspace(a1, b1, self.r + 1, endpoint=True)  # "endpoint=True" is 100% good here
         test_values = [(np.abs(w1(z_i) - w2(z_i))) / ((b0 - a0) ** (self.r + self.rho)) for z_i in z_arr]
