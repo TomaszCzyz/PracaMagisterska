@@ -1,15 +1,58 @@
-from scipy import integrate
-import numpy as np
-import warnings
 import copy
+import warnings
+
+import numpy as np
+from scipy import integrate
+from scipy.optimize import minimize_scalar
+
+
+def norm_lp(f, interval, p):
+    norm = integrate.quad(
+        func=lambda x: f(x) ** p,
+        a=interval[0], b=interval[1]
+    )[0] ** (1 / p)
+    return norm
+
+
+def norm_infinity(f, interval):
+    res = minimize_scalar(
+        fun=lambda x: -1 * f(x),  # "-1" because we are looking for maximum, not minimum
+        bounds=interval,
+        method='bounded'
+    )
+    if not res.success:
+        raise Exception("should not execute")
+
+    return res['x']
+
+
+def norm_infinity_2(f, interval):
+    step = 1e-3
+    max_value = 0.0
+    current = interval[0]
+
+    while current <= interval[1]:
+        value = f(current)
+        if value > max_value:
+            max_value = value
+
+        current = current + step
+
+    return max_value
 
 
 def worst_case_error(alg, p=2):
     approximation = alg.run()
+    original_func = alg.example.raw_f
+    interval = alg.example.f__a, alg.example.f__b
 
-    result = integrate.quad(
-        func=lambda x: abs(alg.f(x) - approximation(x)) ** p,
-        a=alg.f__a, b=alg.f__b)[0] ** (1 / p)
+    def f(x):
+        return abs(approximation(x) - original_func(x))
+
+    if p == 'infinity':
+        result = norm_infinity_2(f, interval)
+    else:
+        result = norm_lp(f, interval, p)
 
     return result
 
@@ -22,7 +65,7 @@ def worst_case_error_n(alg, num, p=2):
         errors.append(worst_case_error(alg, p))
 
     alg_m = copy.copy(alg.m)
-    fun_noise = copy.copy(alg.f__noise)
+    fun_noise = copy.copy(alg.example.f__noise)
     return np.max(errors), alg_m, fun_noise
 
 
@@ -61,9 +104,6 @@ def interp_newton(xvals, yvals):
         depth += 1
 
     def f(ii):
-        """
-        Evaluate interpolated estimate at x.
-        """
         terms = []
         return_val = 0
 
@@ -75,6 +115,7 @@ def interp_newton(xvals, yvals):
                 iterval *= (ii - k)
             terms.append(iterval)
             return_val += iterval
+
         return return_val
 
     return f

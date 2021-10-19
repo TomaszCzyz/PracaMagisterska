@@ -11,26 +11,21 @@ logger = logging.getLogger(__name__)
 
 class Alg2014:
     """
-    f - approximated function
-    r, rho - smoothness constants
-    f__a, f__b - interval
+    func - approximated function
     n_knots - initial mesh resolution
     """
 
-    def __init__(self, func: ExampleFunction, n_knots):
-        self.f__noise = func.f__noise
-        self.f = func.fun
-        self.f__a = func.f__a
-        self.f__b = func.f__b
-        self.r = func.f__r
-        self.rho = func.f__rho
+    def __init__(self, example: ExampleFunction, n_knots):
+        self.example = example
         self.m = n_knots
-        self.h = (self.f__b - self.f__a) / self.m
-        # self.d = self.rng.uniform(self.h ** (self.r + self.rho), (self.r + 1) * self.h)
-        # self.d = (self.r + 1) * self.h
-        self.d = self.h ** (self.r + self.rho)
-        self.t = np.linspace(self.f__a, self.f__b, self.m + 1, dtype='float64')
 
+        self.t = np.linspace(self.example.f__a, self.example.f__b, self.m + 1, dtype='float64')
+        self.h = (self.example.f__b - self.example.f__a) / self.m
+        # self.d = (self.r + 1) * self.h
+        self.d = self.h ** (self.example.f__r + self.example.f__rho)
+
+        # following values could be local, but they are defined as class values
+        # to make monitoring of algorithm easier
         self.lagrangePoly = None
         self.step1_interval = None
         self.b_set = None
@@ -51,7 +46,6 @@ class Alg2014:
         max_diam = np.max([self.t[i + 1] - self.t[i] for i in range(len(self.t) - 1)])
 
         if max_diam <= 4 * self.d:
-            self.step1_interval = 0, 0
             return
         else:
             largest_result = 0
@@ -73,9 +67,7 @@ class Alg2014:
                     elif largest_result > test_result > second_largest_result:
                         second_largest_result = test_result
 
-            # largest_result, second_largest_result are big, e.g. 15303122.893 ?= 14954412.219, 33271.187 ?= 131.721
             if math.isclose(largest_result, second_largest_result, rel_tol=1e-14):
-                self.step1_interval = 0, 0
                 return
 
         self.step1_interval = (self.t[largest_result_index], self.t[largest_result_index + 1])
@@ -87,8 +79,7 @@ class Alg2014:
         bisection is based on A_test values
         """
 
-        # logger.info('a=%f b=%f', a, b)
-        if self.step1_interval == (0, 0):
+        if self.step1_interval is None:
             return []
 
         self.b_set = list(self.step1_interval)
@@ -100,8 +91,6 @@ class Alg2014:
             self.b_set.append(v)
             a1 = self.a_test(a_new, a_new + self.d, v - self.d, v)
             a2 = self.a_test(v, v + self.d, b_new - self.d, b_new)
-
-            # logger.info('step2 -> a1=%f a2=%f', a1, a2)
 
             if math.isclose(a1, a2, rel_tol=1e-14):
                 return
@@ -120,61 +109,60 @@ class Alg2014:
             index = bisect.bisect_right(self.t, b_set_sorted[1])
             self.m_set = np.insert(self.m_set, index, b_set_sorted[1:-1])
 
-        approx_intervals = []
-        approx_values = []
+        approx = []
 
         current_knot = self.m_set[0]
         for i in range(len(self.m_set) - 1):
 
             next_knot = self.m_set[i + 1]
 
-            approx_intervals.append(current_knot)
-            approx_values.append(self.f(current_knot))
+            approx.append((current_knot, self.example.fun(current_knot)))
 
             if next_knot - current_knot < 4 * self.d:
                 continue  # interval is small... no need for extra points
 
+            # each "big" interval we divide for 3 sub-intervals
+            # on sub-intervals near edge approx has constant value
+            # and on the middle sub-interval we use interpolating polynomial
             knot1, knot2 = current_knot + self.d, next_knot - self.d
 
-            knots = np.linspace(knot1, knot2, self.r + 1, endpoint=True)
-            values = self.f(knots)
+            knots = np.linspace(knot1, knot2, self.example.f__r + 1)
+            values = self.example.fun(knots)
             polynomial = interp_newton(knots, values)
 
             # extra knot with approximating polynomial on interval [knot1, knot2)
-            approx_intervals.append(knot1)
-            approx_values.append(polynomial)
+            approx.append((knot1, polynomial))
 
             # extra knot with constant function on interval [knot2, next_knot)
-            approx_intervals.append(knot2)
-            approx_values.append(self.f(knot2))
+            approx.append((knot2, self.example.fun(knot2)))
 
             current_knot = next_knot
 
-        approx_intervals.append(self.m_set[-1])
-        approx_values.append(self.f(self.m_set[-1]))
+        approx.append((self.m_set[-1], self.example.fun(self.m_set[-1])))
+        np_approx = np.array(approx)
 
-        def adaptive_approximate(t):
-            ii = bisect.bisect_right(approx_intervals, t) - 1
+        def final_approximation(t):
+            ii = bisect.bisect_right(np_approx[:, 0], t) - 1
 
-            if isinstance(approx_values[ii], (float, np.float64)):
-                return approx_values[ii]
-            elif callable(approx_values[ii]):
-                return approx_values[ii](t)
+            if isinstance(np_approx[ii, 1], (float, np.float64)):
+                return np_approx[ii, 1]
+            elif callable(np_approx[ii, 1]):
+                return np_approx[ii, 1](t)
             raise Exception("should not execute")
 
-        return adaptive_approximate
+        return final_approximation
 
     def a_test(self, a0, a1, b1, b0):
-        knots = np.linspace(b1, b0, self.r + 1, endpoint=True)
-        values = self.f(knots)
+        knots = np.linspace(b1, b0, self.example.f__r + 1)
+        values = self.example.fun(knots)
         w1 = interp_newton(knots, values)
 
-        knots = np.linspace(a0, a1, self.r + 1, endpoint=True)
-        values1 = self.f(knots)
-        w2 = interp_newton(knots, values1)
+        knots = np.linspace(a0, a1, self.example.f__r + 1)
+        values = self.example.fun(knots)
+        w2 = interp_newton(knots, values)
 
-        z_arr = np.linspace(a1, b1, self.r + 1, endpoint=True)  # "endpoint=True" is 100% good here
+        z_arr = np.linspace(a1, b1, self.example.f__r + 1)
         test_values = [(np.abs(w1(z_i) - w2(z_i))) / (b0 - a0) for z_i in z_arr]
-        #  ** (self.r + self.rho)  <-- no need for dividing
+        #  ** (self.r + self.rho)  <-- no need for dividing (the same operation in each test)
 
         return np.max(test_values)

@@ -17,6 +17,7 @@ class MyCallback:
         self.algorithm_name = extra_data[0]
         self.n_times = extra_data[1]
         self.example_function = extra_data[2]
+        self.p = extra_data[3]
         self.finished_tasks = 0
         self.tasks_number = max_count
         self.log10_errors_for_noise = {}
@@ -39,15 +40,17 @@ class MyCallback:
         self.plot_results()
 
     def plot_results(self, save=False):
-        if self.finished_tasks / self.tasks_number < 0.75:
+        if self.finished_tasks / self.tasks_number <= 0.99:
             return
 
         fig, axs = plt.subplots(2, 2, sharex='all', sharey='all')
         fig.text(0.5, 0.04, u'log\u2081\u2080m', ha='center')
         fig.text(0.04, 0.5, u'-log\u2081\u2080err', va='center', rotation='vertical')
-        plt.suptitle("{} for {}(r={})\nbased on {} sample functions".format(
+        plt.suptitle("{} for {}(r={}, p={})\nbased on {} sample functions".format(
             self.algorithm_name, type(self.example_function).__name__,
-            self.example_function.f__r, self.n_times))
+            self.example_function.f__r,
+            self.p,
+            self.n_times))
 
         axs = axs.ravel()
         temp = 0
@@ -90,32 +93,7 @@ class MyCallback:
         print("finished tasks: {}/{}".format(self.finished_tasks, self.tasks_number), end='\r')
 
 
-def calculate(n_times, array, deltas, algorithm_name, example_function):
-    extra_data = algorithm_name, n_times, example_function
-    my_callback = MyCallback(len(array) * len(deltas), extra_data)
-
-    for elem in reversed(array):
-
-        for delta in deltas:
-            print("running algorithm({} times) for m={}, noise={}".format(n_times, elem, delta))
-            example_function.f__noise = delta
-            if algorithm_name == 'alg2015':
-                alg = Alg2015(func=example_function, n_knots=elem)
-            elif algorithm_name == 'alg2014':
-                alg = Alg2014(func=example_function, n_knots=elem)
-            else:
-                raise Exception("incorrect algorithm name")
-
-            result_tuple = worst_case_error_n(
-                alg=alg,
-                num=1 if delta is None else n_times
-            )
-            my_callback.callback_handler(result_tuple)
-
-    return my_callback
-
-
-def calculate_async(n_times, array, deltas, algorithm_name, example_fun_name):
+def calculate(n_times, array, deltas, algorithm_name, example_fun_name, p):
     if example_fun_name == 'example1':
         temp_example_function = Example1()
     elif example_fun_name == 'example2':
@@ -123,7 +101,47 @@ def calculate_async(n_times, array, deltas, algorithm_name, example_fun_name):
     else:
         raise Exception("incorrect algorithm name")
 
-    extra_data = algorithm_name, n_times, temp_example_function
+    extra_data = algorithm_name, n_times, temp_example_function, p
+    my_callback = MyCallback(len(array) * len(deltas), extra_data)
+
+    for elem in reversed(array):
+
+        for delta in deltas:
+            print("running algorithm({} times) for m={}, noise={}".format(n_times, elem, delta))
+
+            if example_fun_name == 'example1':
+                example_function = Example1(delta)
+            elif example_fun_name == 'example2':
+                example_function = Example2(delta)
+            else:
+                raise Exception("incorrect algorithm name")
+
+            if algorithm_name == 'alg2015':
+                alg = Alg2015(example=example_function, n_knots=elem)
+            elif algorithm_name == 'alg2014':
+                alg = Alg2014(example=example_function, n_knots=elem)
+            else:
+                raise Exception("incorrect algorithm name")
+
+            result_tuple = worst_case_error_n(
+                alg=alg,
+                num=1 if delta is None else n_times,
+                p=p
+            )
+            my_callback.callback_handler(result_tuple)
+
+    return my_callback
+
+
+def calculate_async(n_times, array, deltas, algorithm_name, example_fun_name, p):
+    if example_fun_name == 'example1':
+        temp_example_function = Example1()
+    elif example_fun_name == 'example2':
+        temp_example_function = Example2()
+    else:
+        raise Exception("incorrect algorithm name")
+
+    extra_data = algorithm_name, n_times, temp_example_function, p
     my_callback = MyCallback(len(array) * len(deltas), extra_data)
 
     with mp.Pool(processes=mp.cpu_count() - 2) as pool:
@@ -142,15 +160,15 @@ def calculate_async(n_times, array, deltas, algorithm_name, example_fun_name):
                     raise Exception("incorrect algorithm name")
 
                 if algorithm_name == 'alg2015':
-                    alg = Alg2015(func=example_function, n_knots=elem)
+                    alg = Alg2015(example=example_function, n_knots=elem)
                 elif algorithm_name == 'alg2014':
-                    alg = Alg2014(func=example_function, n_knots=elem)
+                    alg = Alg2014(example=example_function, n_knots=elem)
                 else:
                     raise Exception("incorrect algorithm name")
 
                 apply_result = pool.apply_async(
                     func=worst_case_error_n,
-                    args=(alg, 1 if delta is None else n_times),
+                    args=(alg, 1 if delta is None else n_times, p),
                     callback=my_callback.callback_handler)
 
                 apply_results.append(apply_result)
@@ -163,36 +181,25 @@ def calculate_async(n_times, array, deltas, algorithm_name, example_fun_name):
 
 
 def main():
-    example_fun = Example2()
-    example_fun.plot()
-
     # be careful with parameters bellow, e.g. too small m can break an algorithm
-    log10_m_array = np.linspace(1.8, 4.0, num=15)  # 10 ** 4.7 =~ 50118
-
-    n_runs = 100
+    log10_m_array = np.linspace(1.3, 4.1, num=20)  # 10 ** 4.7 =~ 50118
+    n_runs = 2
     m_array = list(np.array(np.power(10, log10_m_array), dtype='int'))
-    noises = [None, 1e-5, 1e-4, 1e-3]
-    # [None, 10e-12, 10e-8, 10e-4] <- cannot take such small noise;
-    # because of precision there is almost no difference in errors in such plot scale
+    noises = [None, 1e-12, 1e-8, 1e-4]
+    # noises = [None, 1e-5, 1e-4, 1e-3]
 
-    # results = calculate(n_runs, m_array, noises, 'alg2014', example_fun)
-    results = calculate_async(n_runs, m_array, noises, 'alg2014', 'example2')
+    example = 'example2'
+    p = 'infinity'
+    results = calculate(n_runs, m_array, noises, 'alg2014', example, p)
+    # results = calculate_async(n_runs, m_array, noises, 'alg2014', example, p)
 
-    # results = calculate(n_runs, m_array, noises, 'alg2015', example_fun)
-    # results = calculate_async(n_runs, m_array, noises, 'alg2015', example_fun)
+    # results = calculate(n_runs, m_array, noises, 'alg2015', example, p)
+    # results = calculate_async(n_runs, m_array, noises, 'alg2015', example, p)
 
-    # example_fun.f__noise = 1e-5
-    # alg = Alg2014(func=example_fun, n_knots=100)
-    # worst_case_error_n(
-    #     alg=alg,
-    #     num=3
-    # )
-    # approximate = alg.run()
+    # alg = Alg2015(example=Example2(None), n_knots=8966)
+    # results = alg.run()
 
-    # temp = np.linspace(example_fun.f__a, example_fun.f__b, num=500, endpoint=False)
-    # for elem in temp:
-    #     print(approximate(elem))
-
+    print("FINISHED")
     return results
 
 
@@ -214,10 +221,12 @@ if __name__ == '__main__':
 
     # %%
 
-    # main_callback.plot_results(save=False)
+    main_callback.plot_results(save=False)
 
-    # alg = Alg2014(func=example_fun, n_knots=102, noise=10e-4)
+    # Example2(None)
+    # alg = Alg2015(example=example_function, n_knots=8966)
     # worst_case_error_n(
     #     alg=alg,
-    #     num=10
+    #     num=3
     # )
+    # results = alg.run()
