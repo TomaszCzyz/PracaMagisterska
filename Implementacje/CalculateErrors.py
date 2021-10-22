@@ -11,20 +11,19 @@ from Utilis import worst_case_error_n
 from alg2014.Alg2014_implementation import Alg2014
 from alg2015.Alg2015_implementation import Alg2015
 
+markers = ['v', '^', '<', '>', 's', 'd', ',', 'x', 'o', '+', '.', '1', '_', '.']
+colors = ['orange', 'grey', 'green', 'b']
+
 
 class MyCallback:
-    def __init__(self, max_count, extra_data):
-        self.algorithm_name = extra_data[0]
-        self.n_times = extra_data[1]
-        self.example_function = extra_data[2]
-        self.p = extra_data[3]
-        self.finished_tasks = 0
+    def __init__(self, max_count, data):
+        self.data = data
         self.tasks_number = max_count
+
+        self.example_function = create_example(data['example_fun_name'])
+        self.finished_tasks = 0
         self.log10_errors_for_noise = {}
         self.log10_m_for_noise = {}
-
-        self.colors = ['orange', 'grey', 'green', 'b']
-        self.markers = ['v', '^', '<', '>', 's', 'd', ',', 'x', 'o', '+', '.', '1', '_', '.']
 
     def callback_handler(self, args):
         error, alg_m, alg_noise = args
@@ -47,10 +46,10 @@ class MyCallback:
         fig.text(0.5, 0.04, u'log\u2081\u2080m', ha='center')
         fig.text(0.04, 0.5, u'-log\u2081\u2080err', va='center', rotation='vertical')
         plt.suptitle("{} for {}(r={}, p={})\nbased on {} sample functions".format(
-            self.algorithm_name, type(self.example_function).__name__,
+            self.data['algorithm_name'], self.data['example_fun_name'],
             self.example_function.f__r,
-            self.p,
-            self.n_times))
+            self.data['p'],
+            self.data['executions_number']))
 
         axs = axs.ravel()
         temp = 0
@@ -58,15 +57,15 @@ class MyCallback:
         for key_noise in sorted_noises:
             axs[temp].scatter(
                 self.log10_m_for_noise[key_noise], self.log10_errors_for_noise[key_noise],
-                c=self.colors[temp],
-                marker=self.markers[-1],
+                c=colors[temp],
+                marker=markers[-1],
                 s=64,
                 label="noise=" + "{:.0e}".format(key_noise) if key_noise is not None else "0"
             )
             m_original = np.array(np.floor(np.power(10, self.log10_m_for_noise[None])), dtype='float64')
             theoretical_error = np.power(m_original, -(self.example_function.f__r + 1))
             reference_line = -np.log10(theoretical_error)
-            axs[temp].plot(self.log10_m_for_noise[None], reference_line)
+            axs[temp].plot(self.log10_m_for_noise[None], reference_line, linestyle='--')
 
             axs[temp].legend(numpoints=1)
             axs[temp].grid()
@@ -77,7 +76,7 @@ class MyCallback:
         plt.show()
 
     def save_plt(self):
-        path = 'data/{}/'.format(self.algorithm_name)
+        path = 'data/{}/'.format(self.data['algorithm_name'])
         if not os.path.exists(path):
             os.makedirs(path)
 
@@ -93,89 +92,67 @@ class MyCallback:
         print("finished tasks: {}/{}".format(self.finished_tasks, self.tasks_number), end='\r')
 
 
-def calculate(n_times, array, deltas, algorithm_name, example_fun_name, p):
-    if example_fun_name == 'example1':
-        temp_example_function = Example1()
-    elif example_fun_name == 'example2':
-        temp_example_function = Example2()
-    else:
-        raise Exception("incorrect algorithm name")
+def create_example(example_name, delta=None):
+    if example_name == 'example1':
+        return Example1(delta)
+    if example_name == 'example2':
+        return Example2(delta)
+    raise Exception("incorrect example function name")
 
-    extra_data = algorithm_name, n_times, temp_example_function, p
+
+def create_algorithm(algorithm_name, example_function, knots_number):
+    if algorithm_name == 'alg2014':
+        return Alg2014(example_function, knots_number)
+    if algorithm_name == 'alg2015':
+        return Alg2015(example_function, knots_number)
+    raise Exception("incorrect algorithm name")
+
+
+def calculate(n_times, array, deltas, algorithm_name, example_fun_name, p, parallel=False):
+    extra_data = {
+        'algorithm_name': algorithm_name,
+        'example_fun_name': example_fun_name,
+        'executions_number': n_times,
+        'p': p
+    }
     my_callback = MyCallback(len(array) * len(deltas), extra_data)
 
-    for elem in reversed(array):
+    if parallel:
+        with mp.Pool(processes=mp.cpu_count() - 2) as pool:
+            apply_results = []
+            for elem in reversed(array):
+                for delta in deltas:
+                    print(
+                        "starting processing algorithm({} times) for m={} and delta={}...".format(n_times, elem, delta))
 
-        for delta in deltas:
-            print("running algorithm({} times) for m={}, noise={}".format(n_times, elem, delta))
+                    example_function = create_example(example_fun_name, delta)
+                    alg = create_algorithm(algorithm_name, example_function, elem)
 
-            if example_fun_name == 'example1':
-                example_function = Example1(delta)
-            elif example_fun_name == 'example2':
-                example_function = Example2(delta)
-            else:
-                raise Exception("incorrect algorithm name")
+                    apply_result = pool.apply_async(
+                        func=worst_case_error_n,
+                        args=(alg, 1 if delta is None else n_times, p),
+                        callback=my_callback.callback_handler)
 
-            if algorithm_name == 'alg2015':
-                alg = Alg2015(example=example_function, n_knots=elem)
-            elif algorithm_name == 'alg2014':
-                alg = Alg2014(example=example_function, n_knots=elem)
-            else:
-                raise Exception("incorrect algorithm name")
+                    apply_results.append(apply_result)
 
-            result_tuple = worst_case_error_n(
-                alg=alg,
-                num=1 if delta is None else n_times,
-                p=p
-            )
-            my_callback.callback_handler(result_tuple)
+            my_callback.print_status()
+            for r in apply_results:
+                r.wait()
 
-    return my_callback
-
-
-def calculate_async(n_times, array, deltas, algorithm_name, example_fun_name, p):
-    if example_fun_name == 'example1':
-        temp_example_function = Example1()
-    elif example_fun_name == 'example2':
-        temp_example_function = Example2()
     else:
-        raise Exception("incorrect algorithm name")
-
-    extra_data = algorithm_name, n_times, temp_example_function, p
-    my_callback = MyCallback(len(array) * len(deltas), extra_data)
-
-    with mp.Pool(processes=mp.cpu_count() - 2) as pool:
-
-        apply_results = []
         for elem in reversed(array):
-
             for delta in deltas:
-                print("starting processing algorithm({} times) for m={} and delta={}...".format(n_times, elem, delta))
+                print("running algorithm({} times) for m={}, noise={}".format(n_times, elem, delta))
 
-                if example_fun_name == 'example1':
-                    example_function = Example1(delta)
-                elif example_fun_name == 'example2':
-                    example_function = Example2(delta)
-                else:
-                    raise Exception("incorrect algorithm name")
+                example_function = create_example(example_fun_name, delta)
+                alg = create_algorithm(algorithm_name, example_function, elem)
 
-                if algorithm_name == 'alg2015':
-                    alg = Alg2015(example=example_function, n_knots=elem)
-                elif algorithm_name == 'alg2014':
-                    alg = Alg2014(example=example_function, n_knots=elem)
-                else:
-                    raise Exception("incorrect algorithm name")
-
-                apply_result = pool.apply_async(
-                    func=worst_case_error_n,
-                    args=(alg, 1 if delta is None else n_times, p),
-                    callback=my_callback.callback_handler)
-
-                apply_results.append(apply_result)
-
-        my_callback.print_status()
-        for r in apply_results:
-            r.wait()
+                result_tuple = worst_case_error_n(
+                    alg=alg,
+                    num=1 if delta is None else n_times,
+                    p=p
+                )
+                my_callback.callback_handler(result_tuple)
 
     return my_callback
 
@@ -188,13 +165,9 @@ def main():
     noises = [None, 1e-12, 1e-8, 1e-4]
     # noises = [None, 1e-5, 1e-4, 1e-3]
 
-    example = 'example2'
-    p = 'infinity'
-    results = calculate(n_runs, m_array, noises, 'alg2014', example, p)
-    # results = calculate_async(n_runs, m_array, noises, 'alg2014', example, p)
+    alg, example, p_norm = 'alg2014', 'example2', 'infinity'
 
-    # results = calculate(n_runs, m_array, noises, 'alg2015', example, p)
-    # results = calculate_async(n_runs, m_array, noises, 'alg2015', example, p)
+    results = calculate(n_runs, m_array, noises, alg, example, p_norm, parallel=False)
 
     # alg = Alg2015(example=Example2(None), n_knots=8966)
     # results = alg.run()
