@@ -15,7 +15,7 @@ markers = ['v', '^', '<', '>', 's', 'd', ',', 'x', 'o', '+', '.', '1', '_', '.']
 colors = ['orange', 'grey', 'green', 'b']
 
 
-class MyCallback:
+class ResultsCollector:
     def __init__(self, max_count, data):
         self.data = data
         self.tasks_number = max_count
@@ -109,13 +109,17 @@ def create_algorithm(algorithm_name, example_function, knots_number):
 
 
 def calculate(n_times, array, deltas, algorithm_name, example_fun_name, p, parallel=False):
+    """
+    calculates approximation error for specified algorithm and function with respect to norm L_p (1 <= p <= infinity)
+    calculations are repeated 'n_times' for each value from 'array' (representing number of knots in initial mesh)
+    """
     extra_data = {
         'algorithm_name': algorithm_name,
         'example_fun_name': example_fun_name,
         'executions_number': n_times,
         'p': p
     }
-    my_callback = MyCallback(len(array) * len(deltas), extra_data)
+    results_collector = ResultsCollector(len(array) * len(deltas), extra_data)
 
     if parallel:
         with mp.Pool(processes=mp.cpu_count() - 2) as pool:
@@ -125,17 +129,17 @@ def calculate(n_times, array, deltas, algorithm_name, example_fun_name, p, paral
                     print(
                         "starting processing algorithm({} times) for m={} and delta={}...".format(n_times, elem, delta))
 
-                    example_function = create_example(example_fun_name, delta)
-                    alg = create_algorithm(algorithm_name, example_function, elem)
+                    function = create_example(example_fun_name, delta)
+                    alg = create_algorithm(algorithm_name, function, elem)
 
                     apply_result = pool.apply_async(
                         func=worst_case_error_n,
                         args=(alg, 1 if delta is None else n_times, p),
-                        callback=my_callback.callback_handler)
+                        callback=results_collector.callback_handler)
 
                     apply_results.append(apply_result)
 
-            my_callback.print_status()
+            results_collector.print_status()
             for r in apply_results:
                 r.wait()
 
@@ -144,30 +148,30 @@ def calculate(n_times, array, deltas, algorithm_name, example_fun_name, p, paral
             for delta in deltas:
                 print("running algorithm({} times) for m={}, noise={}".format(n_times, elem, delta))
 
-                example_function = create_example(example_fun_name, delta)
-                alg = create_algorithm(algorithm_name, example_function, elem)
+                function = create_example(example_fun_name, delta)
+                alg = create_algorithm(algorithm_name, function, elem)
 
                 result_tuple = worst_case_error_n(
                     alg=alg,
-                    num=1 if delta is None else n_times,
-                    p=p
+                    repeat_count=1 if delta is None else n_times,
+                    lp_norm=p
                 )
-                my_callback.callback_handler(result_tuple)
+                results_collector.callback_handler(result_tuple)
 
-    return my_callback
+    return results_collector
 
 
 def main():
-    # be careful with parameters bellow, e.g. too small m can break an algorithm
-    log10_m_array = np.linspace(1.3, 4.1, num=20)  # 10 ** 4.7 =~ 50118
-    n_runs = 2
+    log10_m_array = np.linspace(1.3, 4.2, num=20)  # 10 ** 4.7 =~ 50118
+
     m_array = list(np.array(np.power(10, log10_m_array), dtype='int'))
-    noises = [None, 1e-12, 1e-8, 1e-4]
-    # noises = [None, 1e-5, 1e-4, 1e-3]
+    noises = [None, 1e-12, 1e-8, 1e-4]  # [None, 1e-5, 1e-4, 1e-3]
 
-    alg, example, p_norm = 'alg2014', 'example2', 'infinity'
+    n_runs = 30
 
-    results = calculate(n_runs, m_array, noises, alg, example, p_norm, parallel=False)
+    alg, example, p_norm = 'alg2015', 'example2', 2
+
+    results = calculate(n_runs, m_array, noises, alg, example, p_norm, parallel=True)
 
     # alg = Alg2015(example=Example2(None), n_knots=8966)
     # results = alg.run()
@@ -194,7 +198,7 @@ if __name__ == '__main__':
 
     # %%
 
-    main_callback.plot_results(save=False)
+    # main_callback.plot_results(save=False)
 
     # Example2(None)
     # alg = Alg2015(example=example_function, n_knots=8966)

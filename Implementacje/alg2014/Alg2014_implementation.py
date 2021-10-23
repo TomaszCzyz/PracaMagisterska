@@ -1,8 +1,9 @@
+import bisect
 import logging
 import math
 
 import numpy as np
-import bisect
+
 from Examples import ExampleFunction
 from Utilis import interp_newton
 
@@ -11,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 class Alg2014:
     """
-    func - approximated function
+    example - function to approximate (containing data about class parameters, interval and noise)
     n_knots - initial mesh resolution
     """
 
@@ -144,11 +145,10 @@ class Alg2014:
         def final_approximation(t):
             ii = bisect.bisect_right(np_approx[:, 0], t) - 1
 
-            if isinstance(np_approx[ii, 1], (float, np.float64)):
-                return np_approx[ii, 1]
-            elif callable(np_approx[ii, 1]):
+            if callable(np_approx[ii, 1]):
                 return np_approx[ii, 1](t)
-            raise Exception("should not execute")
+            else:
+                return np_approx[ii, 1]
 
         return final_approximation
 
@@ -163,6 +163,6 @@ class Alg2014:
 
         z_arr = np.linspace(a1, b1, self.example.f__r + 1)
         test_values = [(np.abs(w1(z_i) - w2(z_i))) / (b0 - a0) for z_i in z_arr]
-        #  ** (self.r + self.rho)  <-- no need for dividing (the same operation in each test)
+        #  ** (self.r + self.rho)  <-- no need for this operation (the same operation in each test)
 
         return np.max(test_values)

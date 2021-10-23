@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class Alg2015:
     """
-    func - approximated function
+    example - function to approximate (containing data about class parameters, interval and noise)
     n_knots - initial mesh resolution
     """
 

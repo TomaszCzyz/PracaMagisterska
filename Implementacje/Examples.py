@@ -41,12 +41,7 @@ class Example1(ExampleFunction):
             return np.sin(xx - np.pi - 0.5)
 
     def fun(self, x):
-        values = f_values(self.raw_f, x)
-
-        if self.f__noise is not None:
-            values = add_noise(values, self.f__noise)
-
-        return values
+        return f_values_with_noise(self.raw_f, self.f__noise, x)
 
 
 class Example2(ExampleFunction):
@@ -67,12 +62,16 @@ class Example2(ExampleFunction):
             return np.sin(xx - np.pi)
 
     def fun(self, x):
-        values = f_values(self.raw_f, x)
+        return f_values_with_noise(self.raw_f, self.f__noise, x)
 
-        if self.f__noise is not None:
-            values = add_noise(values, self.f__noise)
 
-        return values
+def f_values_with_noise(fun, noise, x):
+    values = f_values(fun, x)
+
+    if noise is not None:
+        values = add_noise(values, noise)
+
+    return values
 
 
 def f_values(fun, obj):

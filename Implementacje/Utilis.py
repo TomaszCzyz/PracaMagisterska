@@ -1,4 +1,3 @@
-import copy
 import warnings
 
 import numpy as np
@@ -41,7 +40,7 @@ def norm_infinity_2(f, interval):
     return max_value
 
 
-def worst_case_error(alg, p=2):
+def worst_case_error(alg, lp_norm=2):
     approximation = alg.run()
     original_func = alg.example.raw_f
     interval = alg.example.f__a, alg.example.f__b
@@ -49,24 +48,19 @@ def worst_case_error(alg, p=2):
     def f(x):
         return abs(approximation(x) - original_func(x))
 
-    if p == 'infinity':
+    if lp_norm == 'infinity':
         result = norm_infinity_2(f, interval)
     else:
-        result = norm_lp(f, interval, p)
+        result = norm_lp(f, interval, lp_norm)
 
     return result
 
 
-def worst_case_error_n(alg, num, p=2):
+def worst_case_error_n(alg, repeat_count, lp_norm=2):
     warnings.filterwarnings("ignore")
+    max_error = np.max([worst_case_error(alg, lp_norm) for i in range(repeat_count)])
 
-    errors = []
-    for n in range(num):
-        errors.append(worst_case_error(alg, p))
-
-    alg_m = copy.copy(alg.m)
-    fun_noise = copy.copy(alg.example.f__noise)
-    return np.max(errors), alg_m, fun_noise
+    return max_error, alg.m, alg.example.f__noise
 
 
 def interp_newton(xvals, yvals):
