@@ -17,18 +17,18 @@ class ExampleFunction(ABC):
         pass
 
     def plot(self):
-        mesh = np.linspace(self.f__a, self.f__b, 200, dtype='float64')
+        mesh = np.arange(self.f__a, self.f__b, 0.03, dtype='float64')
         plt.scatter(mesh, self.fun(mesh), s=7)
         plt.title(type(self).__name__)
         plt.show()
 
 
 class Example1(ExampleFunction):
-    def __init__(self, f__noise=None):
+    def __init__(self, f__noise=None, f__r=3):
         super().__init__(
             f__a=0,
             f__b=2 * np.pi + 0.5,
-            f__r=3,
+            f__r=f__r,
             f__rho=1,
             f__noise=f__noise
         )
@@ -45,11 +45,11 @@ class Example1(ExampleFunction):
 
 
 class Example2(ExampleFunction):
-    def __init__(self, f__noise=None):
+    def __init__(self, f__noise=None, f__r=3):
         super().__init__(
             f__a=0,
             f__b=3 * np.pi,
-            f__r=4,
+            f__r=f__r,
             f__rho=1,
             f__noise=f__noise
         )
@@ -60,6 +60,24 @@ class Example2(ExampleFunction):
             return np.sin(xx)
         if np.pi <= xx <= 3 * np.pi:
             return np.sin(xx - np.pi)
+
+    def fun(self, x):
+        return f_values_with_noise(self.raw_f, self.f__noise, x)
+
+
+class Example3(ExampleFunction):
+    def __init__(self, f__noise=None, f__r=3):
+        super().__init__(
+            f__a=0.0,
+            f__b=2.0,
+            f__r=f__r,
+            f__rho=1,
+            f__noise=f__noise
+        )
+
+    @staticmethod
+    def raw_f(xx):
+        return abs(xx - 1.0) + (xx - 1.0) / 2.0 - (xx - 1.0) ** 2
 
     def fun(self, x):
         return f_values_with_noise(self.raw_f, self.f__noise, x)
