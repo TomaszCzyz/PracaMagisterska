@@ -18,7 +18,7 @@ class ExampleFunction(ABC):
 
     def plot(self):
         mesh = np.arange(self.f__a, self.f__b, 0.03, dtype='float64')
-        plt.scatter(mesh, self.fun(mesh), s=7)
+        plt.scatter(mesh, self.fun(mesh), s=2)
         plt.title(type(self).__name__)
         plt.show()
 
@@ -78,6 +78,96 @@ class Example3(ExampleFunction):
     @staticmethod
     def raw_f(xx):
         return abs(xx - 1.0) + (xx - 1.0) / 2.0 - (xx - 1.0) ** 2
+
+    def fun(self, x):
+        return f_values_with_noise(self.raw_f, self.f__noise, x)
+
+
+class Example4(ExampleFunction):
+    def __init__(self, f__noise=None, f__r=3):
+        super().__init__(
+            f__a=0.0,
+            f__b=8.0,
+            f__r=f__r,
+            f__rho=1,
+            f__noise=f__noise
+        )
+
+    @staticmethod
+    def raw_f(xx):
+        if xx == 0:
+            return 0
+        if 0 < xx < 4:
+            return (1 / 3) * (xx ** 2) * np.log(0.25 * xx)
+        if 4 <= xx <= 8:
+            return np.e ** (-1.0 * ((xx - 6.0) ** 2))
+
+    def fun(self, x):
+        return f_values_with_noise(self.raw_f, self.f__noise, x)
+
+
+class Example5(ExampleFunction):
+    def __init__(self, f__noise=None, f__r=3):
+        super().__init__(
+            f__a=0.0,
+            f__b=8.0,
+            f__r=f__r,
+            f__rho=1,
+            f__noise=f__noise
+        )
+
+    @staticmethod
+    def raw_f(xx):
+        if xx == 0:
+            return 0
+        if 0 < xx < 4:
+            return (1 / 3) * (xx ** 2) * np.log(0.25 * xx)
+        if 4 <= xx <= 8:
+            return -1.0 * np.e ** (-1.0 * ((xx - 6.0) ** 2)) + 1.0
+
+    def fun(self, x):
+        return f_values_with_noise(self.raw_f, self.f__noise, x)
+
+
+class Example6(ExampleFunction):
+    def __init__(self, f__noise=None, f__r=3):
+        super().__init__(
+            f__a=0.0,
+            f__b=8.0,
+            f__r=f__r,
+            f__rho=1,
+            f__noise=f__noise
+        )
+
+    @staticmethod
+    def raw_f(xx):
+        if 0 <= xx <= 2:
+            return np.arctan(2 - 4)
+        if 2 < xx < 6:
+            return np.arctan(xx - 4)
+        if 6 <= xx <= 8:
+            return np.arctan(6 - 4)
+
+    def fun(self, x):
+        return f_values_with_noise(self.raw_f, self.f__noise, x)
+
+
+class Example7(ExampleFunction):
+    def __init__(self, f__noise=None, f__r=3):
+        super().__init__(
+            f__a=0.0,
+            f__b=8.0,
+            f__r=f__r,
+            f__rho=1,
+            f__noise=f__noise
+        )
+
+    @staticmethod
+    def raw_f(xx):
+        if 0 <= xx <= 2:
+            return np.arctan(2 - 4)
+        if 2 < xx <= 8:
+            return np.arctan(xx - 4)
 
     def fun(self, x):
         return f_values_with_noise(self.raw_f, self.f__noise, x)

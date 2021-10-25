@@ -58,7 +58,7 @@ def worst_case_error(alg, lp_norm=2):
 
 def worst_case_error_n(alg, repeat_count, lp_norm=2):
     warnings.filterwarnings("ignore")
-    max_error = np.max([worst_case_error(alg, lp_norm) for i in range(repeat_count)])
+    max_error = np.max([worst_case_error(alg, lp_norm) for _ in range(repeat_count)])
 
     return max_error, alg.m, alg.example.f__noise
 

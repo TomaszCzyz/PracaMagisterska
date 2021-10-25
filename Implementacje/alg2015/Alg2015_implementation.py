@@ -99,18 +99,29 @@ class Alg2015:
 
     def step2(self):
         r = self.example.f__r
+        begin = max(self.i_max - r, 0)
+        end = self.i_max + 1
         p_neg = interp_newton(
-            self.t[self.i_max - r:self.i_max + 1],
-            self.y[self.i_max - r:self.i_max + 1]
+            self.t[begin:end],
+            self.y[begin:end]
         )
+        begin = self.i_max + r + 1
+        end = min(len(self.t), self.i_max + 2 * r + 1 + 1)
         p_pos = interp_newton(
-            self.t[self.i_max + r + 1: self.i_max + 2 * r + 1 + 1],
-            self.y[self.i_max + r + 1: self.i_max + 2 * r + 1 + 1]
+            self.t[begin:end],
+            self.y[begin:end]
         )
 
         u = self.u_1
         v = self.v_1
+        max_iter = 200
+        iter_count = 0
         while v - u > self.d:
+            if iter_count == max_iter:
+                print('max iteration count({}) has been reached in step2'.format(max_iter))
+                break
+            iter_count += 1
+
             if v - u < 1e-14:  # to avoid infinite loop caused by max precision
                 break
 
@@ -124,6 +135,7 @@ class Alg2015:
             else:
                 v = z[j_max]
 
+        print('iteration in step2: {}'.format(iter_count))
         self.u_2 = u.item()
         self.v_2 = v.item()
         self.p_neg = p_neg
@@ -145,7 +157,7 @@ class Alg2015:
 
             z_max = res['x']
 
-            if math.isclose(z_max, u, rel_tol=1e-14) or math.isclose(z_max, v, rel_tol=1e-14):  # => no local maximum
+            if abs(z_max - u) < 1e-10 or abs(z_max - v) < 1e-10:  # => no local maximum
                 logger.info('minimum was close ot interval edge')
                 break
 

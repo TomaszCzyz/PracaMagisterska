@@ -6,7 +6,7 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
 
-from Examples import Example1, Example2, Example3
+from Examples import Example1, Example2, Example3, Example4, Example5, Example6, Example7
 from Utilis import worst_case_error_n
 from alg2014.Alg2014_implementation import Alg2014
 from alg2015.Alg2015_implementation import Alg2015
@@ -103,12 +103,10 @@ class ResultsCollector:
 
 
 def create_example(example_name, delta=None, f__r=4):
-    if example_name == 'example1':
-        return Example1(delta, f__r)
-    if example_name == 'example2':
-        return Example2(delta, f__r)
-    if example_name == 'example3':
-        return Example3(delta, f__r)
+    name = example_name.capitalize()
+    if name[:7] == 'Example':
+        return globals()[name](delta, f__r)
+
     raise Exception("incorrect example function name")
 
 
@@ -179,13 +177,14 @@ def main():
 
     m_array = [int(10 ** log10_m) for log10_m in log10_m_array]
     noises = [None, 1e-12, 1e-8, 1e-4]
-
     n_runs = 1
-    alg, example = 'alg2015', 'example3'
+    alg, example = 'alg2015', 'Example2'
+    p_norm = 'infinity'
+    r = 4
 
     create_example(example).plot()
 
-    results = calculate(n_runs, m_array, noises, alg, example, p='infinity', parallel=True, f__r=3)
+    results = calculate(n_runs, m_array, noises, alg, example, p=p_norm, parallel=True, f__r=r)
 
     # alg = Alg2015(example=Example2(None), n_knots=8966)
     # results = alg.run()
@@ -198,8 +197,8 @@ if __name__ == '__main__':
     plt.rcParams['axes.linewidth'] = 0.1  # set the value globally
     plt.rcParams['font.size'] = 7
     plt.rcParams['font.family'] = 'sans-serif'
-    plt.rcParams['figure.dpi'] = 150
-    plt.rcParams['savefig.dpi'] = 150
+    plt.rcParams['figure.dpi'] = 175
+    plt.rcParams['savefig.dpi'] = 175
 
     logging.basicConfig(level=logging.INFO, filename='myapp.log')
 
