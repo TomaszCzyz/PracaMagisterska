@@ -35,26 +35,23 @@ class ResultsCollector:
         self.log10_errors_for_noise[alg_noise].append(-np.log10(error))
         self.log10_m_for_noise[alg_noise].append(np.log10(alg_m))
 
-        self.plot_results()
+        if self.finished_tasks / self.tasks_number >= 0.99:
+            self.plot_results()
 
     def plot_results(self, save=False):
-        if self.finished_tasks / self.tasks_number <= 0.99:
-            return
-
         fig, axs = plt.subplots(2, 2, sharex='all', sharey='all')
+        axs = axs.ravel()
 
         # data
-        axs = axs.ravel()
         x_min, x_max = min(self.log10_m_for_noise[None]), max(self.log10_m_for_noise[None])
         subplot_nr = 0
-        sorted_by_noise = sorted(self.log10_m_for_noise.keys(), key=lambda x: (x is not None, x))
-        for key_noise in sorted_by_noise:
+        for key_noise in sorted(self.log10_m_for_noise.keys(), key=lambda x: (x is not None, x)):
             axs[subplot_nr].plot(
                 sorted(self.log10_m_for_noise[key_noise]), sorted(self.log10_errors_for_noise[key_noise]),
                 c=['orange', 'grey', 'green', 'b'][subplot_nr],
                 marker=markers[-1],
                 linewidth=1,  # s=64,
-                label=u'\u03B4=' + "{:.0e}".format(key_noise if key_noise is not None else 0)
+                label=u'\u03B4=' + ("{:.0e}".format(key_noise) if key_noise is not None else '0')
             )
             m_original = np.array(np.floor(np.power(10, self.log10_m_for_noise[None])), dtype='float64')
             theoretical_error = np.power(m_original, -(self.data['f__r'] + 1))
@@ -130,7 +127,8 @@ def calculate(repeat_count, knots_counts, deltas, algorithm_name, example_fun_na
         'f__r': f__r,
         'p': p
     }
-    results_collector = ResultsCollector(len(knots_counts) * len(deltas), extra_data)
+    tasks_number = len(knots_counts) * len(deltas)
+    results_collector = ResultsCollector(tasks_number, extra_data)
 
     if parallel:
         with mp.Pool(processes=mp.cpu_count() - 2) as pool:
@@ -177,9 +175,10 @@ def main():
 
     m_array = [int(10 ** log10_m) for log10_m in log10_m_array]
     noises = [None, 1e-12, 1e-8, 1e-4]
-    n_runs = 1
-    alg, example = 'alg2015', 'Example2'
-    p_norm = 'infinity'
+    n_runs = 10
+    alg = 'alg2015'
+    example = 'Example2'
+    p_norm = 2
     r = 4
 
     create_example(example).plot()
@@ -194,7 +193,7 @@ def main():
 
 
 if __name__ == '__main__':
-    plt.rcParams['axes.linewidth'] = 0.1  # set the value globally
+    plt.rcParams['axes.linewidth'] = 0.1
     plt.rcParams['font.size'] = 7
     plt.rcParams['font.family'] = 'sans-serif'
     plt.rcParams['figure.dpi'] = 175

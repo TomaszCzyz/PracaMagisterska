@@ -6,12 +6,13 @@ rng = np.random.default_rng()
 
 
 class ExampleFunction(ABC):
-    def __init__(self, f__a, f__b, f__r, f__rho, f__noise):
+    def __init__(self, f__a, f__b, f__r, f__rho, f__noise, f__class):
         self.f__a = f__a
         self.f__b = f__b
         self.f__r = f__r
         self.f__rho = f__rho
         self.f__noise = f__noise
+        self.f__class = f__class
 
     def fun(self, x):
         pass
@@ -30,7 +31,8 @@ class Example1(ExampleFunction):
             f__b=2 * np.pi + 0.5,
             f__r=f__r,
             f__rho=1,
-            f__noise=f__noise
+            f__noise=f__noise,
+            f__class='discontinuous'
         )
 
     @staticmethod
@@ -51,7 +53,8 @@ class Example2(ExampleFunction):
             f__b=3 * np.pi,
             f__r=f__r,
             f__rho=1,
-            f__noise=f__noise
+            f__noise=f__noise,
+            f__class='continuous'
         )
 
     @staticmethod
@@ -72,7 +75,8 @@ class Example3(ExampleFunction):
             f__b=2.0,
             f__r=f__r,
             f__rho=1,
-            f__noise=f__noise
+            f__noise=f__noise,
+            f__class='continuous'
         )
 
     @staticmethod
@@ -90,7 +94,8 @@ class Example4(ExampleFunction):
             f__b=8.0,
             f__r=f__r,
             f__rho=1,
-            f__noise=f__noise
+            f__noise=f__noise,
+            f__class='discontinuous'
         )
 
     @staticmethod
@@ -113,7 +118,8 @@ class Example5(ExampleFunction):
             f__b=8.0,
             f__r=f__r,
             f__rho=1,
-            f__noise=f__noise
+            f__noise=f__noise,
+            f__class='discontinuous'
         )
 
     @staticmethod
@@ -136,7 +142,8 @@ class Example6(ExampleFunction):
             f__b=8.0,
             f__r=f__r,
             f__rho=1,
-            f__noise=f__noise
+            f__noise=f__noise,
+            f__class='continuous'
         )
 
     @staticmethod
@@ -159,7 +166,8 @@ class Example7(ExampleFunction):
             f__b=8.0,
             f__r=f__r,
             f__rho=1,
-            f__noise=f__noise
+            f__noise=f__noise,
+            f__class='continuous'
         )
 
     @staticmethod
@@ -197,3 +205,12 @@ def add_noise(values, noise):
         e = rng.uniform(-noise, noise, len(values))
         values = [values[i] + e[i] for i in range(len(values))]
     return values
+
+
+def print_all_examples():
+    name = 'Example'
+    i = 1
+    while name + str(i) in globals():
+        var = globals()[name + str(i)]()
+        var.plot()
+        i += 1

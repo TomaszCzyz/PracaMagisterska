@@ -27,7 +27,10 @@ class Alg2015:
 
         # "d" can easily reach edge precision!!! hence condition in step2
         # self.d = (self.r + 1) * self.h
-        self.d = self.h ** (self.example.f__r + self.example.f__rho)
+        if example.f__class == 'continuous':
+            self.d = (self.example.f__r + 1) * self.h
+        else:
+            self.d = self.h ** (self.example.f__r + self.example.f__rho)
 
         # following values could be local, but they are defined as class values
         # to make monitoring of algorithm easier
@@ -118,7 +121,7 @@ class Alg2015:
         iter_count = 0
         while v - u > self.d:
             if iter_count == max_iter:
-                print('max iteration count({}) has been reached in step2'.format(max_iter))
+                logger.info('max iteration count({}) has been reached in step2'.format(max_iter))
                 break
             iter_count += 1
 
@@ -135,7 +138,7 @@ class Alg2015:
             else:
                 v = z[j_max]
 
-        print('iteration in step2: {}'.format(iter_count))
+        logger.info('iteration in step2: {}'.format(iter_count))
         self.u_2 = u.item()
         self.v_2 = v.item()
         self.p_neg = p_neg
@@ -158,7 +161,7 @@ class Alg2015:
             z_max = res['x']
 
             if abs(z_max - u) < 1e-10 or abs(z_max - v) < 1e-10:  # => no local maximum
-                logger.info('minimum was close ot interval edge')
+                logger.info('minimum was close to interval edge')
                 break
 
             f_value = self.example.fun(z_max)
