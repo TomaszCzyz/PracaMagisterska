@@ -24,16 +24,17 @@
 \usepackage{enumerate}
 \usepackage{enumitem}
 \usepackage{mathtools}
-\usepackage{caption}
-\usepackage{float}
-\floatstyle{plaintop}
-\restylefloat{table}
-
 \usepackage{color}
+\usepackage{float}
 
 \usepackage[polish]{babel}
 \usepackage[OT4]{fontenc}
 \usepackage{polski}
+
+% \usepackage{arabtex}
+% {\makeatletter\long\gdef\@gobble#1{}}
+% \captionsetup{labelformat=empty}
+
 \allowdisplaybreaks
 %% <<<< BiBTeX >>>>
 % \bibliographystyle{ddabbrv}
@@ -525,10 +526,12 @@
     \end{equation}
     gdzie $\alpha<\bar{\alpha}<\bar{\beta}<\beta$, $z_{j} = \bar{\alpha} + (\bar{\beta} - \bar{\alpha})j/r$, dla $j=0,1,\dots,r$ oraz $\bar{h} = \beta - \alpha$ jest długością przedziału, na którym \textit{test} jest zdefiniowany.
 
-    \noindent
-    \begin{table}[h!]
-        \centering
-        \captionof{table}{Table Title} \label{tab:title} 
+    \vspace{10pt}
+    \begin{table}[H]
+        \begin{center}
+            \textbf{Algorytm oparty na wielomianach Lagrange'a}            
+        \end{center}
+
         \begin{tabular}{p{0.045\linewidth} p{0.85\linewidth}}
             \textit{K1:}    & Niech $\omega \coloneqq h^{r+\varrho}$, $B \coloneqq \emptyset$ \\
                             & \textbf{jeżeli} \(\displaystyle \max_{0 \leq i \leq p-1} (t_{i+1} - t_{i}) \leq 4\omega \) \textbf{wtedy} \\
@@ -538,11 +541,9 @@
                             & $\quad$ $A\coloneqq\max \left\{A_{g}^{i} \mid t_{j+1}-t_{j}>4 \omega,\; j=0,1, \ldots, p-1 \right\}$ \\
                             & $\quad$ \textbf{jeżeli} istnieją różne $k$ i $l$ takie, że $A = A_{g}^{k} \land A = A_{g}^{l}$ \textbf{wtedy} \\
                             & $\quad\quad$ idź do \textit{K3} \\
-                            & \\
         \end{tabular}
-    \end{table}
-    \noindent
-    \begin{table}[h!]
+    \end{table} \vspace{-20pt}
+    \begin{table}[H]
         \begin{tabular}{p{0.045\linewidth} p{0.85\linewidth}}
         \textit{K2:}    & Niech $[t_{k}, t_{k+1}]$ - przedział otrzymany w \textit{K1} \\
                         & Niech $[\alpha,\beta] = [t_{k}, t_{k+1}]$ oraz $B = B \cup \{\alpha, \beta\}$ \\
@@ -553,11 +554,9 @@
                         & $\quad$\textbf{w p.p.} \\
                         & $\quad$$\quad$za następny przedział $[\alpha, \beta]$ wybierz podprzedział $[\alpha, v]$ lub $[v, \beta]$, \\
                         & $\quad$$\quad$dla którego wartość testu była większa \\
-                        &  \\
         \end{tabular}
-    \end{table}
-    \noindent
-    \begin{table}[h!]
+    \end{table} \vspace{-20pt}
+    \begin{table}[H]
         \begin{tabular}{p{0.045\linewidth} p{0.85\linewidth}}
         \textit{K3:}    & Niech $\bar{M} = \left\{ t_{0}, \dots, t_{m} \right\} \cup B$ będzie podziałem zdefiniownym punktami $\alpha = t_{0} < t_{1} < \ldots < t_{k} = \beta$, gdzie $k = m + \mathcal{O}(\log m)$ \\
                         & $\varphi^{KP}(x)= \begin{cases}
@@ -591,19 +590,21 @@
     Na początku, algorytm aproksymuje punkt osobliwy $\po_f$. Jest to realizowane w trzech krokach. W kroku 1. przy pomocy siatki o rozmiarze długości $h$ i różnic dzielonych lokalizowany jest punkt $\po_f$ na przedziale $[u_1, v_1]$ o długości $(r + 1)h$. W kroku 2. używamy wielomianów interpolujących $\tilde{p}_+$ i $\tilde{p}_-$ do zwężenia tego przedziału do $[u_2, v_2]$. Krok 3. produkuje przedział $[u_3, v_3] \subseteq [u_2, v_2]$, w którym różnica $|\tilde{p}_{+} - \tilde{p}_{-}|$ jest nierosnąca na $[u_3, \xi]$ i niemalejąca na $[\xi, v_3]$, gdzie $\xi$ jest finalną aproksymacją $\po_f$.
 
     Oznaczenia $\argmax_{j} \psi_{j}$ oraz $\argmin_{j} \psi_{j}$ użyte w algorytmie oznaczają argument $j$ maksymalizujący oraz minimalizujący $\psi_{j}$ względem $j$.
-    \vspace{10pt}
-
-    \newpage
-    \textbf{Algorytm oparty na różnicach dzielonych}
 
     \vspace{10pt}
-    \noindent
-    \begin{tabular}{p{0.045\linewidth} p{0.85\linewidth}}        
-        \textit{K1} & Oblicz różnice dzielone $\tilde{d}_i = \tilde{f}[t_i, \ldots, t_{i+r+1}]$ for $1 \leq i \leq m $ oraz znajdź \\
-                        & \(\displaystyle \qquad i^* = \argmax_{1 \leq i \leq m }|\tilde{d}_i| \)  \\
-                        & Niech $u_1 = t_{i^*}$ i $v_1 = t_{i^* + r + 1}$. \\
-                        & \\
+    \begin{table}[H]
+        \begin{center}
+            \textbf{Algorytm oparty na różnicach dzielonych}            
+        \end{center}
 
+        \begin{tabular}{p{0.045\linewidth} p{0.85\linewidth}}        
+            \textit{K1}     & Oblicz różnice dzielone $\tilde{d}_i = \tilde{f}[t_i, \ldots, t_{i+r+1}]$ for $1 \leq i \leq m $ oraz znajdź \\
+                            & \(\displaystyle \qquad i^* = \argmax_{1 \leq i \leq m }|\tilde{d}_i| \)  \\
+                            & Niech $u_1 = t_{i^*}$ i $v_1 = t_{i^* + r + 1}$. \\
+        \end{tabular}
+    \end{table} \vspace{-20pt}
+    \begin{table}[H]
+        \begin{tabular}{p{0.045\linewidth} p{0.85\linewidth}}
         \textit{K2} & Oznaczymy przez $\tilde{p}_+$ i $\tilde{p}_-$ wielomiany stopnia $ \leq r$, które interpolują węzły $(t_j, \tilde{f}(t_j))$ odpowiednio dla $i^* - r \leq j \leq i^*$ oraz dla $i^* + r + 1 \leq j \leq i^* + 2r + 1$. Następnie wykonaj iterację: \\
                         & $u := u_1$, $v := v_1$ \\
                         & \textbf{dopóki} $v-u > \omega$ \textbf{wykonuj}: \\
@@ -615,8 +616,10 @@
                         & $\quad\quad$$v:= z_{j^*}$ \\
                         & \textbf{koniec} \\
                         & Niech $u_2 = u$ i $v_2 = v$. \\
-                        & \\
-
+        \end{tabular}
+    \end{table} \vspace{-20pt}
+    \begin{table}[H]
+        \begin{tabular}{p{0.045\linewidth} p{0.85\linewidth}}
         \textit{K3} & Wykonaj iterację: \\
                         & $u := u_2$, $v := v_2$ \\
                         & \textbf{dopóki} istnieje maksimum lokalne $|\tilde{p}_{+} - \tilde{p}_{-}|$ na $(u,v)$ \textbf{wykonuj} \\
@@ -627,7 +630,8 @@
                         & $\quad\quad$$v:= z$ \\
                         & \textbf{koniec} \\
                         & Niech $u_3 = u$ i $v_3 = v$.
-    \end{tabular} \vspace{10pt}
+        \end{tabular}
+    \end{table}
 
     Finalną aproksymacją $\po_f$ jest
     \begin{equation*}
@@ -988,7 +992,7 @@
         \begin{equation*}
             \left|f(x)-\tilde{p}_{i}(x)\right| \leq\left|f(x)-p_{i}(x)\right|+\left|\tilde{p}_{i}(x)-p_{i}(x)\right|
         \end{equation*}
-        Jeżeli $x \in\left[t_{i}, t_{i+r}\right]$, wtedy, z wyrażenia na błąd interpolacji Lagrange'a dla pierwszego członu powyższej sumy mamy:
+        Jeżeli $x \in\left[t_{i}, t_{i+r}\right]$, wtedy, z wyrażenia na błąd interpolacji Lagrange'a dla pierwszego członu powyższej sumy, mamy:
         \begin{equation*}
             \begin{aligned}
                 \left|f(x)-p_{i}(x)\right| &=\left|\left(x-t_{i}\right) \cdots\left(x-t_{i+r}\right) f\left[t_{i}, \ldots, t_{i+r}, x\right]\right| \\
@@ -1091,7 +1095,7 @@
     \textit{Przypadek I}: $\po_{f} \notin (u_{1}, v_{1}]$.
     Przy takich założeniach, z lematu \eqref{lem:algMP_1} oraz z \eqref{eq:algMP_7} mamy, że
     \begin{equation*}
-        |\tilde{d}_{i}| \leq B_{r}(b, f) h^{\varrho-1} \quad \text{z} B_{r}(b, f)=\frac{c\left(g_{f}\right)(r+1)^{\varrho}+b 2^{r+1}}{(r+1) !}.
+        |\tilde{d}_{i}| \leq B_{r}(b, f) h^{\varrho-1} \quad \text{z } B_{r}(b, f)=\frac{c\left(g_{f}\right)(r+1)^{\varrho}+b 2^{r+1}}{(r+1) !}.
     \end{equation*}
 
     Przypuśćmy, że $\varphi_{h}^{*}(y)(x) = \tilde{p}_{i}(x)$ dla pewnego $i$. Jeżeli $x \notin [u_{1}, v_{1})$, wtedy $x \in [t_{i}, t_{i+r})$ (albo $x \in [t_{i-1/2}, t_{i+1/2})$ dla $r=0$) oraz $[t_{i}, t_{i+r}] \cap (u_{1}, v_{1}) = \emptyset$. Wtedy z lematów \ref{lem:algMP_2} i \ref{lem:algMP_3} wiemy, że błąd aproksymacji w punkcie $x$ jest ograniczony z góry przez $C_{r,\varrho}(f)h^{r+\varrho} + \delta \Lambda_{r}$ dla $t_{f} \notin (t_{i}, t_{i+r}]$ (albo $\po_{f} \notin [x_{i-1/2}, x_{i+1/2})$ dla $r=0$) lub przez $E_{r}(f)h^{r+\varrho} + \delta \Lambda_{r}$ w przeciwnym przypadku, gdzie $E_{r}(f) = D_{r}(B_{r}(b, f), f)$.

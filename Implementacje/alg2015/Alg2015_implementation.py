@@ -1,6 +1,5 @@
 import bisect
 import logging
-import math
 
 import numpy as np
 from scipy.optimize import minimize_scalar
@@ -117,20 +116,13 @@ class Alg2015:
 
         u = self.u_1
         v = self.v_1
-        max_iter = 200
+
         iter_count = 0
         while v - u > self.d:
-            if iter_count == max_iter:
-                logger.info('max iteration count({}) has been reached in step2'.format(max_iter))
-                break
-            iter_count += 1
-
-            if v - u < 1e-14:  # to avoid infinite loop caused by max precision
-                break
 
             z = [u + j * (v - u) / (r + 2) for j in range(1, r + 2)]
             dif = [np.abs(p_pos(z_j) - p_neg(z_j)) for z_j in z]
-            j_max = np.argmax(dif)
+            j_max = np.argmax(dif).item()
             f_value = self.example.fun(z[j_max])
 
             if abs(f_value - p_neg(z[j_max])) <= abs(f_value - p_pos(z[j_max])):
@@ -175,7 +167,7 @@ class Alg2015:
         v_3 = v
 
         res = minimize_scalar(
-            fun=lambda x: np.abs(self.p_neg(x) - self.p_pos(x)),
+            fun=lambda x: -1.0 * np.abs(self.p_neg(x) - self.p_pos(x)),
             bounds=(u_3, v_3),
             method='bounded')
 

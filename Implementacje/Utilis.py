@@ -113,3 +113,21 @@ def interp_newton(xvals, yvals):
         return return_val
 
     return f
+
+
+def maximize_primitive(fun, a, b, num=100):
+    fun_max = -float("inf")
+    arg_max = None
+
+    dx = (b - a) / num
+    dx = dx if dx > 1e-14 else 1e-14
+    xval = a + dx
+    while xval < b:
+        value = fun(xval)
+        if value > fun_max:
+            fun_max = value
+            arg_max = xval
+
+        xval += dx
+
+    return arg_max

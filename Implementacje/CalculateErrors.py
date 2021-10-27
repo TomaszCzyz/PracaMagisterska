@@ -175,7 +175,7 @@ def main():
 
     m_array = [int(10 ** log10_m) for log10_m in log10_m_array]
     noises = [None, 1e-12, 1e-8, 1e-4]
-    n_runs = 10
+    n_runs = 1
     alg = 'alg2015'
     example = 'Example2'
     p_norm = 2
@@ -183,7 +183,7 @@ def main():
 
     create_example(example).plot()
 
-    results = calculate(n_runs, m_array, noises, alg, example, p=p_norm, parallel=True, f__r=r)
+    results = calculate(n_runs, m_array, noises, alg, example, p=p_norm, parallel=False, f__r=r)
 
     # alg = Alg2015(example=Example2(None), n_knots=8966)
     # results = alg.run()
@@ -192,13 +192,16 @@ def main():
     return results
 
 
-if __name__ == '__main__':
+def apply_global_plot_styles():
     plt.rcParams['axes.linewidth'] = 0.1
     plt.rcParams['font.size'] = 7
     plt.rcParams['font.family'] = 'sans-serif'
     plt.rcParams['figure.dpi'] = 175
     plt.rcParams['savefig.dpi'] = 175
 
+
+if __name__ == '__main__':
+    apply_global_plot_styles()
     logging.basicConfig(level=logging.INFO, filename='myapp.log')
 
     start_datetime = datetime.now()
