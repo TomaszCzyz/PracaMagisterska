@@ -1,6 +1,5 @@
 import bisect
 import logging
-import math
 
 import numpy as np
 
@@ -68,7 +67,7 @@ class Alg2014:
                     elif largest_result > test_result > second_largest_result:
                         second_largest_result = test_result
 
-            if math.isclose(largest_result, second_largest_result, rel_tol=1e-14):
+            if largest_result - second_largest_result < 1e-14:
                 return
 
         self.step1_interval = (self.t[largest_result_index], self.t[largest_result_index + 1])
@@ -93,7 +92,7 @@ class Alg2014:
             a1 = self.a_test(a_new, a_new + self.d, v - self.d, v)
             a2 = self.a_test(v, v + self.d, b_new - self.d, b_new)
 
-            if math.isclose(a1, a2, rel_tol=1e-14):
+            if a1 - a2 < 1e-14:
                 return
 
             if a1 > a2:

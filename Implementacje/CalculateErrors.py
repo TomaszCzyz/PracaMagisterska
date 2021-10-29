@@ -1,6 +1,7 @@
 import logging
 import multiprocessing as mp
 import os
+import sys
 from datetime import datetime
 
 import matplotlib.pyplot as plt
@@ -11,7 +12,18 @@ from Utilis import worst_case_error_n
 from alg2014.Alg2014_implementation import Alg2014
 from alg2015.Alg2015_implementation import Alg2015
 
-markers = ['v', '^', '<', '>', 's', 'd', ',', 'x', 'o', '+', '.', '1', '_', '.']
+markers = ['1', '2', '1', '2']
+colors = ['orange', 'grey', 'green', 'b']
+SUB = str.maketrans("0123456789", "₀₁₂₃₄₅₆₇₈₉")
+SUP = str.maketrans("0123456789-=()", "⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁼⁽⁾")
+
+
+def apply_global_plot_styles():
+    plt.rcParams['axes.linewidth'] = 0.1
+    plt.rcParams['font.size'] = 7
+    plt.rcParams['font.family'] = 'sans-serif'
+    plt.rcParams['figure.dpi'] = 175
+    plt.rcParams['savefig.dpi'] = 175
 
 
 class ResultsCollector:
@@ -36,43 +48,50 @@ class ResultsCollector:
         self.log10_m_for_noise[alg_noise].append(np.log10(alg_m))
 
         if self.finished_tasks / self.tasks_number >= 0.99:
-            self.plot_results()
+            self.plot_results_2()
 
-    def plot_results(self, save=False):
-        fig, axs = plt.subplots(2, 2, sharex='all', sharey='all')
-        axs = axs.ravel()
+    def plot_results_2(self, save=False):
+        fig, ax = plt.subplots()
 
-        # data
         x_min, x_max = min(self.log10_m_for_noise[None]), max(self.log10_m_for_noise[None])
-        subplot_nr = 0
-        for key_noise in sorted(self.log10_m_for_noise.keys(), key=lambda x: (x is not None, x)):
-            axs[subplot_nr].plot(
-                sorted(self.log10_m_for_noise[key_noise]), sorted(self.log10_errors_for_noise[key_noise]),
-                c=['orange', 'grey', 'green', 'b'][subplot_nr],
-                marker=markers[-1],
-                linewidth=1,  # s=64,
-                label=u'\u03B4=' + ("{:.0e}".format(key_noise) if key_noise is not None else '0')
-            )
-            m_original = np.array(np.floor(np.power(10, self.log10_m_for_noise[None])), dtype='float64')
-            theoretical_error = np.power(m_original, -(self.data['f__r'] + 1))
-            reference_line = -np.log10(theoretical_error)
-            axs[subplot_nr].plot(sorted(self.log10_m_for_noise[None]), sorted(reference_line), linestyle='--',
-                                 linewidth=1, color='grey')
+        m_original = np.array(np.floor(np.power(10, self.log10_m_for_noise[None])), dtype='float64')
+        theoretical_error = np.power(m_original, -(self.data['f__r'] + 1))
+        reference_line = -np.log10(theoretical_error)
 
-            axs[subplot_nr].legend(numpoints=1)
-            axs[subplot_nr].grid(linewidth=0.5, linestyle=':')
-            axs[subplot_nr].xaxis.set_tick_params(width=0.5, color='grey')
-            axs[subplot_nr].yaxis.set_tick_params(width=0.5, color='grey')
+        subplot_nr = 0
+        for key_noise in sorted(self.log10_m_for_noise.keys(), key=lambda x: (x is not None, x), reverse=False):
+            plt.plot(
+                sorted(self.log10_m_for_noise[key_noise]), sorted(self.log10_errors_for_noise[key_noise]),
+                c=colors[subplot_nr],
+                marker=markers[subplot_nr],
+                linewidth=1,
+                label=u'\u03B4=' + ("{:.0e}".format(key_noise) if key_noise is not None else '0')
+                # alpha=0.5
+            )
             subplot_nr += 1
+
+        plt.plot(
+            sorted(self.log10_m_for_noise[None]), sorted(reference_line),
+            color='grey',
+            linestyle='--',
+            linewidth=1,
+            label=("m{}".format(-(self.data['f__r'] + 1))).translate(SUP),
+        )
+
+        plt.grid(linewidth=0.5, linestyle=':')
+        plt.legend(numpoints=1)
+        ax.xaxis.set_tick_params(width=0.5, color='grey')
+        ax.yaxis.set_tick_params(width=0.5, color='grey')
 
         # description and general plot styles
         fig.text(0.5, 0.02, u'log\u2081\u2080m', ha='center')
         fig.text(0.01, 0.5, u'-log\u2081\u2080err', va='center', rotation='vertical')
-        plt.suptitle("{} for {}(r={}, p={})\nbased on {} sample functions".format(
+        plt.suptitle("{} for {}(r={}, p={})\nbased on {} sample functions ({})".format(
             self.data['algorithm_name'], self.data['example_fun_name'],
             self.data['f__r'],
             self.data['p'],
-            self.data['executions_number']))
+            self.data['executions_number'],
+            datetime.now()))
         plt.subplots_adjust(left=0.08, bottom=0.08, right=0.98, top=0.9,
                             wspace=0.07, hspace=0.1)
         plt.xlim([x_min - 0.2, x_max + 0.2])
@@ -107,11 +126,11 @@ def create_example(example_name, delta=None, f__r=4):
     raise Exception("incorrect example function name")
 
 
-def create_algorithm(algorithm_name, example_function, knots_number):
+def create_algorithm(algorithm_name, example_function, knots_number, p=2):
     if algorithm_name == 'alg2014':
         return Alg2014(example_function, knots_number)
     if algorithm_name == 'alg2015':
-        return Alg2015(example_function, knots_number)
+        return Alg2015(example_function, knots_number, p)
     raise Exception("incorrect algorithm name")
 
 
@@ -139,7 +158,7 @@ def calculate(repeat_count, knots_counts, deltas, algorithm_name, example_fun_na
                           .format(repeat_count, knots_number, noise))
 
                     function = create_example(example_fun_name, noise, f__r=f__r)
-                    alg = create_algorithm(algorithm_name, function, knots_number)
+                    alg = create_algorithm(algorithm_name, function, knots_number, p)
 
                     apply_result = pool.apply_async(
                         func=worst_case_error_n,
@@ -171,38 +190,30 @@ def calculate(repeat_count, knots_counts, deltas, algorithm_name, example_fun_na
 
 
 def main():
-    log10_m_array = np.linspace(1.3, 4.4, num=20)  # 10 ** 4.7 =~ 50118
+    log10_m_array = np.linspace(1.3, 4.4, num=28)  # 10 ** 4.7 =~ 50118
 
     m_array = [int(10 ** log10_m) for log10_m in log10_m_array]
     noises = [None, 1e-12, 1e-8, 1e-4]
-    n_runs = 1
+    n_runs = 10
     alg = 'alg2015'
-    example = 'Example2'
-    p_norm = 2
+    example = 'Example4'
+    p_norm = 'infinity'
     r = 4
 
     create_example(example).plot()
 
-    results = calculate(n_runs, m_array, noises, alg, example, p=p_norm, parallel=False, f__r=r)
-
-    # alg = Alg2015(example=Example2(None), n_knots=8966)
+    results = calculate(n_runs, m_array, noises, alg, example, p=p_norm, parallel=True, f__r=r)
+    # alg = Alg2015(example=Example2(None), n_knots=35, p=p_norm)
     # results = alg.run()
 
     print("FINISHED")
     return results
 
 
-def apply_global_plot_styles():
-    plt.rcParams['axes.linewidth'] = 0.1
-    plt.rcParams['font.size'] = 7
-    plt.rcParams['font.family'] = 'sans-serif'
-    plt.rcParams['figure.dpi'] = 175
-    plt.rcParams['savefig.dpi'] = 175
-
-
 if __name__ == '__main__':
     apply_global_plot_styles()
-    logging.basicConfig(level=logging.INFO, filename='myapp.log')
+    logging.basicConfig(level=logging.INFO, filename='myapp.log', format="%(asctime)s:%(message)s")
+    logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 
     start_datetime = datetime.now()
     logging.info('Started at %s', start_datetime.strftime("%d/%m/%Y %H:%M:%S"))
@@ -217,7 +228,7 @@ if __name__ == '__main__':
 
     # %%
 
-    main_callback.plot_results(save=True)
+    # main_callback.plot_results(save=True)
 
     # Example2(None)
     # alg = Alg2015(example=example_function, n_knots=8966)

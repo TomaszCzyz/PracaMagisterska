@@ -2,10 +2,9 @@ import bisect
 import logging
 
 import numpy as np
-from scipy.optimize import minimize_scalar
 
 from Examples import ExampleFunction
-from Utilis import interp_newton
+from Utilis import interp_newton, max_local_primitive
 
 logger = logging.getLogger(__name__)
 
@@ -16,9 +15,10 @@ class Alg2015:
     n_knots - initial mesh resolution
     """
 
-    def __init__(self, example: ExampleFunction, n_knots):
+    def __init__(self, example: ExampleFunction, n_knots, p):
         self.example = example
         self.m = n_knots
+        self.p = 1 if p == 'infinity' else p
 
         self.t = np.linspace(self.example.f__a, self.example.f__b, self.m + 1, dtype='float64')
         self.y = example.fun(self.t)
@@ -29,7 +29,8 @@ class Alg2015:
         if example.f__class == 'continuous':
             self.d = (self.example.f__r + 1) * self.h
         else:
-            self.d = self.h ** (self.example.f__r + self.example.f__rho)
+            omega = self.h ** ((self.example.f__r + self.example.f__rho) * self.p + 1)
+            self.d = omega if omega > 5e-15 else 5e-15
 
         # following values could be local, but they are defined as class values
         # to make monitoring of algorithm easier
@@ -45,45 +46,40 @@ class Alg2015:
         self.ksi = None
 
     def run(self):
-        logger.info("executing alg2015 dla m={}".format(self.m))
+        logger.info("executing alg2015 dla m={} and noise={}".format(self.m, self.example.f__noise))
         self.step1()
         self.step2()
         self.step3()
 
         approx = []
-        current_knot = self.t[0]
-        # before (u_1, v_1)
-        for i in range(self.i_max):
-            next_knot = self.t[i + 1]
+        r = self.example.f__r
 
-            knots = np.linspace(current_knot, next_knot, self.example.f__r + 1)
-            values = self.example.fun(knots)
+        # before (u_1, v_1)
+        # for i in range(0, self.i_max - r + 1):  # also working without step r
+        for i in range(0, self.i_max - r, r):
+            knots = self.t[i:i + r + 1]
+            values = self.y[i:i + r + 1]
             polynomial = interp_newton(knots, values)
 
-            approx.append((current_knot, polynomial))
-
-            current_knot = next_knot
+            approx.append((self.t[i], polynomial))
 
         # on (u_1, v_1)
-        approx.append((self.u_1, self.p_neg))
+        approx.append((self.t[self.i_max - r], self.p_neg))
+        # approx.append((self.t[self.i_max - r + 1], self.p_neg))  # approx.append((self.u_1, self.p_neg))
         approx.append((self.ksi, self.p_pos))
 
-        v_1_index = self.i_max + self.example.f__r + 1
-        current_knot = self.t[v_1_index]
+        p_pos_end_index = self.i_max + 2 * r + 1 + 1
         # after (u_1, v_1)
-        for i in range(v_1_index, len(self.t) - 1):
-            next_knot = self.t[i + 1]
-
-            knots = np.linspace(current_knot, next_knot, self.example.f__r + 1)
-            values = self.example.fun(knots)
+        # for i in range(v_1_index, len(self.t) - r + 1):  # also working without step r
+        for i in range(p_pos_end_index, len(self.t), r):
+            knots = self.t[i:i + r + 1]
+            values = self.y[i:i + r + 1]
             polynomial = interp_newton(knots, values)
 
-            approx.append((current_knot, polynomial))
-
-            current_knot = next_knot
+            approx.append((self.t[i], polynomial))
 
         # no the right edge of initial interval
-        approx.append((self.t[-1], lambda x: self.example.fun(self.t[-1])))
+        approx.append((self.t[-1], lambda x: self.y(self.t[-1])))
 
         np_approx = np.array(approx)
 
@@ -101,14 +97,14 @@ class Alg2015:
 
     def step2(self):
         r = self.example.f__r
-        begin = max(self.i_max - r, 0)
+        begin = self.i_max - r
         end = self.i_max + 1
         p_neg = interp_newton(
             self.t[begin:end],
             self.y[begin:end]
         )
         begin = self.i_max + r + 1
-        end = min(len(self.t), self.i_max + 2 * r + 1 + 1)
+        end = self.i_max + 2 * r + 1 + 1
         p_pos = interp_newton(
             self.t[begin:end],
             self.y[begin:end]
@@ -119,6 +115,7 @@ class Alg2015:
 
         iter_count = 0
         while v - u > self.d:
+            iter_count += 1
 
             z = [u + j * (v - u) / (r + 2) for j in range(1, r + 2)]
             dif = [np.abs(p_pos(z_j) - p_neg(z_j)) for z_j in z]
@@ -140,20 +137,21 @@ class Alg2015:
         u = self.u_2
         v = self.v_2
 
+        def inter_diff(x):
+            return abs(self.p_neg(x) - self.p_pos(x))
+
+        iter_count = 0
         while True:
-            res = minimize_scalar(
-                fun=lambda x: -1 * abs(self.p_neg(x) - self.p_pos(x)),
-                # "-1" because we are looking for maximum, not minimum
-                bounds=(u, v),
-                method='bounded'
-            )
-            if not res.success:
+            iter_count += 1
+
+            z_max = max_local_primitive(inter_diff, u, v)
+
+            if z_max is None:
+                logger.info('local maximum not found')
                 break
 
-            z_max = res['x']
-
-            if abs(z_max - u) < 1e-10 or abs(z_max - v) < 1e-10:  # => no local maximum
-                logger.info('minimum was close to interval edge')
+            if abs(z_max - u) < 2e-14 or abs(z_max - v) < 2e-14:
+                logger.info('local maximum was on interval edge')
                 break
 
             f_value = self.example.fun(z_max)
@@ -163,18 +161,16 @@ class Alg2015:
             else:
                 v = z_max
 
+        logger.info('iteration in step3: {}'.format(iter_count))
+
         u_3 = u
         v_3 = v
 
-        res = minimize_scalar(
-            fun=lambda x: -1.0 * np.abs(self.p_neg(x) - self.p_pos(x)),
-            bounds=(u_3, v_3),
-            method='bounded')
+        ksi = max_local_primitive(lambda x: -1.0 * inter_diff(x), u_3, v_3)
+        if ksi is None:
+            logger.info("assigning ksi = u_3, because interval (u3, v3) was too small")
+            ksi = u_3
 
-        if not res.success:
-            raise Exception('could not minimize function form step 3')
-
-        ksi = res['x']
         self.u_3 = u_3
         self.v_3 = v_3
         self.ksi = ksi

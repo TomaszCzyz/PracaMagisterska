@@ -26,14 +26,12 @@
 \usepackage{mathtools}
 \usepackage{color}
 \usepackage{float}
+\usepackage{graphicx}
+\graphicspath{ {./images/} }
 
 \usepackage[polish]{babel}
 \usepackage[OT4]{fontenc}
 \usepackage{polski}
-
-% \usepackage{arabtex}
-% {\makeatletter\long\gdef\@gobble#1{}}
-% \captionsetup{labelformat=empty}
 
 \allowdisplaybreaks
 %% <<<< BiBTeX >>>>
@@ -70,9 +68,9 @@
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\Pra}{\mathbb{Pra}}
 \newcommand{\F}{\mathcal{F}}
+\newcommand{\1}{\mathbbm{1}}
 \newcommand{\Galphabeta}{\mathcal{G}_{r,\varrho}([\alpha,\beta])}
 \newcommand{\G}{\mathcal{G}_{r,\varrho}}
-\newcommand{\1}{\mathbbm{1}}
 \newcommand{\wor}{\mathrm{wor}}
 \newcommand{\reg}{\mathrm{reg}}
 \newcommand{\cost}{\mathrm{cost}}
@@ -145,13 +143,13 @@
 \section{Informacja, algorytm, aproksymacja}
 
 
-    W tym rozdziale wyjaśnijmy co rozumiemy przez aproksymację i w jaki sposób ją otrzymujemy. W tym celu wprowadzimy fundamentalne pojęcia, takie jak operator rozwiązania, informacja zaburzona oraz algorytm. Szczególną uwagę poświęcimy informacji która, mówiąc w skrócie, jest tym co wiemy o problemie do rozwiązania. W~niniejszej pracy kluczownym założeniem jest zaburzenie informacji, tzn. otrzymujemy ją z jakimś błędem. Taką informację nazywamy \textit{niedokładną} lub zaburzoną.
+    W tym rozdziale wyjaśnijmy co rozumiemy przez aproksymację i w jaki sposób ją otrzymujemy. W tym celu wprowadzimy fundamentalne pojęcia, takie jak operator rozwiązania, informacja niedokładna oraz algorytm. Szczególną uwagę poświęcimy informacji która, mówiąc w skrócie, jest tym co wiemy o problemie do rozwiązania. Głównym założeniem tej pracy jest warunek, że informację o funkcji otrzymujemy z pewnym błędem. Taką informację nazywamy \textit{niedokładną} lub \textit{zaburzoną}.
 
     Niech $F$ będzie przestrznią liniową a $G$ przestrzenią unormowaną, obie nad ciałem liczb rzeczywistych. Odwzorowanie 
     \begin{equation*}
         S : F \rightarrow G
     \end{equation*}
-    nazywamy \textit{operatorem rozwiązania}. Dla każdego elementu $f$ z $F$ chcemy obliczyć aproksymację $S(f)$. Niech $U(f)$ będzie obliczoną aproksymacją.
+    nazywamy \textit{operatorem rozwiązania}. Elementy z $f$ z $F$ nazywane są \textit{problemami}, a elementy $S(f)$ \textit{rozwiązaniami}. Dla każdego problemu $f$ chcemy obliczyć aproksymację rozwiązania $S(f)$. Niech $U(f)$ będzie obliczoną aproksymacją.
 
     Niech $\varepsilon \geq 0$. Mówimy, że $S(f)$ jest $\varepsilon$-aprkosymacją funkcji $f$ wtedy i tylko wtedy, gdy $\| S(f) -  U(f)\| \leq \varepsilon$. Celem jest znalezienie takiej aproksymacji $U(f)$, że jest ona $\varepsilon$-aprkosymacją dla wszysktich elementów $f$ z $F$. Aby to zrobić potrzebujemy posiadać pewną wiedzę o $f$.
 
@@ -166,8 +164,8 @@
     \begin{equation*}
         N(f) = \left[ L_{1}(f), L_{2}(f), \ldots, L_{n}(f) \right] \; \forall f \in F.
     \end{equation*}
-    W tym przypadku poszczególne funkcjonały informacji zależą tylko od funkcji $f$ i są obliczane niezależnie.
-    Ogólniejszą klasą jest informacja adaptacyjna, w której możemy wybierać wartości bazując na poprzednich wynikach. Mówiąc dokłądniej, informacja $N$ jest adaptacyjna wtedy i tylko wtedy, gdy
+    W tym przypadku poszczególne funkcjonały informacji zależą tylko od elementu $f$ i są obliczane niezależnie.
+    Ogólniejszą klasą jest informacja adaptacyjna, w której możemy wybierać wartości funkcjonałów bazując na poprzednich wynikach. Mówiąc dokładniej, informacja $N$ jest adaptacyjna wtedy i tylko wtedy, gdy
     \begin{equation*}
         N(f) = \left[ L_{1}(f), L_{2}(f; y_{1}), \ldots, L_{i}(f; y_{1}, \ldots, y_{n(f)-1}) \right],
     \end{equation*}
@@ -177,48 +175,65 @@
 
     W niniejszej pracy zakładamy, że $f$ jest funkcją, a jedynymi dostępnymi funkcjonałami informacji są wartości funkcji w punktach. Informację nieadaptacyjną oraz adaptacyjną możemy więc zapisać w postaci $N(f) = \left[ f(t_{1}), f(t_{2}), \ldots, f(t_{n(f)}) \right]$. Jeżeli $n(f) = n$ i punkty $t_{i}$ otrzymujemy \textit{a priori}, wtedy $N$ jest nieadaptacyjna. Natomiast, jeżeli $n(f)$ różni się lub wybór punktów $t_{i}$ jest zależny od $f(t_{1}), f(t_{2}), \ldots, f(t_{i-1})$, to $N$ jest adaptacyjna.
 
-    Kluczowym założeniem jest fakt, że informacje o funkcji uzyskujemy z pewnym błędem. Mówiąc dokłądniej, inforamacje o funkcji przyjmują postać $y_{i} = f(x_{i}) + e_{i}$, dla $1 \leq i \leq n$, gdzie $|e_{i}| \leq \delta$ to tak zwany \textit{szum}.
+    Kluczowym założeniem jest fakt, że informacje o funkcji uzyskujemy z pewnym błędem. Mówiąc dokładniej, inforamacje o funkcji przyjmują postać $y_{i} = f(x_{i}) + e_{i}$, dla $1 \leq i \leq n$, gdzie $|e_{i}| \leq \delta$ to tak zwany \textit{szum}.
     
-    Dla przykładu, dla informacji nieadaptacyjnej składającej się z zaburzonych ewaluacji funkcji $f$ w punktach $x_{1}, \dots, x_{n}$ z precyzją $\delta$, mamy:
+    Dla przykładu, dla informacji nieadaptacyjnej składającej się z zaburzonych ewaluacji funkcji $f$ w punktach $t_{1}, \dots, t_{n}$ z precyzją $\delta$, mamy
     \begin{equation*}
-        N(f) = \{y \in \R^{n} : \quad |y_{i} - f(x_{i})| \leq \delta, \quad 1 \leq i \leq n\}
+        N(f) = \{y \in \R^{n} : \quad |y_{i} - f(t_{i})| \leq \delta, \quad 1 \leq i \leq n\}.
     \end{equation*}
     
-    Każdy element $y \in N(f)$ będziemy nazywać \textit{informacją o $f$}. Zauważmy, że dla $\delta = 0$, zbiór $N(f)$ ma dokładnie jeden element dla wszystkich $f \in F$, tzn. informacja $N$ jest \textit{dokładna}. Zakładamy, że $N(f)$ jest niepuste dla wszystkich $f \in F$. W przypadku, gdy istnieje $f$ dla którego $N(f)$ ma przynajmniej dwa elementy, wtedy informacja jest \textit{niedokładna (częściowa)}.
+    Każdy element $y \in N(f)$ będziemy nazywać \textit{informacją o $f$}. Zauważmy, że dla $\delta = 0$, zbiór $N(f)$ ma dokładnie jeden element dla wszystkich $f \in F$, tzn. informacja $N$ jest \textit{dokładna}. Zakładamy, że $N(f)$ jest niepuste dla wszystkich $f \in F$. W przypadku, gdy istnieje $f$ dla którego $N(f)$ ma przynajmniej dwa elementy, wtedy informacja jest \textit{niedokładna}.
 
-    Naszym zadaniem jest aproksymacja elementów $S(f)$ dla $f$ należącego do $E \subset F$, bazując wyłącznie na informacji zaburzonej o $f$. 
-
-    Znając informację $y$ o $f$ możemy wprowadzić aproksymację, a raczej algorytm który ją skonstruuje. \textit{Algorytmem} nazywamy odwzorowanie:
+    Znając informację $N(f)$ możemy obliczyć aproksymację $f$ używając \textit{algorytmu} $\varphi$, w postaci odwzorowania
     \begin{equation*}
-        \varphi : Y \rightarrow G
+        \varphi : Y \rightarrow G.
     \end{equation*}
-    Innymi słowy, aproksymacją $S(f)$ jest $\varphi(y)$, gdzie $y$ jest informacją o $f$. Błąd aproksymacji zdefiniownay jest jako różnica $\| S(f) - \varphi(y) \|$, gdzie $\|\cdot\|$ jest normą w przestrzeni~$G$.
+    Dostajemy, że aproksymacja $U(f) = \varphi(N(f))$, czyli algorytm $\varphi$ używa informacji $N(f)$, aby wyprodukować element z $G$, który aproksymuje $S(f)$.
+
+    W tej pracy rozważamy zagadnienie aproksymacji pewnych funkcji skalarnych, używając skończonej liczby wartości funkcji, przy założeniu, że błąd aproksymacji jest mierzony w normie $L^{p}$ ($1 \leq p \leq \infty$). A zatem operator rozwiązania $S$ jest odwzorowaniem identycznościowym prowadzącym z przestrzeni funkcji $F$ w przestrzeń $L^{p}$, natomiast błąd aproksymacji $f \in F$ otrzymanej algorytmem $\varphi : Y \rightarrow L^{p}(0,T)$ z użyciem inforamcji $y \in N(f)$ wynosi
+    \begin{equation*}
+        \|f-\varphi(y)\|_{L^p} = \left( \int_{0}^{T} |(f-\varphi(y))(x)|^p \,dx  \right)^{1/p} \quad \text{ dla } \; 1 \leq p < \infty
+    \end{equation*}
+    oraz
+    \begin{equation*}
+        \|f-\varphi(y)\|_{L^\infty} = \esssup_{0 < x \leq T} | (f - \varphi(y))(x) |.
+    \end{equation*}
+
+
+    Dla przykładu, niech F będzie przestrzenią ciągłych funkcji rzeczywistych dwukrotnie różniczkowalnych $f: [0,1] \rightarrow \R$, a $G=L_{2}(0,1)$. To oznacza, że $S(f) = f$, a dla $t_{i} \in [0,1]$ opartor informacji dany jest przez
+    \begin{equation*}
+        N(f)=\left\{y \in \R^{n} \mid \sum_{i=1}^{n}\left(y_{i}-f\left(t_{i}\right)\right)^{2} \leq \delta^{2}\right\},
+    \end{equation*}
+    gdzie $y$ odpowiada $n$ obserwacjom $f(t_{i})$ dla $1 \leq i \leq n$, z precyzją $\delta$ każda. Przykładem algorytmu aproksymujęcego funkcję $f$ może być konstrukcja funkcji sklejanej $l: [0,1] \rightarrow \R$, czyli takiej funkcji, że $l$ jest wielomianem na każdym podprzedziale $(t_{i}, t_{i+1})$ podziału $t_{1} < \ldots < t_{n}$.
+
+
+    % Naszym zadaniem jest aproksymacja elementów $S(f)$ dla $f$ należącego do $E \subset F$, bazując wyłącznie na informacji zaburzonej o $f$.
 
 
 \section{Model obliczeniowy}
 
 
-    W ogólności, optymalność algorytmu oraz złożonść problemu zależą od przyjętego modelu obliczeniowego. Model jest określony poprzez sposób w jaki błąd i koszt algorytmu są zdefiniowane. 
+    W ogólności, optymalność algorytmu oraz złożoność problemu zależą od przyjętego modelu obliczeniowego. Model jest określony poprzez sposób w jaki błąd i koszt algorytmu są zdefiniowane. 
     
-    Jeżeli za błąd i koszt przyjmujemy wydajność na najtrudniejszym spośród wszystkich problemów w danej klasie, wtedy mówimy o \textit{modelu najgorszego przypadku}. Innymi często rozważanymi modelami są: probablistyczny, średni, mieszany, losowy czy asymptotyczny, jednak nimi nie będziemy zajmować się w tej pracy.
+    Jeżeli za błąd i koszt przyjmujemy wydajność na najtrudniejszym spośród wszystkich problemów w danej klasie, wtedy mówimy o \textit{modelu najgorszego przypadku}. Innymi często rozważanymi modelami są: model probablistyczny, średni, mieszany, losowy czy asymptotyczny, jednak nimi nie będziemy zajmować się w tej pracy.
 
-    Niech $N : F \rightarrow 2^{Y}$ będzie operatorem inforamcji a $S: F \rightarrow G$ operatorem rozwiązania. Poprzez \textit{błąd najgorszego przypadku} algorytmu $\varphi : Y \rightarrow G$ na zbiorze $E \subset F$ rozumiemy:
+    Niech $N : F \rightarrow 2^{Y}$ będzie operatorem inforamcji a $S: F \rightarrow G$ operatorem rozwiązania dla $G=L^{p}$. Poprzez \textit{błąd najgorszego przypadku} algorytmu $\varphi : Y \rightarrow L^{p}$ na zbiorze $E \subset F$ rozumiemy:
     \begin{equation*}
-        e^{\wor}(\varphi, N, E) = \sup_{f \in E} \sup_{y \in N(f)} \|S(f) - \varphi(y) \|
+        e_{p}^{\wor}(\varphi, N, E) = \sup_{f \in E} \sup_{y \in N(f)} \|S(f) - \varphi(y) \|_{L^{p}}
     \end{equation*}
 
     Celem jest znalezienia algorytmu, który minimalizuje błąd najgorszego przypadku względem wszystkich algorytmów w danej klasie. Algortym osiągający to minimum nazywamy \textit{optymalnym}.
 
-    W praktyce rozważania dotyczą algorytmów, które wykorzystując określoną liczbę wartości funkcji. Oznaczmy przez $\mathcal{N}(n, \delta)$ klasę wszystkich (adaptacyjnych) informacji $N$, które używają co najwyżej $n$ ewaluacji funkcji, z precyzją $\delta$ każda. Wtedy przez \textit{minimalany błąd najgorszego przypadku} w klasie $E$, który może zostać osiągnięty przez algorytm używający informacji o co najwyżej $n$ wartościach funkcji z precyzją $\delta$ rozumiemy:
+    W tej pracy rozważamy algorytmy aprosymujące funkcje z osobliwością, które wykorzystują określoną liczbę wartości funkcji. Oznaczmy przez $\mathcal{N}(n, \delta)$ klasę wszystkich (adaptacyjnych) informacji $N$, które używają co najwyżej $n$ ewaluacji funkcji, z precyzją $\delta$ każda. Wtedy przez \textit{minimalany błąd najgorszego przypadku} w klasie $E$, który może zostać osiągnięty przez algorytm używający informacji o co najwyżej $n$ wartościach funkcji z precyzją $\delta$ rozumiemy:
 
     \begin{equation*}
-        r^{\wor}_{p}(n, \delta, E) = \inf\{ e^{\wor}(\varphi, N, E) : \; \varphi \text{ używa } N \in \mathcal{N}(n, \delta) \}
+        r^{\wor}_{p}(n, \delta, E) = \inf\{ e_{p}^{\wor}(\varphi, N, E) : \; \varphi \text{ używa } N \in \mathcal{N}(n, \delta) \}
     \end{equation*}
 
 
-    W tej pracy porównujemy dwa algorytmy aproksymujęce funkcje z osobliwością, które osiągają błąd na takim samym, optymalnym, poziomie błędu najgorszego przypadku, jednak tylko w przypadku jednego z nich w analizie zostało uwzgędione zaburzenie informacji.
+    W tej pracy porównujemy dwa algorytmy aproksymujęce funkcje z osobliwością, które osiągają błąd na takim samym, optymalnym, poziomie błędu najgorszego przypadku, jednak tylko w przypadku jednego z nich w analizie zostało uwzględione zaburzenie informacji.
 
-    Drugą kluczową cechą jest koszt algorytmu. Na koszt może się składać zarówno koszt uzyskania informacji o wartości funkcji, jak i koszt operacji arytmetycznych potrzebnych do obliczenia algorytmu. W tej pracy przyjmujemy, że koszt algorytmu $\varphi$ jest równy tylko kosztowi uzyskania informacji o wartości funkcji $f$, czyli
+    Drugą cechą modelu obliczeniowego jest koszt algorytmu. Może się na niego składać zarówno koszt uzyskania informacji o wartości funkcji, jak i koszt operacji arytmetycznych potrzebnych do obliczenia algorytmu. Ponieważ zakładamy, że ewaluacje wartości funkcji obarczone są pewnym błędem, który może znacząco przewyższać błędy wynikające z operacji arytmetycznych, przyjmujemy, że koszt algorytmu $\varphi$ jest równy tylko kosztowi uzyskania informacji o wartości funkcji $f$, czyli
     \begin{equation*}
         \cost(\varphi, f) = n,
     \end{equation*}
@@ -238,8 +253,9 @@
 
 \section{Klasy funkcji}
 
-    W tej pracy będziemy rozważać problem, w którym opertor rozwiązania $S$ jest odwzorowaniem identycznościowym prowadzącym w przestrzeń $L^{p}$. Wprowadzimy teraz klasy funkcji, na których operują algorytmy.
 
+    Wprowadzimy teraz dwie definicje klasy funkcji kawałkami regularnych użyte w artykułach \cite{CoDF} i \cite{AoP}. 
+    
     Dla liczby całkowitej $ r \geq 0$, $\varrho \in (0,1]$ oraz $a < b$, przez $H_{r, \varrho}(a,b)$ oznaczamy klasę funkcji $g: [a,b] \rightarrow \R$ takich, że $g \in C^r([a, b])$ i $g^{(r)}$ jest Hölderowsko ciągła z wykładnikiem $\varrho$, tzn.
     \begin{equation*}
         c(g) := \sup_{a \leq x \leq y \leq b} \frac{|g^{(r)}(x) - g^{(r)}(y)|}{|x-y|^{\varrho}} < \infty.
@@ -250,44 +266,41 @@
     \end{equation*}
     Można powiedzieć, że $f$ jest 'kopią' $g_f$ na każdym z przedziałów $(lT + \po_f, (l + 1)T + \po_f]$ i $f$ jest prawostronnie ciągła w $lT + \po_f$. W związku z tym wszystkie punkty, które różnią się między sobą o wielokrotność $T$ będą uważane za identyczne. Dla przykładu, jeżeli $0 < x_1 \leq T < x_2 \leq 2T$, to przedział $(x_1, x_2]$ będzie utożsamiany z $(x_1,T] \cup (0, x_2 - T] \subset (0, T]$.
 
-    Przez $\Delta_f^{(j)}$ ozanaczmy \emph{skoki nieciągłości} dla kolejnych pochdnych $f$ w punkcie nieciągłości $\po_f$,
+    \begin{figure}[h!]
+        % \centering
+        \includegraphics[width=.45\linewidth]{g_f_plot.png}
+        \includegraphics[width=.45\linewidth]{f_plot.png}
+    \end{figure}
+
+
+    Przez $\Delta_f^{(j)}$ ozanaczmy \emph{skoki nieciągłości} dla kolejnych pochodnych $f$ w punkcie nieciągłości $\po_f$,
     \begin{equation*}
         \Delta_f^{(j)} = f^{(j)}(\po_f^+) - f^{(j)}(\po_f^-) = g_f^{(j)}(0) - g_f^{(j)}(T) \quad 0 \leq j \leq r,
     \end{equation*}
 
-    W tej pracy będziemy rozpatrywać aproksymacje $\varphi : Y \rightarrow L^p(0, T)$ funkcji $f \in F_{r, \varrho}$ względem normy $L^p$, gdzie $1 \leq p \leq \infty$. Czyli, z definicji normy $L_{p}$, błąd aproksymcji funkcji $f$ dla informacji $y$ wynosi:
-    \begin{equation*}
-        \|f-\varphi(y)\|_{L^p} = \left( \int_{0}^{T} |(f-\varphi(y))(x)|^p \,dx  \right)^{1/p} \quad \text{ dla } \; 1 \leq p < \infty
-    \end{equation*}
-    oraz
-    \begin{equation*}
-        \|f-\varphi(y)\|_{L^\infty} = \esssup_{0 < x \leq T} | (f - \varphi(y))(x) |
-    \end{equation*}
-
-    Ze względu na zachowanie się funkcji w punkcie osobliwym, rozróżniamy następujące klasy funkcji:
+    Ze względu na zachowanie się funkcji w punkcie osobliwym, rozróżniamy następujące klasy funkcji
     \begin{equation*}
         \begin{split}
             \mathcal{K} & = \{f = c \1_{\R}, c \in \R \}, \\
             \mathcal{H}_{r, \varrho} & = \{ f \in F_{r, \varrho}: c(g_{f}) \leq 1, \Delta_{f}^{(j)} = 0 \text{ dla każdego } 0 \leq j \leq r\} \\
             \mathcal{F}_{r, \varrho}^{C} & = \{ f \in F_{r, \varrho}: c(g_{f}) \leq 1, \Delta_{f}^{(0)} = 0 \} \\
             \mathcal{F}_{r, \varrho}^{D} & = \{ f \in F_{r, \varrho}: c(g_{f}) \leq 1, | \Delta_{f}^{(0)} | \leq 1 \} \\
-            \mathcal{F}_{r, \varrho} & = \{ f \in F_{r, \varrho}: c(g_{f}) \leq 1 \} \\
+            \mathcal{F}_{r, \varrho} & = \{ f \in F_{r, \varrho}: c(g_{f}) \leq 1 \}. \\
         \end{split}
     \end{equation*}
     Oczywiście
     \begin{equation*}
-        \mathcal{K} \subset \mathcal{H}_{r, \varrho} \subset \mathcal{F}_{r, \varrho}^{C} \subset \mathcal{F}_{r, \varrho}^{D} \subset \mathcal{F}_{r, \varrho}
+        \mathcal{K} \subset \mathcal{H}_{r, \varrho} \subset \mathcal{F}_{r, \varrho}^{C} \subset \mathcal{F}_{r, \varrho}^{D} \subset \mathcal{F}_{r, \varrho}.
     \end{equation*}
 
 
     Algorytm przedstawiony w  \cite{CoDF}, oryginalnie bazuje na lekko zmodyfikowanych klasach funkcji, co wynika z innej natury problemu rozważanego w pracy. Dla spójności i lepszego przedstawiania problemu wprowadzimy oryginalnie rozważane klasy funkcji i sprecyzujemy różnice między klasami przedstawionymi wcześniej.
 
-    Niech $L_{0}, L_{r}, D_{0}, D_{1}, \ldots, D_{r}$ będą dodatnimi stałymi.
-
+    Niech $L_{0}, L_{r}, D_{0}, D_{1}, \ldots, D_{r}$ będą dodatnimi stałymi. Wprowadźmy klasę funkcji regularnych
     \begin{equation*}
         \begin{aligned}
         G_{r, \varrho}^{\reg}([a, b])= &\left\{g:[a, b] \rightarrow \R^{d} \mid g \in C^{(r)}([a, b]),\left\|g^{(j)}(x)\right\| \leq D_{j}, j=0,1, \ldots, r\right. \\
-                                      &\left.\left\|g^{(r)}(x)-g^{(r)}(y)\right\| \leq L_{r}|x-y|^{\varrho},\|g(y)-g(x)\| \leq L_{0}|y-x|, x,y \in [a, b]\right\}
+                                      &\left.\left\|g^{(r)}(x)-g^{(r)}(y)\right\| \leq L_{r}|x-y|^{\varrho},\|g(y)-g(x)\| \leq L_{0}|y-x|, x,y \in [a, b]\right\}.
         \end{aligned}
     \end{equation*}
 
@@ -299,13 +312,15 @@
     
     Dla funkcji $g \in \G([a,b])$ definiujemy wielomian
     \begin{equation} \label{eq:26}
-        s_{g}(x)=\sum_{j=0}^{r} \frac{1}{j !} \Delta_{g}^{j}\left(x-\po_{g}\right)^{j}, \quad x \in [a, b],        
+        s_{g}(x)=\sum_{j=0}^{r} \frac{1}{j !} \Delta_{g}^{(j)}\left(x-\po_{g}\right)^{j}, \quad x \in [a, b],        
     \end{equation}
     gdzie $\Delta_{g}^{(j)}$ jest wektorem skoków w punkcie osobliwym zdefiniowanym jak wcześniej.
 
-    Jeżeli $\Delta_{g}^{j}=0$ dla wszystkich $j=0,1, \ldots, r$, wtedy $g$ jest regularna, czyli $g \in G_{r, \varrho}^{\reg}([a, b])$. Jeżeli $g \in \G([a, b])$ i $\Delta_{g}^{0}=0$, wtedy $g$ jest Lipschitzowsko ciągła w $[a, b]$.
+    Jeżeli $\Delta_{g}^{(j)}=0$ dla wszystkich $j=0,1, \ldots, r$, wtedy $g$ jest regularna, czyli $g \in G_{r, \varrho}^{\reg}([a, b])$. Jeżeli $g \in \G([a, b])$ i $\Delta_{g}^{(0)}=0$, wtedy $g$ jest Lipschitzowsko ciągła w $[a, b]$.
 
-    Definicja klasy $G_{r, \varrho}$ różni się od definicji  $F_{r, \varrho}$ dopuszczeniem wielowymiarowości funkcji $g$ oraz bardziej ogólnym podejściem do parametrów klasy. Przyjęcie, że funkjce prowadzą w $\R$ ułatwia rozważania praktyczne, a wyniki teoretyczne można łatwo uogólnić. W przypadku drugiej różnicy, ponieważ w tej pracy skupiamy się na wynikach numerycznych, przyjęcie za jedyny parametr klasy $c(g_{f}) = 1$ jest uzasadnionym uproszczeniem. Funkcje zawsze możemy przemnożyć przez stałą, aby otrzymać odpowiedni parameter.
+    Definicja klasy $G_{r, \varrho}^{\reg}$ różni się od definicji  $F_{r, \varrho}$ dopuszczeniem wielowymiarowości funkcji $g$, bardziej ogólnym podejściem do parametrów klasy oraz brakiem założenia o okresowości. Przyjęcie, że funkcje prowadzą w $\R$ ułatwia rozważania praktyczne, a wyniki teoretyczne można łatwo uogólnić. W przypadku drugiej różnicy, ponieważ w tej pracy skupiamy się na wynikach numerycznych, przyjęcie za jedyny parametr klasy $c(g_{f}) = 1$ jest uzasadnionym uproszczeniem. Funkcję zawsze możemy przemnożyć przez stałą, aby otrzymać odpowiedni parameter. Natomiast założenie dotyczące okresowości ma jedynie na celu uprościć analizę algorytmu i może zostać łatwo uogólnione. To znaczy, że wszystkie dowody dotyczące funkcji okresowych zachodzą również dla funkcji nieokresowych.
+
+    A zatem wszystkie różnice da się wyeliminować przy pomocy kilku technicznych zabiegów. Można powiedzieć, że z dokładnością do wymienionych różnic, klasa $G_{r, \varrho}^{\reg}$ odpowiada klasie $F_{r, \varrho}$, a klasa $\G$ odpowiada kalsie $\F^{D}_{r, \varrho}$.
     
 
 \mgrclosechapter
@@ -317,7 +332,7 @@
 \section{Ograniczenie z dołu}
 
 
-    Na początku przytoczymy znane wyniki dotyczące ogranieczeń z dołu dla informacji dokładnej, które uzasadniają użycie algorytmów adaptacyjnych. Wiadomo, że w klasie funkcji $r$-regularnych, najlepszym tępem zbieżności dla błędu jest $n^{-r}$. Pokazano to m.in. w \cite{PoA}, gdzie skonstruowano algorytm zachowujący tą własność. W tej samej pracy udowodniono również, że wprowadzenie osobliwości, powoduje pogorszenie się tępa zbieżności dla algorytmów nieadaptacyjnych do $n^{1/p}$. Pokazuje to następnujące twierdzenie z \cite{PoA}.
+    Na początku przytoczymy znane wyniki dotyczące ogranieczeń z dołu dla informacji dokładnej, które uzasadniają użycie algorytmów adaptacyjnych. Wiadomo, że w~klasie funkcji $r$-regularnych, najlepszym tępem zbieżności dla błędu jest $n^{-r}$. Pokazano to m.in. w \cite{PoA}, gdzie skonstruowano algorytm zachowujący tą własność. W tej samej pracy udowodniono również, że wprowadzenie osobliwości, powoduje pogorszenie się tępa zbieżności dla algorytmów nieadaptacyjnych do $n^{1/p}$. Pokazuje to następnujące twierdzenie z \cite{PoA}.
 
     \begin{thm}
         Niech $\varphi_{n}$ będzie dowolnym algorytmem nieadaptacyjnym korzystającym z n ewaluacji funkcji oraz niech $\Delta > 0$. Istnieje kawałkami stała funkcja $f \in F_{r, 1}$ taka, że $|\Delta_{f}^{(0)}| \leq \Delta$ oraz
@@ -635,7 +650,7 @@
 
     Finalną aproksymacją $\po_f$ jest
     \begin{equation*}
-            \xi := \argmax_{u_3 \leq x \leq v_3}|\tilde{p}_{+} - \tilde{p}_{-}| \hspace{200pt}
+            \xi := \argmin_{u_3 \leq x \leq v_3}|\tilde{p}_{+} - \tilde{p}_{-}| \hspace{200pt}
     \end{equation*}
 
     Niech $N_{h}^{*}(y_{h})$ będzie operatorem informacji odpowiadający naszemu algorytmowi. Aproksymacja $\varphi_{h}^{*}(y_{h})$ funkcji $f$ dla informacji $y_{h}$ o $f$, tj. dla $y_{h} \in N_{h}^{*}(f)$ jest konstruowana w następujący sposób. Na przedziale $[u_{1}, v_{1})$ ekstrapolujemy

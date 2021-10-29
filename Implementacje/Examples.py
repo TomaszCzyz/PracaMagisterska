@@ -207,7 +207,7 @@ def add_noise(values, noise):
     return values
 
 
-def print_all_examples():
+def plot_all_examples():
     name = 'Example'
     i = 1
     while name + str(i) in globals():

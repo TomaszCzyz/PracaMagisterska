@@ -1,36 +1,27 @@
+import logging
 import warnings
 
 import numpy as np
 from scipy import integrate
-from scipy.optimize import minimize_scalar
+
+logger = logging.getLogger(__name__)
+omitted_part_of_interval = 0.5
 
 
 def norm_lp(f, interval, p):
     norm = integrate.quad(
         func=lambda x: f(x) ** p,
-        a=interval[0], b=interval[1]
+        a=interval[0]+omitted_part_of_interval, b=interval[1]-omitted_part_of_interval
     )[0] ** (1 / p)
     return norm
 
 
 def norm_infinity(f, interval):
-    res = minimize_scalar(
-        fun=lambda x: -1 * f(x),  # "-1" because we are looking for maximum, not minimum
-        bounds=interval,
-        method='bounded'
-    )
-    if not res.success:
-        raise Exception("should not execute")
-
-    return res['x']
-
-
-def norm_infinity_2(f, interval):
-    step = 1e-3
+    step = 3e-3
     max_value = 0.0
-    current = interval[0]
+    current = interval[0] + omitted_part_of_interval
 
-    while current <= interval[1]:
+    while current <= interval[1] - omitted_part_of_interval:
         value = f(current)
         if value > max_value:
             max_value = value
@@ -49,7 +40,7 @@ def worst_case_error(alg, lp_norm=2):
         return abs(approximation(x) - original_func(x))
 
     if lp_norm == 'infinity':
-        result = norm_infinity_2(f, interval)
+        result = norm_infinity(f, interval)
     else:
         result = norm_lp(f, interval, lp_norm)
 
@@ -115,9 +106,13 @@ def interp_newton(xvals, yvals):
     return f
 
 
-def maximize_primitive(fun, a, b, num=100):
+def max_local_primitive(fun, a, b, num=100):
     fun_max = -float("inf")
     arg_max = None
+
+    if b-a < 1e-14:
+        logger.info("interval is smaller than 1e-14; skipping local maximum search")
+        return None
 
     dx = (b - a) / num
     dx = dx if dx > 1e-14 else 1e-14
