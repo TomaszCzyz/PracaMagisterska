@@ -45,7 +45,7 @@ class Alg2015:
         self.ksi = None
 
     def run(self):
-        logger.info("executing alg2015 dla m={} and noise={}".format(self.m, self.example.f__noise))
+        logger.info("\nexecuting alg2015 dla m={} and noise={}".format(self.m, self.example.f__noise))
         self.step1()
         self.step2()
         self.step3()
