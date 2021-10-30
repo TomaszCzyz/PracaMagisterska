@@ -21,7 +21,9 @@ class Alg2014:
 
         self.t = np.linspace(self.example.f__a, self.example.f__b, self.m + 1, dtype='float64')
         self.h = (self.example.f__b - self.example.f__a) / self.m
-        # self.d = (self.r + 1) * self.h
+
+        omega = self.h ** (self.example.f__r + self.example.f__rho)
+        self.d = omega if omega > 5e-15 else 5e-15
         self.d = self.h ** (self.example.f__r + self.example.f__rho)
 
         # following values could be local, but they are defined as class values
@@ -32,10 +34,13 @@ class Alg2014:
         self.m_set = np.array(self.t)
 
     def run(self):
-        logger.info("executing alg2014 dla m={}".format(self.m))
+        logger.info("executing alg2014 dla m={} and noise={}".format(self.m, self.example.f__noise))
         self.step1()
         self.step2()
-        return self.step3()
+        approximation = self.step3()
+        logger.info("executed alg2015")
+
+        return approximation
 
     def step1(self):
         """
@@ -43,35 +48,35 @@ class Alg2014:
         1. check if exist intervals with diameters greater than 4*d in initial mesh
         2. if yes, find interval with the biggest A_test (A_test result has to be unique)
         """
-        max_diam = np.max([self.t[i + 1] - self.t[i] for i in range(len(self.t) - 1)])
+        largest_result = 0
+        second_largest_result = 0
+        largest_result_index = 0
 
-        if max_diam <= 4 * self.d:
+        for i in range(len(self.t) - 1):
+
+            if self.t[i + 1] - self.t[i] <= 4 * self.d:
+                continue
+
+            test_result = self.a_test(
+                self.t[i],
+                self.t[i] + self.d,
+                self.t[i + 1] - self.d,
+                self.t[i + 1]
+            )
+
+            if test_result > largest_result:
+                second_largest_result = largest_result
+                largest_result = test_result
+                largest_result_index = i
+            elif test_result > second_largest_result:
+                second_largest_result = test_result
+
+        if largest_result - second_largest_result < 1e-14:
             return
-        else:
-            largest_result = 0
-            second_largest_result = 0
-            largest_result_index = 0
-
-            for i in range(len(self.t) - 1):
-                if self.t[i + 1] - self.t[i] > 4 * self.d:
-                    test_result = self.a_test(
-                        self.t[i],
-                        self.t[i] + self.d,
-                        self.t[i + 1] - self.d,
-                        self.t[i + 1]
-                    )
-
-                    if test_result > largest_result:
-                        largest_result = test_result
-                        largest_result_index = i
-                    elif largest_result > test_result > second_largest_result:
-                        second_largest_result = test_result
-
-            if largest_result - second_largest_result < 1e-14:
-                return
 
         self.step1_interval = (self.t[largest_result_index], self.t[largest_result_index + 1])
-        logger.info('interval located in step1: {}'.format(self.step1_interval))
+        logger.info(
+            "step1 - interval (u_1, v_1): [{:.14f} {:.14f}]".format(self.step1_interval[0], self.step1_interval[1]))
 
     def step2(self):
         """
@@ -85,20 +90,26 @@ class Alg2014:
         self.b_set = list(self.step1_interval)
         a_new, b_new = self.step1_interval
 
+        iter_count = 0
         while b_new - a_new > 4 * self.d:
+            iter_count += 1
 
             v = (a_new + b_new) / 2
             self.b_set.append(v)
+
             a1 = self.a_test(a_new, a_new + self.d, v - self.d, v)
             a2 = self.a_test(v, v + self.d, b_new - self.d, b_new)
 
             if a1 - a2 < 1e-14:
-                return
+                break
 
             if a1 > a2:
                 b_new = v
             else:
                 a_new = v
+
+        logger.info('step2 - iterations: {}'.format(iter_count))
+        logger.info("step2 - b_set(len:{}): {}".format(len(self.b_set), self.b_set))
 
     def step3(self):
         """
@@ -152,16 +163,17 @@ class Alg2014:
         return final_approximation
 
     def a_test(self, a0, a1, b1, b0):
-        knots = np.linspace(b1, b0, self.example.f__r + 1)
+        r = self.example.f__r
+        knots = np.linspace(b1, b0, r + 1)
         values = self.example.fun(knots)
         w1 = interp_newton(knots, values)
 
-        knots = np.linspace(a0, a1, self.example.f__r + 1)
+        knots = np.linspace(a0, a1, r + 1)
         values = self.example.fun(knots)
         w2 = interp_newton(knots, values)
 
-        z_arr = np.linspace(a1, b1, self.example.f__r + 1)
-        test_values = [(np.abs(w1(z_i) - w2(z_i))) / (b0 - a0) for z_i in z_arr]
-        #  ** (self.r + self.rho)  <-- no need for this operation (the same operation in each test)
+        z_arr = np.linspace(a1, b1, r + 1)
+        test_values = [abs(w1(z_i) - w2(z_i)) for z_i in z_arr]
+        # / ((b0 - a0) ** (r + self.example.f__rho)) <- no need when all studied intervals have the same length
 
-        return np.max(test_values)
+        return max(test_values)

@@ -25,9 +25,8 @@ class Alg2015:
         self.h = (self.example.f__b - self.example.f__a) / self.m
 
         # "d" can easily reach edge precision!!! hence condition in step2
-        # self.d = (self.r + 1) * self.h
         if example.f__class == 'continuous':
-            self.d = (self.example.f__r + 1) * self.h
+            self.d = (self.example.f__r + 1) * self.h + 1e-14
         else:
             omega = self.h ** ((self.example.f__r + self.example.f__rho) * self.p + 1)
             self.d = omega if omega > 5e-15 else 5e-15
@@ -50,7 +49,12 @@ class Alg2015:
         self.step1()
         self.step2()
         self.step3()
+        approximation = self.create_approximation_2()
+        logger.info("executed alg2015")
 
+        return approximation
+
+    def create_approximation_1(self):
         approx = []
         r = self.example.f__r
 
@@ -89,11 +93,61 @@ class Alg2015:
 
         return final_approximation
 
+    def create_approximation_2(self):
+        approx = {}
+        r = self.example.f__r
+        # on (u_1, v_1)
+        approx[(self.u_1, self.ksi)] = self.p_neg
+        approx[(self.ksi, self.v_1)] = self.p_pos
+        # from u_1 to 0
+        i = self.i_max
+        while i > r:
+            i -= r
+            # i -= 1
+
+            knots = self.t[i:i + r + 1]
+            values = self.y[i:i + r + 1]
+            polynomial = interp_newton(knots, values)
+
+            approx[(knots[0], knots[-1])] = polynomial
+        # if there is the same interval, it will be overridden with the same polynomial
+        knots = self.t[0:r + 1]
+        values = self.y[0:r + 1]
+        polynomial = interp_newton(knots, values)
+        approx[(knots[0], knots[-1])] = polynomial
+        # from v_1 to T
+        i = self.i_max + 2 * r + 1
+        while i < len(self.t) - r:
+            knots = self.t[i:i + r + 1]
+            values = self.y[i:i + r + 1]
+            polynomial = interp_newton(knots, values)
+
+            approx[(knots[0], knots[-1])] = polynomial
+            i += r
+            # i += 1
+        # if there is the same interval, it will be overridden with the same polynomial
+        knots = self.t[-r:]
+        values = self.y[-r:]
+        polynomial = interp_newton(knots, values)
+        approx[(knots[0], knots[-1])] = polynomial
+        sorted_intervals = sorted(approx.keys(), key=lambda x: x[0])
+        temp = []
+        for interval in sorted_intervals:
+            temp.append([interval[0], approx[interval]])
+        np_approx = np.array(temp)
+
+        def final_approximation(t):
+            ii = bisect.bisect_right(np_approx[:, 0], t) - 1
+            return np_approx[ii, 1](t)
+
+        return final_approximation
+
     def step1(self):
         i_max = np.argmax(self.divided_diff())
         self.u_1 = self.t[i_max]
         self.v_1 = self.t[i_max + self.example.f__r + 1]
         self.i_max = i_max
+        logger.info("step1 - interval (u_1, v_1): [{:.14f} {:.14f}]".format(self.u_1, self.v_1))
 
     def step2(self):
         r = self.example.f__r
@@ -127,11 +181,12 @@ class Alg2015:
             else:
                 v = z[j_max]
 
-        logger.info('iteration in step2: {}'.format(iter_count))
+        logger.info('step2 - iterations: {}'.format(iter_count))
         self.u_2 = u.item()
         self.v_2 = v.item()
         self.p_neg = p_neg
         self.p_pos = p_pos
+        logger.info("step2 - interval (u_2, v_2): [{:.14f} {:.14f}]".format(self.u_2, self.v_2))
 
     def step3(self):
         u = self.u_2
@@ -147,11 +202,11 @@ class Alg2015:
             z_max = max_local_primitive(inter_diff, u, v)
 
             if z_max is None:
-                logger.info('local maximum not found')
+                logger.info('step3 - local maximum not found')
                 break
 
-            if abs(z_max - u) < 2e-14 or abs(z_max - v) < 2e-14:
-                logger.info('local maximum was on interval edge')
+            if abs(z_max - u) < 1e-14 or abs(z_max - v) < 1e-14:
+                logger.info('step3 - local maximum was on interval edge')
                 break
 
             f_value = self.example.fun(z_max)
@@ -161,19 +216,21 @@ class Alg2015:
             else:
                 v = z_max
 
-        logger.info('iteration in step3: {}'.format(iter_count))
+        logger.info('step3 - iterations: {}'.format(iter_count))
 
         u_3 = u
         v_3 = v
 
         ksi = max_local_primitive(lambda x: -1.0 * inter_diff(x), u_3, v_3)
         if ksi is None:
-            logger.info("assigning ksi = u_3, because interval (u3, v3) was too small")
+            logger.info("step3 - assigning ksi = u_3, because interval (u3, v3) was too small")
             ksi = u_3
 
         self.u_3 = u_3
         self.v_3 = v_3
         self.ksi = ksi
+        logger.info("step3 - interval (u_3, v_3): [{:.14f} {:.14f}]".format(self.u_3, self.v_3))
+        logger.info("step3 - ksi: {:.14f}".format(self.ksi))
 
     def divided_diff(self):
         table = [self.y]

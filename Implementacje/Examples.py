@@ -6,13 +6,14 @@ rng = np.random.default_rng()
 
 
 class ExampleFunction(ABC):
-    def __init__(self, f__a, f__b, f__r, f__rho, f__noise, f__class):
+    def __init__(self, f__a, f__b, f__r, f__rho, f__noise, f__class, singularity=None):
         self.f__a = f__a
         self.f__b = f__b
         self.f__r = f__r
         self.f__rho = f__rho
         self.f__noise = f__noise
         self.f__class = f__class
+        self.singularity = singularity
 
     def fun(self, x):
         pass
@@ -32,7 +33,8 @@ class Example1(ExampleFunction):
             f__r=f__r,
             f__rho=1,
             f__noise=f__noise,
-            f__class='discontinuous'
+            f__class='discontinuous',
+            singularity=3.14
         )
 
     @staticmethod
@@ -54,7 +56,8 @@ class Example2(ExampleFunction):
             f__r=f__r,
             f__rho=1,
             f__noise=f__noise,
-            f__class='continuous'
+            f__class='continuous',
+            singularity=3.14
         )
 
     @staticmethod
@@ -76,7 +79,8 @@ class Example3(ExampleFunction):
             f__r=f__r,
             f__rho=1,
             f__noise=f__noise,
-            f__class='continuous'
+            f__class='continuous',
+            singularity=1.0
         )
 
     @staticmethod
@@ -95,7 +99,8 @@ class Example4(ExampleFunction):
             f__r=f__r,
             f__rho=1,
             f__noise=f__noise,
-            f__class='discontinuous'
+            f__class='discontinuous',
+            singularity=4.0
         )
 
     @staticmethod
@@ -119,7 +124,8 @@ class Example5(ExampleFunction):
             f__r=f__r,
             f__rho=1,
             f__noise=f__noise,
-            f__class='discontinuous'
+            f__class='discontinuous',
+            singularity=4.0
         )
 
     @staticmethod
@@ -167,7 +173,8 @@ class Example7(ExampleFunction):
             f__r=f__r,
             f__rho=1,
             f__noise=f__noise,
-            f__class='continuous'
+            f__class='continuous',
+            singularity=2.0
         )
 
     @staticmethod

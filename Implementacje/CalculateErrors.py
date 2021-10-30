@@ -53,10 +53,13 @@ class ResultsCollector:
     def plot_results_2(self, save=False):
         fig, ax = plt.subplots()
 
-        x_min, x_max = min(self.log10_m_for_noise[None]), max(self.log10_m_for_noise[None])
-        m_original = np.array(np.floor(np.power(10, self.log10_m_for_noise[None])), dtype='float64')
+        ref_noise = None if None in self.log10_m_for_noise.keys() else list(self.log10_m_for_noise.keys())[0]
+
+        x_min, x_max = min(self.log10_m_for_noise[ref_noise]), max(self.log10_m_for_noise[ref_noise])
+
+        m_original = np.array(np.floor(np.power(10, self.log10_m_for_noise[ref_noise])), dtype='float64')
         theoretical_error = np.power(m_original, -(self.data['f__r'] + 1))
-        reference_line = -np.log10(theoretical_error)
+        reference_line = -np.log10(theoretical_error) - 2.0
 
         subplot_nr = 0
         for key_noise in sorted(self.log10_m_for_noise.keys(), key=lambda x: (x is not None, x), reverse=False):
@@ -65,13 +68,13 @@ class ResultsCollector:
                 c=colors[subplot_nr],
                 marker=markers[subplot_nr],
                 linewidth=1,
-                label=u'\u03B4=' + ("{:.0e}".format(key_noise) if key_noise is not None else '0')
+                label=r'$\delta$=' + ("{:.0e}".format(key_noise) if key_noise is not None else '0')
                 # alpha=0.5
             )
             subplot_nr += 1
 
         plt.plot(
-            sorted(self.log10_m_for_noise[None]), sorted(reference_line),
+            sorted(self.log10_m_for_noise[ref_noise]), sorted(reference_line),
             color='grey',
             linestyle='--',
             linewidth=1,
@@ -84,8 +87,8 @@ class ResultsCollector:
         ax.yaxis.set_tick_params(width=0.5, color='grey')
 
         # description and general plot styles
-        fig.text(0.5, 0.02, u'log\u2081\u2080m', ha='center')
-        fig.text(0.01, 0.5, u'-log\u2081\u2080err', va='center', rotation='vertical')
+        fig.text(0.5, 0.02, r'$\log_{10}m$', ha='center')
+        fig.text(0.01, 0.5, r'$-\log_{10}err$', va='center', rotation='vertical')
         plt.suptitle("{} for {}(r={}, p={})\nbased on {} sample functions ({})".format(
             self.data['algorithm_name'], self.data['example_fun_name'],
             self.data['f__r'],
@@ -190,17 +193,17 @@ def calculate(repeat_count, knots_counts, deltas, algorithm_name, example_fun_na
 
 
 def main():
-    log10_m_array = np.linspace(1.3, 4.4, num=28)  # 10 ** 4.7 =~ 50118
+    log10_m_array = np.linspace(1.3, 3.5, num=15)  # 10 ** 4.7 =~ 50118
 
     m_array = [int(10 ** log10_m) for log10_m in log10_m_array]
-    noises = [None, 1e-12, 1e-8, 1e-4]
-    n_runs = 10
-    alg = 'alg2015'
-    example = 'Example4'
+    noises = [None]  # [None, 1e-12, 1e-8, 1e-4]
+    n_runs = 1
+    alg = 'alg2014'
+    example = 'Example2'
     p_norm = 'infinity'
     r = 4
 
-    create_example(example).plot()
+    # create_example(example).plot()
 
     results = calculate(n_runs, m_array, noises, alg, example, p=p_norm, parallel=True, f__r=r)
     # alg = Alg2015(example=Example2(None), n_knots=35, p=p_norm)
@@ -228,7 +231,7 @@ if __name__ == '__main__':
 
     # %%
 
-    # main_callback.plot_results(save=True)
+    main_callback.plot_results_2(save=True)
 
     # Example2(None)
     # alg = Alg2015(example=example_function, n_knots=8966)

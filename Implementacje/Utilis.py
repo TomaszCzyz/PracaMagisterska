@@ -5,20 +5,23 @@ import numpy as np
 from scipy import integrate
 
 logger = logging.getLogger(__name__)
+rng = np.random.default_rng()
 omitted_part_of_interval = 0.5
 
 
 def norm_lp(f, interval, p):
     norm = integrate.quad(
         func=lambda x: f(x) ** p,
-        a=interval[0]+omitted_part_of_interval, b=interval[1]-omitted_part_of_interval
+        a=interval[0] + omitted_part_of_interval, b=interval[1] - omitted_part_of_interval
     )[0] ** (1 / p)
     return norm
 
 
-def norm_infinity(f, interval):
-    step = 3e-3
+def norm_infinity(f, interval, singularity_interval):
+    step = 1e-3
+    randoms = rng.random(100) * step
     max_value = 0.0
+    counter = 0
     current = interval[0] + omitted_part_of_interval
 
     while current <= interval[1] - omitted_part_of_interval:
@@ -26,7 +29,11 @@ def norm_infinity(f, interval):
         if value > max_value:
             max_value = value
 
-        current = current + step
+        if singularity_interval[0] <= current <= singularity_interval[1]:
+            current += (step + randoms[counter % len(randoms)]) / 1000
+        else:
+            current += step + randoms[counter % len(randoms)]
+        counter += 1
 
     return max_value
 
@@ -40,7 +47,9 @@ def worst_case_error(alg, lp_norm=2):
         return abs(approximation(x) - original_func(x))
 
     if lp_norm == 'infinity':
-        result = norm_infinity(f, interval)
+        s = alg.example.singularity
+        singularity_interval = (s - 0.1, s + 0.1) if isinstance(s, float) else None
+        result = norm_infinity(f, interval, singularity_interval)
     else:
         result = norm_lp(f, interval, lp_norm)
 
@@ -106,11 +115,11 @@ def interp_newton(xvals, yvals):
     return f
 
 
-def max_local_primitive(fun, a, b, num=100):
+def max_local_primitive(fun, a, b, num=1000):
     fun_max = -float("inf")
     arg_max = None
 
-    if b-a < 1e-14:
+    if b - a < 1e-14:
         logger.info("interval is smaller than 1e-14; skipping local maximum search")
         return None
 
