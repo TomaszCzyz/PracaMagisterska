@@ -2,9 +2,10 @@ import bisect
 import logging
 
 import numpy as np
+from scipy.optimize import minimize_scalar
 
 from Examples import ExampleFunction
-from Utilis import interp_newton, max_local_primitive
+from Utilis import interp_newton
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +19,7 @@ class Alg2015:
     def __init__(self, example: ExampleFunction, n_knots, p):
         self.example = example
         self.m = n_knots
-        self.p = 1 if p == 'infinity' else p
+        self.p = 10 if p == 'infinity' else p
 
         self.t = np.linspace(self.example.f__a, self.example.f__b, self.m + 1, dtype='float64')
         self.y = example.fun(self.t)
@@ -49,7 +50,7 @@ class Alg2015:
         self.step1()
         self.step2()
         self.step3()
-        approximation = self.create_approximation_2()
+        approximation = self.create_approximation_3()
         logger.info("executed alg2015")
 
         return approximation
@@ -102,8 +103,8 @@ class Alg2015:
         # from u_1 to 0
         i = self.i_max
         while i > r:
-            i -= r
-            # i -= 1
+            # i -= r
+            i -= 1
 
             knots = self.t[i:i + r + 1]
             values = self.y[i:i + r + 1]
@@ -123,8 +124,8 @@ class Alg2015:
             polynomial = interp_newton(knots, values)
 
             approx[(knots[0], knots[-1])] = polynomial
-            i += r
-            # i += 1
+            # i += r
+            i += 1
         # if there is the same interval, it will be overridden with the same polynomial
         knots = self.t[-r:]
         values = self.y[-r:]
@@ -142,6 +143,47 @@ class Alg2015:
 
         return final_approximation
 
+    def create_approximation_3(self):
+        approx = []
+        r = self.example.f__r
+        period = self.example.f__b - self.example.f__a
+        # -1 -> because t[0] == t[-1]
+        rolled_t = np.concatenate((self.t[self.i_max + r + 1 + 1:-1], self.t[:self.i_max]))
+        rolled_y = np.concatenate((self.y[self.i_max + r + 1 + 1:-1], self.y[:self.i_max]))
+
+        approx_before_ksi = (self.t[self.i_max - r], self.p_neg)
+        approx_after_ksi = (self.ksi, self.p_pos)
+
+        for i in range(len(rolled_t) - r):
+            begin, end = i, i + r
+
+            knots = rolled_t[begin:end + 1]
+            if knots[-1] < knots[0]:
+                knots = [knot if knot >= knots[0] else (knot + period) for knot in knots]
+            values = rolled_y[begin:end + 1]
+            polynomial = interp_newton(knots, values)
+
+            approx.append((knots[0], polynomial))
+
+        approx.append(approx_before_ksi)
+        approx.append(approx_after_ksi)
+
+        index = 0
+        while index < len(approx):
+            if approx[index][0] == self.t[0]:
+                break  # index of beginning of the first interval from original mesh in rolled_t
+            index += 1
+        np_approx = np.concatenate((approx[index:], approx[:index]))
+
+        def final_approximation(t):
+            if self.t[0] > t > self.t[-1]:
+                raise Exception("value {} is outside function domain".format(t))
+
+            ii = bisect.bisect_right(np_approx[:, 0], t)
+            return np_approx[ii - 1, 1](t)
+
+        return final_approximation
+
     def step1(self):
         i_max = np.argmax(self.divided_diff())
         self.u_1 = self.t[i_max]
@@ -152,16 +194,16 @@ class Alg2015:
     def step2(self):
         r = self.example.f__r
         begin = self.i_max - r
-        end = self.i_max + 1
+        end = self.i_max  # begin + r
         p_neg = interp_newton(
-            self.t[begin:end],
-            self.y[begin:end]
+            self.t[begin:end + 1],
+            self.y[begin:end + 1]
         )
         begin = self.i_max + r + 1
-        end = self.i_max + 2 * r + 1 + 1
+        end = self.i_max + 2 * r + 1  # begin + r
         p_pos = interp_newton(
-            self.t[begin:end],
-            self.y[begin:end]
+            self.t[begin:end + 1],
+            self.y[begin:end + 1]
         )
 
         u = self.u_1
@@ -196,16 +238,22 @@ class Alg2015:
             return abs(self.p_neg(x) - self.p_pos(x))
 
         iter_count = 0
+        xatol = 1e-05
         while True:
             iter_count += 1
 
-            z_max = max_local_primitive(inter_diff, u, v)
+            # z_max = max_local_primitive(inter_diff, u, v)
+            res = minimize_scalar(fun=lambda x: -1.0 * inter_diff(x), bounds=(u, v), method='bounded',
+                                  options={'xatol': xatol, 'maxiter': 100, 'disp': 0})
 
-            if z_max is None:
-                logger.info('step3 - local maximum not found')
+            if not res['success']:
+                logger.info("step3 - could not minimize function in while loop")
                 break
 
-            if abs(z_max - u) < 1e-14 or abs(z_max - v) < 1e-14:
+            z_max = res['x']
+            # logger.info("step3 - found local max; z_max: {}".format(z_max))
+
+            if abs(z_max - u) < xatol or abs(z_max - v) < xatol:
                 logger.info('step3 - local maximum was on interval edge')
                 break
 
@@ -221,10 +269,13 @@ class Alg2015:
         u_3 = u
         v_3 = v
 
-        ksi = max_local_primitive(lambda x: -1.0 * inter_diff(x), u_3, v_3)
-        if ksi is None:
-            logger.info("step3 - assigning ksi = u_3, because interval (u3, v3) was too small")
-            ksi = u_3
+        res = minimize_scalar(fun=lambda x: inter_diff(x), bounds=(u_3, v_3), method='bounded',
+                              options={'xatol': 1e-14, 'maxiter': 200, 'disp': 0})
+        if not res['success']:
+            logger.info("step3 - WATCH OUT!!! - could not minimize function to calculate ksi")
+            return
+
+        ksi = res['x']
 
         self.u_3 = u_3
         self.v_3 = v_3

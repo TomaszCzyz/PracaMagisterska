@@ -4,7 +4,7 @@ import logging
 import numpy as np
 
 from Examples import ExampleFunction
-from Utilis import interp_newton
+from Utilis import divided_diff_coeffs, newton_poly
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,6 @@ class Alg2014:
 
         omega = self.h ** (self.example.f__r + self.example.f__rho)
         self.d = omega if omega > 5e-15 else 5e-15
-        self.d = self.h ** (self.example.f__r + self.example.f__rho)
 
         # following values could be local, but they are defined as class values
         # to make monitoring of algorithm easier
@@ -34,7 +33,7 @@ class Alg2014:
         self.m_set = np.array(self.t)
 
     def run(self):
-        logger.info("executing alg2014 dla m={} and noise={}".format(self.m, self.example.f__noise))
+        logger.info("\nexecuting alg2014 dla m={} and noise={}".format(self.m, self.example.f__noise))
         self.step1()
         self.step2()
         approximation = self.step3()
@@ -51,11 +50,14 @@ class Alg2014:
         largest_result = 0
         second_largest_result = 0
         largest_result_index = 0
+        second_largest_result_index = 0
 
+        iter_count = 0
         for i in range(len(self.t) - 1):
 
             if self.t[i + 1] - self.t[i] <= 4 * self.d:
                 continue
+            iter_count += 1
 
             test_result = self.a_test(
                 self.t[i],
@@ -63,20 +65,32 @@ class Alg2014:
                 self.t[i + 1] - self.d,
                 self.t[i + 1]
             )
+            logger.info("step1 - interval(i:{:2}): [{:.14f} {:.14f}], test_result: {:.14f}".format(
+                i, self.t[i], self.t[i + 1], test_result))
 
             if test_result > largest_result:
                 second_largest_result = largest_result
+                second_largest_result_index = largest_result_index
+
                 largest_result = test_result
                 largest_result_index = i
+
             elif test_result > second_largest_result:
                 second_largest_result = test_result
+                second_largest_result_index = i
+
+        logger.info(
+            "step1 - (largest(index:{}): {} second largest(index:{}): {})".format(
+                largest_result_index, largest_result, second_largest_result_index, second_largest_result))
 
         if largest_result - second_largest_result < 1e-14:
-            return
-
-        self.step1_interval = (self.t[largest_result_index], self.t[largest_result_index + 1])
-        logger.info(
-            "step1 - interval (u_1, v_1): [{:.14f} {:.14f}]".format(self.step1_interval[0], self.step1_interval[1]))
+            self.step1_interval = None
+            logger.info("step1 - largest test result was not unique")
+        else:
+            self.step1_interval = (self.t[largest_result_index], self.t[largest_result_index + 1])
+            logger.info("step1 - interval (u_1, v_1): [{:.14f} {:.14f}]".format(
+                self.step1_interval[0], self.step1_interval[1]))
+        pass
 
     def step2(self):
         """
@@ -87,8 +101,8 @@ class Alg2014:
         if self.step1_interval is None:
             return []
 
-        self.b_set = list(self.step1_interval)
         a_new, b_new = self.step1_interval
+        self.b_set = [a_new, b_new]
 
         iter_count = 0
         while b_new - a_new > 4 * self.d:
@@ -100,7 +114,7 @@ class Alg2014:
             a1 = self.a_test(a_new, a_new + self.d, v - self.d, v)
             a2 = self.a_test(v, v + self.d, b_new - self.d, b_new)
 
-            if a1 - a2 < 1e-14:
+            if abs(a1 - a2) < 1e-14:
                 break
 
             if a1 > a2:
@@ -109,7 +123,7 @@ class Alg2014:
                 a_new = v
 
         logger.info('step2 - iterations: {}'.format(iter_count))
-        logger.info("step2 - b_set(len:{}): {}".format(len(self.b_set), self.b_set))
+        logger.info("step2 - b_set(len:{}): {}".format(len(self.b_set), sorted(self.b_set)))
 
     def step3(self):
         """
@@ -133,16 +147,16 @@ class Alg2014:
                 continue  # interval is small... no need for extra points
 
             # each "big" interval we divide for 3 sub-intervals
-            # on sub-intervals near edge approx has constant value
-            # and on the middle sub-interval we use interpolating polynomial
+            # on sub-intervals near edge approximation has constant value
+            # and in the middle sub-interval we use interpolating polynomial
             knot1, knot2 = current_knot + self.d, next_knot - self.d
 
             knots = np.linspace(knot1, knot2, self.example.f__r + 1)
             values = self.example.fun(knots)
-            polynomial = interp_newton(knots, values)
+            polynomial_coeffs = divided_diff_coeffs(knots, values)[0, :]
 
             # extra knot with approximating polynomial on interval [knot1, knot2)
-            approx.append((knot1, polynomial))
+            approx.append((knot1, [polynomial_coeffs, knots]))
 
             # extra knot with constant function on interval [knot2, next_knot)
             approx.append((knot2, self.example.fun(knot2)))
@@ -154,26 +168,34 @@ class Alg2014:
 
         def final_approximation(t):
             ii = bisect.bisect_right(np_approx[:, 0], t) - 1
+            elem = np_approx[ii, 1]
 
-            if callable(np_approx[ii, 1]):
-                return np_approx[ii, 1](t)
+            # if callable(np_approx[ii, 1]):
+            if isinstance(elem, list):
+                new_value = newton_poly(elem[0], elem[1], [t])
+                return new_value
             else:
-                return np_approx[ii, 1]
+                return elem
 
         return final_approximation
 
     def a_test(self, a0, a1, b1, b0):
         r = self.example.f__r
-        knots = np.linspace(b1, b0, r + 1)
-        values = self.example.fun(knots)
-        w1 = interp_newton(knots, values)
 
-        knots = np.linspace(a0, a1, r + 1)
-        values = self.example.fun(knots)
-        w2 = interp_newton(knots, values)
+        w1_knots = np.linspace(a0, a1, r + 1)
+        w1_values = self.example.fun(w1_knots)
+        w1_coeffs = divided_diff_coeffs(w1_knots, w1_values)[0, :]
+
+        w2_knots = np.linspace(b1, b0, r + 1)
+        w2_values = self.example.fun(w2_knots)
+        w2_coeffs = divided_diff_coeffs(w2_knots, w2_values)[0, :]
 
         z_arr = np.linspace(a1, b1, r + 1)
-        test_values = [abs(w1(z_i) - w2(z_i)) for z_i in z_arr]
+        w1_values_new = newton_poly(w1_coeffs, w1_knots, z_arr)
+        w2_values_new = newton_poly(w2_coeffs, w2_knots, z_arr)
+
+        test_values = [abs(w1_values_new[j] - w2_values_new[j]) for j in range(r + 1)]
         # / ((b0 - a0) ** (r + self.example.f__rho)) <- no need when all studied intervals have the same length
 
-        return max(test_values)
+        max_val = max(test_values)
+        return max_val

@@ -6,7 +6,7 @@ from scipy import integrate
 
 logger = logging.getLogger(__name__)
 rng = np.random.default_rng()
-omitted_part_of_interval = 0.5
+omitted_part_of_interval = 0.0
 
 
 def norm_lp(f, interval, p):
@@ -29,8 +29,12 @@ def norm_infinity(f, interval, singularity_interval):
         if value > max_value:
             max_value = value
 
-        if singularity_interval[0] <= current <= singularity_interval[1]:
-            current += (step + randoms[counter % len(randoms)]) / 1000
+        # more dense close to edge and singularity
+        if current < interval[0] + 0.1 or current > interval[1] - 0.1 or \
+                singularity_interval[0] <= current < singularity_interval[1]:
+            current += (step + randoms[counter % len(randoms)]) / 100
+            # current = singularity_interval[1]
+            # logger.info("skipping interval with singularity during calculating error")
         else:
             current += step + randoms[counter % len(randoms)]
         counter += 1
@@ -61,6 +65,34 @@ def worst_case_error_n(alg, repeat_count, lp_norm=2):
     max_error = np.max([worst_case_error(alg, lp_norm) for _ in range(repeat_count)])
 
     return max_error, alg.m, alg.example.f__noise
+
+
+def divided_diff_coeffs(x, y):
+    """
+    function to calculate the divided differences table
+    """
+    n = len(y)
+    coeffs = np.zeros([n, n])
+    # the first column is y
+    coeffs[:, 0] = y
+
+    for j in range(1, n):
+        for i in range(n - j):
+            coeffs[i][j] = (coeffs[i + 1][j - 1] - coeffs[i][j - 1]) / (x[i + j] - x[i])
+
+    return coeffs
+
+
+def newton_poly(coeffs, x_data, x):
+    """
+    evaluate the newton polynomial
+    at x
+    """
+    n = len(x_data) - 1
+    p = coeffs[n]
+    for k in range(1, n + 1):
+        p = coeffs[n - k] + (x - x_data[n - k]) * p
+    return p
 
 
 def interp_newton(xvals, yvals):
@@ -115,7 +147,7 @@ def interp_newton(xvals, yvals):
     return f
 
 
-def max_local_primitive(fun, a, b, num=1000):
+def max_local_primitive(fun, a, b, num=200):
     fun_max = -float("inf")
     arg_max = None
 

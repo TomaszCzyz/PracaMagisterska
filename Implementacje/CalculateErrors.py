@@ -59,7 +59,7 @@ class ResultsCollector:
 
         m_original = np.array(np.floor(np.power(10, self.log10_m_for_noise[ref_noise])), dtype='float64')
         theoretical_error = np.power(m_original, -(self.data['f__r'] + 1))
-        reference_line = -np.log10(theoretical_error) - 2.0
+        reference_line = -np.log10(theoretical_error)  # - 2.0
 
         subplot_nr = 0
         for key_noise in sorted(self.log10_m_for_noise.keys(), key=lambda x: (x is not None, x), reverse=False):
@@ -97,7 +97,8 @@ class ResultsCollector:
             datetime.now()))
         plt.subplots_adjust(left=0.08, bottom=0.08, right=0.98, top=0.9,
                             wspace=0.07, hspace=0.1)
-        plt.xlim([x_min - 0.2, x_max + 0.2])
+
+        plt.xlim([x_min - 0.1, x_max + 0.1])
         plt.xticks(np.arange(np.floor(x_min), np.ceil(x_max), 0.5))
 
         if save:
@@ -193,20 +194,21 @@ def calculate(repeat_count, knots_counts, deltas, algorithm_name, example_fun_na
 
 
 def main():
-    log10_m_array = np.linspace(1.3, 3.5, num=15)  # 10 ** 4.7 =~ 50118
+    log10_m_array = np.linspace(1.4, 4.4, num=25)  # 10 ** 4.7 =~ 50118
+    # log10_m_array = [1.5]
 
     m_array = [int(10 ** log10_m) for log10_m in log10_m_array]
-    noises = [None]  # [None, 1e-12, 1e-8, 1e-4]
-    n_runs = 1
-    alg = 'alg2014'
-    example = 'Example2'
-    p_norm = 'infinity'
+    noises = [None, 1e-12, 1e-8, 1e-4]
+    n_runs = 10
+    alg = 'alg2015'
+    example = 'Example1'
+    p_norm = 2  # 'infinity'
     r = 4
 
     # create_example(example).plot()
 
     results = calculate(n_runs, m_array, noises, alg, example, p=p_norm, parallel=True, f__r=r)
-    # alg = Alg2015(example=Example2(None), n_knots=35, p=p_norm)
+    # alg = Alg2014(example=Example2(None), n_knots=66)
     # results = alg.run()
 
     print("FINISHED")
