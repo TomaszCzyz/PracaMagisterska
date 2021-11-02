@@ -252,8 +252,6 @@ def main():
     create_example(example).plot()
 
     results = calculate(repeat_count, m_array, noises, alg, example, p=p_norm, parallel=True, f__r=r)
-    # alg = Alg2014(example=Example2(None), n_knots=66)
-    # results = alg.run()
 
     return results
 
@@ -282,10 +280,3 @@ if __name__ == '__main__':
 
     main_callback.plot_results(save=True)
 
-    # Example2(None)
-    # alg = Alg2015(example=example_function, n_knots=8966)
-    # worst_case_error_n(
-    #     alg=alg,
-    #     num=3
-    # )
-    # results = alg.run()

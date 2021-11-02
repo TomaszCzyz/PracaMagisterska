@@ -90,6 +90,14 @@ def worst_case_error_n(alg, repeat_count, lp_norm=2):
 
     Returns tuple containing:
     maximum of calculated errors, initial mesh resolution and noise associated with the algorithm
+
+    Execution example:
+    example_function = Example2(1e-8)
+    alg = Alg2015(example=example_function, n_knots=8966)
+    error = worst_case_error_n(
+        alg=alg,
+        repeat_count=100
+    )[0]  # <- if only interested in error
     """
     # warnings.filterwarnings("ignore")
     max_error = np.max([worst_case_error(alg, lp_norm) for _ in range(repeat_count)])

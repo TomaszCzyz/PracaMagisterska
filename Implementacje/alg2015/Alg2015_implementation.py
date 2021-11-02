@@ -14,6 +14,10 @@ class Alg2015:
     """
     example - function to approximate (containing data about class parameters, interval and noise)
     n_knots - initial mesh resolution
+
+    Execution example:
+    alg = Alg2015(example=Example2(None), n_knots=1234)
+    approximation = alg.run()
     """
 
     def __init__(self, example: ExampleFunction, n_knots, p):
