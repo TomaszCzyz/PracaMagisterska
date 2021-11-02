@@ -1,6 +1,7 @@
+from abc import ABC
+
 import matplotlib.pyplot as plt
 import numpy as np
-from abc import ABC
 
 rng = np.random.default_rng()
 

@@ -10,6 +10,9 @@ omitted_part_of_interval = 0.0
 
 
 def norm_lp(f, interval, p):
+    """
+    Calculates L_p norm of function f on a given interval
+    """
     norm = integrate.quad(
         func=lambda x: f(x) ** p,
         a=interval[0] + omitted_part_of_interval, b=interval[1] - omitted_part_of_interval
@@ -17,32 +20,54 @@ def norm_lp(f, interval, p):
     return norm
 
 
-def norm_infinity(f, interval, singularity_interval):
+def norm_infinity(f, interval, singularity=None):
+    """
+    Calculates maximum norm of function f on a given interval.
+    Method iterate through interval using step 'step' with random change to avoid hitting special points in interval,
+    such as points in initial mesh.
+    Additionally, step is reduced near edges and singularity, if specified.
+    """
     step = 1e-3
-    randoms = rng.random(100) * step
+    margin = 0.1
+    randoms = rng.random(100) * step  # predefine random number for performance
+    step_reduction_ratio = 100
+
+    start, stop = interval[0], interval[1]
     max_value = 0.0
     counter = 0
-    current = interval[0] + omitted_part_of_interval
 
-    while current <= interval[1] - omitted_part_of_interval:
+    def is_near_singularity(s, x, mar=0.1):
+        if s is None or not isinstance(s, float):
+            return False
+
+        if s - mar <= x < s + mar:
+            return True
+
+    current = start + omitted_part_of_interval
+    while current <= stop - omitted_part_of_interval:
         value = f(current)
         if value > max_value:
             max_value = value
 
         # more dense close to edge and singularity
-        if current < interval[0] + 0.1 or current > interval[1] - 0.1 or \
-                singularity_interval[0] <= current < singularity_interval[1]:
-            current += (step + randoms[counter % len(randoms)]) / 100
+        if current < start + margin or current > stop - margin or is_near_singularity(current, singularity, margin):
+            current += (step + randoms[counter % len(randoms)]) / step_reduction_ratio
+            # TODO delete below commented code. It was added for debugging purposes.
             # current = singularity_interval[1]
             # logger.info("skipping interval with singularity during calculating error")
         else:
             current += step + randoms[counter % len(randoms)]
+
         counter += 1
 
     return max_value
 
 
 def worst_case_error(alg, lp_norm=2):
+    """
+    Calculates error of approximation for given algorithm.
+    Function used for comparison is stored in algorithm as part of 'example' function
+    """
     approximation = alg.run()
     original_func = alg.example.raw_f
     interval = alg.example.f__a, alg.example.f__b
@@ -51,9 +76,8 @@ def worst_case_error(alg, lp_norm=2):
         return abs(approximation(x) - original_func(x))
 
     if lp_norm == 'infinity':
-        s = alg.example.singularity
-        singularity_interval = (s - 0.1, s + 0.1) if isinstance(s, float) else None
-        result = norm_infinity(f, interval, singularity_interval)
+        singularity = alg.example.singularity
+        result = norm_infinity(f, interval, singularity)
     else:
         result = norm_lp(f, interval, lp_norm)
 
@@ -61,7 +85,13 @@ def worst_case_error(alg, lp_norm=2):
 
 
 def worst_case_error_n(alg, repeat_count, lp_norm=2):
-    warnings.filterwarnings("ignore")
+    """
+    Runs 'worst_case_error' method 'repeat_count' times for given norm.
+
+    Returns tuple containing:
+    maximum of calculated errors, initial mesh resolution and noise associated with the algorithm
+    """
+    # warnings.filterwarnings("ignore")
     max_error = np.max([worst_case_error(alg, lp_norm) for _ in range(repeat_count)])
 
     return max_error, alg.m, alg.example.f__noise
@@ -69,7 +99,7 @@ def worst_case_error_n(alg, repeat_count, lp_norm=2):
 
 def divided_diff_coeffs(x, y):
     """
-    function to calculate the divided differences table
+    Function to calculate the divided differences table
     """
     n = len(y)
     coeffs = np.zeros([n, n])
@@ -85,8 +115,7 @@ def divided_diff_coeffs(x, y):
 
 def newton_poly(coeffs, x_data, x):
     """
-    evaluate the newton polynomial
-    at x
+    Evaluate the newton polynomial at x
     """
     n = len(x_data) - 1
     p = coeffs[n]
@@ -97,8 +126,10 @@ def newton_poly(coeffs, x_data, x):
 
 def interp_newton(xvals, yvals):
     """
-    Return a function representing the interpolating
-    polynomial determined by xvals and yvals.
+    Return a function representing the interpolating polynomial determined by xvals and yvals.
+    This method combines two steps:
+    1. calculate coefficients
+    2. create function depending on these coefficients
     """
     assert len(xvals) == len(yvals)
     nbr_data_points = len(xvals)
@@ -145,25 +176,3 @@ def interp_newton(xvals, yvals):
         return return_val
 
     return f
-
-
-def max_local_primitive(fun, a, b, num=200):
-    fun_max = -float("inf")
-    arg_max = None
-
-    if b - a < 1e-14:
-        logger.info("interval is smaller than 1e-14; skipping local maximum search")
-        return None
-
-    dx = (b - a) / num
-    dx = dx if dx > 1e-14 else 1e-14
-    xval = a + dx
-    while xval < b:
-        value = fun(xval)
-        if value > fun_max:
-            fun_max = value
-            arg_max = xval
-
-        xval += dx
-
-    return arg_max
