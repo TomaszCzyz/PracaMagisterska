@@ -14,11 +14,6 @@ from Utilis import worst_case_error_n
 from alg2014.Alg2014_implementation import Alg2014
 from alg2015.Alg2015_implementation import Alg2015
 
-markers = ['1', '2', '1', '2']
-colors = ['orange', 'grey', 'green', 'blue']
-SUB = str.maketrans("0123456789", "₀₁₂₃₄₅₆₇₈₉")
-SUP = str.maketrans("0123456789-=()", "⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁼⁽⁾")
-
 
 def apply_global_plot_styles():
     plt.rcParams['axes.linewidth'] = 0.1
@@ -31,22 +26,26 @@ def apply_global_plot_styles():
 class ResultsCollector:
     """
     This class collect results using method callback_handler.
-    Passed data should be in tuple (error, alg_m, alg_noise):
+    Passed data should be tuple (error, alg_m, alg_noise), where
         error - error of approximation
         alg_m - initial mesh resolution associated with the error
         alg_noise - noise associated with the error
+
+    Additionally, prints available results when 'print_threshold'(percent of finished tasks) is achieved.
+    If plot_threshold > 100, then no results are printed.
     """
 
-    def __init__(self, max_count, data):
+    def __init__(self, max_count, data, plot_threshold=None):
         self.data = data
         self.tasks_number = max_count
+        self.plot_threshold = plot_threshold if plot_threshold is not None else 101
 
         self.example_function = create_example(data['example_fun_name'])
         self.finished_tasks = 0
         self.log10_errors_for_noise = {}
         self.log10_m_for_noise = {}
 
-    def callback_handler(self, args, plot_threshold=100):
+    def callback_handler(self, args):
         """
         Stores new data about the error in two dictionaries:
         {noise: [-log10(error1), -log10(error4), ..., -log10(error2)]} and
@@ -69,7 +68,7 @@ class ResultsCollector:
         self.log10_errors_for_noise[alg_noise].append(-np.log10(error))
         self.log10_m_for_noise[alg_noise].append(np.log10(alg_m))
 
-        if self.finished_tasks / self.tasks_number >= plot_threshold:
+        if self.finished_tasks / self.tasks_number >= (self.plot_threshold / 100):
             self.plot_results()
 
     def plot_results(self, save=False):
@@ -85,10 +84,14 @@ class ResultsCollector:
         x_min, x_max = min(self.log10_m_for_noise[ref_noise]), max(self.log10_m_for_noise[ref_noise])
 
         # data for plot of the theoretical error
+        theoretical_error_exponent = -(self.data['f__r'] + 1)
         m_original = np.array(np.floor(np.power(10, self.log10_m_for_noise[ref_noise])), dtype='float64')
-        theoretical_error = np.power(m_original, -(self.data['f__r'] + 1))
+        theoretical_error = np.power(m_original, theoretical_error_exponent)
         reference_line = -np.log10(theoretical_error)  # - 2.0
 
+        markers = ['1', '2', '1', '2']
+        colors = ['orange', 'grey', 'green', 'blue']
+        supscript = str.maketrans("0123456789-=()", "⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁼⁽⁾")
         subplot_nr = 0
         for key_noise in sorted_noises:
             plt.plot(
@@ -106,7 +109,7 @@ class ResultsCollector:
             color='grey',
             linestyle='--',
             linewidth=1,
-            label=("m{}".format(-(self.data['f__r'] + 1))).translate(SUP),
+            label=("m{}".format(theoretical_error_exponent)).translate(supscript)
         )
 
         # description and general plot styles
@@ -194,7 +197,7 @@ def calculate(repeat_count, knots_counts, deltas, algorithm_name, example_fun_na
         'p': p
     }
     tasks_number = len(knots_counts) * len(deltas)
-    results_collector = ResultsCollector(tasks_number, extra_data)
+    results_collector = ResultsCollector(tasks_number, extra_data, plot_threshold=None)
 
     if parallel:
         with mp.Pool(processes=mp.cpu_count() // 2) as pool:
@@ -237,37 +240,26 @@ def calculate(repeat_count, knots_counts, deltas, algorithm_name, example_fun_na
 
 
 def main():
-    log10_m_array = np.linspace(1.4, 4.4, num=25)  # 10 ** 4.7 =~ 50118
-    # log10_m_array = [1.5]
+    apply_global_plot_styles()
+
+    log10_m_array = np.linspace(1.4, 3.5, num=25)  # 10 ** 4.7 =~ 50118
 
     # Entry data for calculations
     m_array = [int(10 ** log10_m) for log10_m in log10_m_array]
     noises = [None, 1e-12, 1e-8, 1e-4]
-    repeat_count = 1000
+    repeat_count = 100
     alg = 'alg2015'
     example = 'Example1'
-    p_norm = 2  # 'infinity'
+    p_norm = 'infinity'
     r = 4
 
     create_example(example).plot()
 
-    results = calculate(repeat_count, m_array, noises, alg, example, p=p_norm, parallel=True, f__r=r)
-
-    return results
-
-
-if __name__ == '__main__':
-    apply_global_plot_styles()
-    # print logs to file
-    logging.basicConfig(level=logging.INFO, filename='myapp.log', format="%(asctime)s:%(message)s")
-    # print logs to console
-    logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
-
     start_datetime = datetime.now()
-
     logging.info('Started at %s', start_datetime.strftime("%d/%m/%Y %H:%M:%S"))
 
-    main_callback = main()
+    results_collector = calculate(repeat_count, m_array, noises, alg, example, p=p_norm, parallel=True, f__r=r)
+    results_collector.plot_results(save=True)
 
     end_datetime = datetime.now()
     processing_time = end_datetime - start_datetime
@@ -276,7 +268,13 @@ if __name__ == '__main__':
                  end_datetime.strftime("%d/%m/%Y %H:%M:%S"),
                  str(processing_time))
 
-    # %%
+    return results_collector
 
-    main_callback.plot_results(save=True)
 
+if __name__ == '__main__':
+    # print logs to file
+    logging.basicConfig(level=logging.INFO, filename='Calculate.log', format="%(asctime)s:%(message)s")
+    # print logs to console
+    logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
+
+    results = main()

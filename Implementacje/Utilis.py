@@ -11,8 +11,9 @@ omitted_part_of_interval = 0.0
 
 def norm_lp(f, interval, p):
     """
-    Calculates L_p norm of function f on a given interval
+    Calculates L_p norm for 1 < p < infinity of function f on a given interval
     """
+    warnings.filterwarnings("ignore")
     norm = integrate.quad(
         func=lambda x: f(x) ** p,
         a=interval[0] + omitted_part_of_interval, b=interval[1] - omitted_part_of_interval
@@ -99,7 +100,6 @@ def worst_case_error_n(alg, repeat_count, lp_norm=2):
         repeat_count=100
     )[0]  # <- if only interested in error
     """
-    # warnings.filterwarnings("ignore")
     max_error = np.max([worst_case_error(alg, lp_norm) for _ in range(repeat_count)])
 
     return max_error, alg.m, alg.example.f__noise
