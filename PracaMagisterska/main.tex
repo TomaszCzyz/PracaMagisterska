@@ -972,21 +972,16 @@
 \section{Analiza algorytmu opartego o różnice dzielone}
 
 
-    Zanim przejdziemy do analizy algorytmu, przypomnijmy znaną własność różnic dzielonych.
+    Zanim przejdziemy do analizy algorytmu, przedstawmy dwie własności różnic dzielonych.
 
-    Niech $t_{0}, \ldots, t_{r}$ będą parami rozłączynymi punktami należącymi do przedziału $[0, T]$ oraz niech $f$ będzie $r$-krotnie różniczowalną funkcją na tym przedziale. Wtedy istnieje punkt $\xi \in \conv (t_{0}, \ldots, t_{r}) \coloneqq \left( \min \{t_{0}, \ldots, t_{r}\}, \max \{t_{0}, \ldots, t_{r}\} \right)$, taki że
+    Niech $t_{0}, \ldots, t_{r}$ będą parami rozłączynymi punktami należącymi do przedziału $[0, T]$ oraz niech $f$ będzie $r$-krotnie różniczowalną funkcją określoną na tym przedziale. Wtedy istnieje punkt $\xi \in \conv (t_{0}, \ldots, t_{r}) \coloneqq \left( \min \{t_{0}, \ldots, t_{r}\}, \max \{t_{0}, \ldots, t_{r}\} \right)$, taki że
     \begin{equation} \label{eq:33:wartosc_srednia_roz_dziel}
         f\left[ t_{0}, \ldots, t_{r} \right] = \frac{f^{(r)}(\xi)}{r!}.
     \end{equation}
-    Przypomnijmy również, że błąd interpolacji wielomianowej wyraża się wzorem
-    \begin{equation*} \label{eq:34:blad_interpolacji_lagrangea}
-        f(t) - p(t) = f[t, t_{0}, \ldots, t_{r}] \prod_{j = 0}^{r} (t - t_{i}),
-    \end{equation*}
-    gdzie $p$ jest wielomianem interpolacyjnym opartym na punktach $t_{0}, \ldots, t_{r}$.
-
-    Wprowadźmy jeszcze jedną własność różnic dzielonych, która pochodzi z artukułu \cite{UA}.
+    
+    Kolejna własność zosatała przedstawiona w artukule~\cite{UA}.
     \begin{lemma} \label{lem:4:wlasnosc_roznic_dzielonych_z_art_2009}
-        Niech $f: [a,b] \rightarrow \R$ oraz $a < c_{0} <  c_{1} < \ldots < c_{k}$ dla $k \geq r$. Wtedyd dla podciągu $0 < j_{0} < j_{i} < \ldots < j_{r} \leq k$ mamy
+        Niech $f: [a,b] \rightarrow \R$ oraz $a < c_{0} <  c_{1} < \ldots < c_{k}$ dla $k \geq r$. Wtedy dla podciągu $0 < j_{0} < j_{i} < \ldots < j_{r} \leq k$ mamy
         \begin{equation*}
             \left| f[c_{j_{0}}, c_{j_{1}}, \ldots, c_{j_{r}}] \right| \leq \max_{0 \leq i \leq k-r} \left| f[c_{i}, c_{i+1}, \ldots, c_{i+r}] \right|.
         \end{equation*}
@@ -1006,7 +1001,13 @@
 
     \end{proof}
 
-    Analiza algorytmu z pracy wykorzystujęcego różnice dzielone do lokalizacji osobliwości opiera się na właśwościach interpolacji z użyciem zaburzonej informacji oraz punktowej analizie błędu aproksymacji. Twierdzenia i lematy w tym rozdziale zostały przedstawione w artykule \cite{AoP}. Zacznijmy od przedstawiania kilku lematów dotyczących różnic dzielonych, zdefiniowanych jak w \eqref{eq:31:niedokladna_roznica_dzielna}, i błędu interpolacji, gdy mamy do czynienia z informacją niedokładną.
+    Przypomnijmy również, że błąd interpolacji wielomianowej wyraża się wzorem
+    \begin{equation*} \label{eq:34:blad_interpolacji_lagrangea}
+        f(t) - p(t) = f[t, t_{0}, \ldots, t_{r}] \prod_{j = 0}^{r} (t - t_{i}),
+    \end{equation*}
+    gdzie $p$ jest wielomianem interpolacyjnym opartym na punktach $t_{0}, \ldots, t_{r}$.
+
+    Analiza algorytmu wykorzystujęcego różnice dzielone do lokalizacji osobliwości opiera się na właśwościach interpolacji z użyciem zaburzonej informacji oraz punktowej analizie błędu aproksymacji. Analiza ta została opracowana w pracy \cite{AoP} i w jej skład wchodzą dowody i lematy umieszczone w dalszej części tego rozdziału. Zacznijmy od przedstawiania kilku lematów dotyczących różnic dzielonych i błędu interpolacji, gdy mamy do czynienia z informacją niedokładną.
     
     Poniższy lemat mówi, że wartość zburzonej różnicy dzielonej dla funkcji regularnej na przedziale jest ograniczona ze względu na precyzję z jaką otrzymujemy wartości funkcji oraz przez stałą zależną od parametrów klasy.
 
@@ -1040,7 +1041,7 @@
         co dowodzi lemat.
     \end{proof}
 
-    Teraz oszacujemy błąd interpolacji i ekstrapolacji w obecności zaburzenia wartości funkcji. Niech $p_{i}$ i $\tilde{p_{i}}$ odpowiadają wielomianom stopnia co najwyżej $r$ interpolujących $f$ opartych na odpowiednio dokładnych i niedokładnych wartościach funkcji $f$ w punktach $t_{i}, t_{i+1}, \dots, t_{i+r}$. Dla $r \geq 1$, wprowadźmy oznaczenia: 
+    Teraz oszacujemy błąd interpolacji i ekstrapolacji w obecności zaburzenia wartości funkcji. Niech $p_{i}$ i $\tilde{p_{i}}$ odpowiadają wielomianom stopnia co najwyżej $r$ opartych na odpowiednio dokładnych i niedokładnych wartościach funkcji $f$ w punktach $t_{i}, t_{i+1}, \dots, t_{i+r}$. Dla $r \geq 1$, wprowadźmy oznaczenia: 
     \begin{equation*}
         \beta_{r} = \max_{0 \leq t \leq r} \left|\prod_{k=0}^{r} (t-k)\right|, \quad
         \Lambda_{r} = \max_{0 \leq t \leq r} \sum_{k=0}^{r} \prod_{\substack{\ell=0 \\ \ell \neq k}}^{r} \left| \frac{t-\ell}{k-\ell} \right|, \quad
@@ -1069,14 +1070,13 @@
     \end{lemma}
 
     \begin{proof}
-        W przypadku, gdy $r=0$ interpolujemy funkcją stałą, więc błąd interpolacji wynosi
+        W przypadku, gdy $r=0$ interpolujemy funkcją stałą, więc błąd interpolacji dla $x \in [t_{i - \frac{1}{2}}, t_{i + \frac{1}{2}})$ wynosi
         \begin{equation*}
             \begin{aligned}                
                 |f(x) - \tilde{p}(x)| &= |f(x) - f(t_{i}) - e_{i}| \leq |f(x) - f(t_{i})| + |e_{i}| \\
                     &\leq c(g_{f}) \left|t_{i-\frac{1}{2}} - t_{i}\right|^{\varrho} + |e_{i}| \leq c(g_{f}) 2^{-\varrho}h^{\varrho} + \delta.
             \end{aligned}
         \end{equation*}
-        Dla $x \in [t_{i-1}, t_{i - \frac{1}{2}})$
         Niech $r \geq 1$, korzystając z nierówności trójkąta
         \begin{equation*}
             \left|f(x)-\tilde{p}_{i}(x)\right| \leq\left|f(x)-p_{i}(x)\right|+\left|\tilde{p}_{i}(x)-p_{i}(x)\right|.
@@ -1161,7 +1161,7 @@
         \begin{equation*}
             \left|p_{j}(x)-\tilde{p}_{j}(x)\right| \leq \delta \Lambda_{r}.
         \end{equation*}
-        Możemy tearz oszacować pozostały człon $\left|\tilde{p}_{j}(x)-\tilde{p}_{i}(x)\right|$. Dla $i+r+1 \leq k \leq j+r$, mamy
+        Możemy teraz oszacować pozostały człon $\left|\tilde{p}_{j}(x)-\tilde{p}_{i}(x)\right|$. Dla $i+r+1 \leq k \leq j+r$, mamy
         \begin{equation} \label{eq:3}
             \left(\tilde{f}-\tilde{p}_{i}\right)\left[t_{i}, \ldots, t_{i+r}, t_{k}\right]=\frac{y_{k}-\tilde{p}_{i}\left(t_{k}\right)}{(k-i)(k-i-1) \cdots(k-i-r) h^{r+1}}
         \end{equation}
@@ -1169,7 +1169,7 @@
         \begin{equation} \label{eq:4}
             \left|\left(\tilde{f}-\tilde{p}_{i}\right)\left[t_{i}, \ldots, t_{i+r}, t_{k}\right]\right|=\left|\tilde{f}\left[t_{i}, \ldots, t_{i+r}, t_{k}\right]\right| \leq \max_{i \leq \ell \leq k-r-1}\left|\tilde{d}_{\ell}\right| \leq B h^{\varrho-1},
         \end{equation}
-        gdzie pierwsza nierówność wynika z \cite{UA}(Lemat 1), natomiast druga z \eqref{eq:2}. Biorąc \eqref{eq:3} oraz \eqref{eq:4}, otrzymujemy:
+        gdzie pierwsza nierówność wynika z lematu \ref{lem:4:wlasnosc_roznic_dzielonych_z_art_2009}, natomiast druga z \eqref{eq:2}. Biorąc \eqref{eq:3} oraz \eqref{eq:4}, otrzymujemy:
         \begin{equation} \label{eq:5}
             \left|y_{k}-\tilde{p}_{i}\left(t_{k}\right)\right| \leq \frac{(2 r) !}{(r-1) !} B h^{r+\varrho}.
         \end{equation}
@@ -1206,7 +1206,7 @@
         |\tilde{d}_{i}| \leq B_{r}(b, f) h^{\varrho-1}, \quad \text{ gdzie } B_{r}(b, f)=\frac{c\left(g_{f}\right)(r+1)^{\varrho}+b 2^{r+1}}{(r+1) !}.
     \end{equation*}
 
-    Przypuśćmy, że $\varphi_{h}^{*}(y)(x) = \tilde{p}_{i}(x)$ dla pewnego $i$. Jeżeli $x \notin [u_{1}, v_{1})$, wtedy $x \in [t_{i}, t_{i+r})$ (albo $x \in [t_{i-1/2}, t_{i+1/2})$ dla $r=0$) oraz $[t_{i}, t_{i+r}] \cap (u_{1}, v_{1}) = \emptyset$. Wtedy z lematów \ref{lem:algMP_2} i \ref{lem:algMP_3} wiemy, że błąd aproksymacji w punkcie $x$ jest ograniczony z góry przez $C_{r,\varrho}(f)h^{r+\varrho} + \delta \Lambda_{r}$ dla $t_{f} \notin (t_{i}, t_{i+r}]$ (albo $\po_{f} \notin [x_{i-1/2}, x_{i+1/2})$ dla $r=0$) lub przez $E_{r}(f)h^{r+\varrho} + \delta \Lambda_{r}$ w przeciwnym przypadku, gdzie $E_{r}(f) = D_{r}(B_{r}(b, f), f)$.
+    Przypuśćmy, że $\varphi_{h}^{*}(y)(x) = \tilde{p}_{i}(x)$ dla pewnego $i$. Jeżeli $x \notin [u_{1}, v_{1})$, wtedy $x \in [t_{i}, t_{i+r})$ (albo $x \in [t_{i-1/2}, t_{i+1/2})$ dla $r=0$) oraz $[t_{i}, t_{i+r}] \cap (u_{1}, v_{1}) = \emptyset$. Wtedy z lematów \ref{lem:algMP_2} i \ref{lem:algMP_3} wiemy, że błąd aproksymacji w punkcie $x$ jest ograniczony z góry przez $C_{r,\varrho}(f)h^{r+\varrho} + \delta \Lambda_{r}$ dla $t_{f} \notin (t_{i}, t_{i+r}]$ (albo $\po_{f} \notin [x_{i-1/2}, x_{i+1/2})$ dla $r=0$) lub przez $E_{r}(f)h^{r+\varrho} + \delta \Lambda_{r}$ , gdy $\po_{f} \in (t_{i}, t_{i+r}] $, gdzie $E_{r}(f) = D_{r}(B_{r}(b, f), f)$.\\
     Z drugiej strony, jeżeli $x \in [u_{1}, v_{1})$, wtedy znów z lematu \ref{lem:algMP_3} wiemy, że błąd jest ograniczony przez $\bar{C}_{r, \varrho} h^{r+\varrho}+\delta \bar{\Lambda}_{r}$ dla $\po_{f} \notin \left(t_{i}, t_{i+r}\right]\left(\right.$ albo $\po_{f} \notin\left(t_{i-1 / 2}, t_{i+1 / 2}\right]$ dla $\left.r=0\right)$, lub przez $E_{r}(f) h^{r+\varrho}+\delta \Lambda_{r}$ w przeciwnym przypadku.
 
     \textit{Przypadek II}: $\po_{f} \in (u_{1}, v_{1}]$.
@@ -1214,7 +1214,11 @@
     \begin{equation*}
         u_{1} < \po_{f} \leq \xi \leq v_{1}.
     \end{equation*}
-    Z lematu \ref{lem:algMP_2} dla $x \notin [u_{1}, v_{1})$ wiemy, że błąd jest ograniczony z góry przez $C_{r, \varrho}(f) h^{r+\varrho}+\delta \Lambda_{r}$ a dla $x \in [u_{1}, \po_{f}) \cap [\xi, v_{1})$ przez $\bar{C}_{r, \varrho} h^{r+\varrho}+\delta \bar{\Lambda}_{r}$. Z tego powodu możemy założyć, że $x \in [\po_{f}, \xi)$, to jest najbardziej interesujący przypadek. Mamy trzy możliwości:
+    Z lematu \ref{lem:algMP_2} dla $x \notin [u_{1}, v_{1})$ wiemy, że błąd jest ograniczony z góry przez $C_{r, \varrho}(f) h^{r+\varrho}+\delta \Lambda_{r}$ a dla $x \in [u_{1}, \po_{f}) \cap [\xi, v_{1})$ przez $\bar{C}_{r, \varrho} h^{r+\varrho}+\delta \bar{\Lambda}_{r}$. Z tego powodu możemy założyć, że 
+    \begin{equation} \label{eq:37}
+        x \in [\po_{f}, \xi).
+    \end{equation}
+    Mamy trzy możliwości:
 
     \textit{Przypadek IIa}: $\po_{f} \in (u_{1}, v_{1}] \backslash (u_{2}, v_{2}]$.
     Z przyjętych założeń wynika, że w kroku 2. algorytmu, w pewnej iteracji musi zachodzić
@@ -1243,7 +1247,7 @@
     \begin{equation} \label{eq:29}
         \left|\tilde{f}(z)-\tilde{p}_{-}(z)\right| \leq\left|\tilde{f}(z)-\tilde{p}_{+}(z)\right| \quad \text { oraz } \quad \po_{f} \in(u, z],
     \end{equation}
-    a to wraz z [ref] wskazuję na to, że
+    a to wraz z \eqref{eq:37} wskazuję na to, że
     \begin{equation*}
         \left|\tilde{p}_{+}(x)-\tilde{p}_{-}(x)\right| \leq \max \left(\left|\tilde{p}_{+}(z)-\tilde{p}_{-}(z)\right|,\left|\tilde{p}_{+}\left(\po_{f}\right)-\tilde{p}_{-}\left(\po_{f}\right)\right|\right),
     \end{equation*}
@@ -1279,16 +1283,17 @@
         \end{aligned}
     \end{equation*}
 
-    Podsumowując analizę błędu dla każdego punktu otrzymujemy, że gdy $\delta \leq bh^{r+\varrho}$ wtedy:
+    Podsumowując analizę błędu dla każdego punktu otrzymujemy, że dla $\delta \leq bh^{r+\varrho}$ mamy
     \begin{equation*}
         \begin{cases}
-            |f(x) - \varphi_{h}^{*}(y_{h})(x)| \propto \max(1, c(g_{f})) h^{r+\varrho} & \text{ dla } x \notin (u_{2}, v_{2}], \\
-            |f(x) - \varphi_{h}^{*}(y_{h})(x)| \propto \max(1, c(g_{f})) h^{r+\varrho} + |\Delta_{f}^{(0)}| & \text{ dla } x \in (u_{2}, v_{2}], \\
+            |f(x) - \varphi_{h}^{*}(y_{h})(x)| = \mathcal{O} (\max(1, c(g_{f})) h^{r+\varrho}) & \text{ dla } x \notin (u_{2}, v_{2}], \\
+            |f(x) - \varphi_{h}^{*}(y_{h})(x)| = \mathcal{O} (\max(1, c(g_{f})) h^{r+\varrho} + |\Delta_{f}^{(0)}|) & \text{ dla } x \in (u_{2}, v_{2}], \\
         \end{cases}
     \end{equation*}
-    gdzie $v_{2} - u_{2} \leq \omega$
+    gdzie $v_{2} - u_{2} \leq \omega$.
 
-    Mamy również, że liczba ewaluacji funkcji $n$ jest proporcjonalna do $h^{-1}$, tak więc $h^{r+\varrho}$ jest proporcjonalne do $n^{-(r+\varrho)}$. Z tej obserwacji wynika poniższe stwierdzenie:
+    Wiemy również, że liczba ewaluacji funkcji $n$ jest proporcjonalna do $h^{-1}$, tak więc $h^{r+\varrho}$ jest proporcjonalne do $n^{-(r+\varrho)}$. Z tej obserwacji oraz przedstwionej analizy wynikają poniższe stwierdzenia dotyczące błędu najgorszego przypadku.
+
     \begin{stw}
         \label{stw2}
         Niech $1 \leq p \leq \infty$. Jeżeli $\delta \leq bh^{r+\varrho}$ oraz $\omega(h) = h^{(r+\varrho)p + 1}$, wtedy
@@ -1308,14 +1313,14 @@
         \end{equation}
     \end{stw}
 
-    Ponownie, dla $r \geq 2$ użycie informacji adaptacyjnej jest konieczne. Łącząc wyniki \eqref{stw2}, \eqref{stw3} i \eqref{stw1}\eqref{stw1_i} otrzymujemy \ref{thm:1:i} i \ref{thm:1:ii} z twierdzenia \eqref{thm:1:ograniczenia_z_gory}.
+    Ponownie, dla $r \geq 2$ użycie informacji adaptacyjnej jest konieczne. Łącząc wyniki stwierdzeń \ref{stw2}, \ref{stw3} i \ref{stw1}\ref{stw1_i} otrzymujemy twierdzenie \ref{thm:1:ograniczenia_z_gory}\ref{thm:1:i}-\ref{thm:1:ii}.
     Faktycznie, dla ustalonego $\delta$ i $n$ możemy wybrać $h = \frac{T}{m}$ takie, że
     \begin{equation}
         m = m(n, \delta)=\left\lfloor\min \left(\beta n, \frac{1}{T}\left(\frac{b}{\delta}\right)^{\frac{1}{r+\varrho}}\right)\right\rfloor=\varTheta\left(\min \left(n, \delta^{-1 /(r+\varrho)}\right)\right).
     \end{equation}
 
     \begin{uw} \label{uw:2}
-        Zauważmy, że dla ustalonej precyzji $\delta$ nie ma sensu brać $m$ większego niż $m_{max} = \varTheta(\delta^{-1 / (r+\varrho)})$ wartości funkcji, ponieważ dla $m = m_{max}$ osiągamy maksymalną dokładność dla danego $\delta$.
+        Zauważmy, że dla ustalonej precyzji $\delta$ nie ma sensu brać $m$ więcej niż $m_{max} = \varTheta(\delta^{-1 / (r+\varrho)})$ wartości funkcji, ponieważ dla $m = m_{max}$ osiągamy maksymalną dokładność dla danego $\delta$.
     \end{uw}
 
 \mgrclosechapter
