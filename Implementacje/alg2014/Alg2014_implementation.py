@@ -4,7 +4,7 @@ import logging
 import numpy as np
 
 from Examples import ExampleFunction
-from Utilis import divided_diff_coeffs, newton_poly
+from Utilis import divided_diff_coeffs, newton_poly, interp_newton
 
 logger = logging.getLogger(__name__)
 
@@ -13,6 +13,10 @@ class Alg2014:
     """
     example - function to approximate (containing data about class parameters, interval and noise)
     n_knots - initial mesh resolution
+
+    Execution example:
+    alg = Alg2014(example=Example2(None), n_knots=1234)
+    approximation = alg.run()
     """
 
     def __init__(self, example: ExampleFunction, n_knots):
@@ -65,8 +69,8 @@ class Alg2014:
                 self.t[i + 1] - self.d,
                 self.t[i + 1]
             )
-            logger.info("step1 - interval(i:{:2}): [{:.14f} {:.14f}], test_result: {:.14f}".format(
-                i, self.t[i], self.t[i + 1], test_result))
+            # logger.info("step1 - interval(i:{:2}): [{:.14f} {:.14f}], test_result: {:.14f}".format(
+            #     i, self.t[i], self.t[i + 1], test_result))
 
             if test_result > largest_result:
                 second_largest_result = largest_result
@@ -134,31 +138,32 @@ class Alg2014:
             index = bisect.bisect_right(self.t, b_set_sorted[1])
             self.m_set = np.insert(self.m_set, index, b_set_sorted[1:-1])
 
-        approx = []
+        return self.create_approximation()
 
+    def create_approximation(self):
+        """
+        Creating approximation with constant value on "small" sub-intervals and
+        interpolating polynomial on the middle of "big" ones.
+        Big interval are obtained by dividing intervals of length bigger than 4 * self.d into three parts,
+        where edge sub-intervals are "small".
+        """
+        approx = []
         current_knot = self.m_set[0]
         for i in range(len(self.m_set) - 1):
 
             next_knot = self.m_set[i + 1]
-
             approx.append((current_knot, self.example.fun(current_knot)))
 
             if next_knot - current_knot < 4 * self.d:
                 continue  # interval is small... no need for extra points
 
-            # each "big" interval we divide for 3 sub-intervals
-            # on sub-intervals near edge approximation has constant value
-            # and in the middle sub-interval we use interpolating polynomial
             knot1, knot2 = current_knot + self.d, next_knot - self.d
 
             knots = np.linspace(knot1, knot2, self.example.f__r + 1)
             values = self.example.fun(knots)
-            polynomial_coeffs = divided_diff_coeffs(knots, values)[0, :]
+            polynomial = interp_newton(knots, values)
 
-            # extra knot with approximating polynomial on interval [knot1, knot2)
-            approx.append((knot1, [polynomial_coeffs, knots]))
-
-            # extra knot with constant function on interval [knot2, next_knot)
+            approx.append((knot1, polynomial))
             approx.append((knot2, self.example.fun(knot2)))
 
             current_knot = next_knot
@@ -167,14 +172,15 @@ class Alg2014:
         np_approx = np.array(approx)
 
         def final_approximation(t):
-            ii = bisect.bisect_right(np_approx[:, 0], t) - 1
-            elem = np_approx[ii, 1]
+            if self.m_set[-1] < t < self.m_set[0]:
+                raise Exception("value {} is outside function domain".format(t))
 
-            # if callable(np_approx[ii, 1]):
-            if isinstance(elem, list):
-                new_value = newton_poly(elem[0], elem[1], [t])
-                return new_value
-            else:
+            ii = bisect.bisect_right(np_approx[:, 0], t)
+            elem = np_approx[ii - 1, 1]
+
+            if callable(elem):
+                return elem(t)
+            if isinstance(elem, (float, np.float64)):
                 return elem
 
         return final_approximation
@@ -182,20 +188,16 @@ class Alg2014:
     def a_test(self, a0, a1, b1, b0):
         r = self.example.f__r
 
-        w1_knots = np.linspace(a0, a1, r + 1)
-        w1_values = self.example.fun(w1_knots)
-        w1_coeffs = divided_diff_coeffs(w1_knots, w1_values)[0, :]
+        knots = np.linspace(b1, b0, r + 1)
+        values = self.example.fun(knots)
+        w1 = interp_newton(knots, values)
 
-        w2_knots = np.linspace(b1, b0, r + 1)
-        w2_values = self.example.fun(w2_knots)
-        w2_coeffs = divided_diff_coeffs(w2_knots, w2_values)[0, :]
+        knots = np.linspace(a0, a1, r + 1)
+        values = self.example.fun(knots)
+        w2 = interp_newton(knots, values)
 
         z_arr = np.linspace(a1, b1, r + 1)
-        w1_values_new = newton_poly(w1_coeffs, w1_knots, z_arr)
-        w2_values_new = newton_poly(w2_coeffs, w2_knots, z_arr)
-
-        test_values = [abs(w1_values_new[j] - w2_values_new[j]) for j in range(r + 1)]
+        test_values = [abs(w1(z_i) - w2(z_i)) for z_i in z_arr]
         # / ((b0 - a0) ** (r + self.example.f__rho)) <- no need when all studied intervals have the same length
 
-        max_val = max(test_values)
-        return max_val
+        return max(test_values)

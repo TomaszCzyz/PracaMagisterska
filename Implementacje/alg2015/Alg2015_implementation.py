@@ -16,7 +16,7 @@ class Alg2015:
     n_knots - initial mesh resolution
 
     Execution example:
-    alg = Alg2015(example=Example2(None), n_knots=1234)
+    alg = Alg2015(example=Example2(None), n_knots=1234, p=2)
     approximation = alg.run()
     """
 
@@ -54,139 +54,10 @@ class Alg2015:
         self.step1()
         self.step2()
         self.step3()
-        approximation = self.create_approximation_3()
+        approximation = self.create_approximation()
         logger.info("executed alg2015")
 
         return approximation
-
-    def create_approximation_1(self):
-        approx = []
-        r = self.example.f__r
-
-        # before (u_1, v_1)
-        # for i in range(0, self.i_max - r + 1):  # also working without step r
-        for i in range(0, self.i_max - r, r):
-            knots = self.t[i:i + r + 1]
-            values = self.y[i:i + r + 1]
-            polynomial = interp_newton(knots, values)
-
-            approx.append((self.t[i], polynomial))
-
-        # on (u_1, v_1)
-        approx.append((self.t[self.i_max - r], self.p_neg))
-        # approx.append((self.t[self.i_max - r + 1], self.p_neg))  # approx.append((self.u_1, self.p_neg))
-        approx.append((self.ksi, self.p_pos))
-
-        p_pos_end_index = self.i_max + 2 * r + 1 + 1
-        # after (u_1, v_1)
-        # for i in range(v_1_index, len(self.t) - r + 1):  # also working without step r
-        for i in range(p_pos_end_index, len(self.t), r):
-            knots = self.t[i:i + r + 1]
-            values = self.y[i:i + r + 1]
-            polynomial = interp_newton(knots, values)
-
-            approx.append((self.t[i], polynomial))
-
-        # no the right edge of initial interval
-        approx.append((self.t[-1], lambda x: self.y(self.t[-1])))
-
-        np_approx = np.array(approx)
-
-        def final_approximation(t):
-            ii = bisect.bisect_right(np_approx[:, 0], t) - 1
-            return np_approx[ii, 1](t)
-
-        return final_approximation
-
-    def create_approximation_2(self):
-        approx = {}
-        r = self.example.f__r
-        # on (u_1, v_1)
-        approx[(self.u_1, self.ksi)] = self.p_neg
-        approx[(self.ksi, self.v_1)] = self.p_pos
-        # from u_1 to 0
-        i = self.i_max
-        while i > r:
-            # i -= r
-            i -= 1
-
-            knots = self.t[i:i + r + 1]
-            values = self.y[i:i + r + 1]
-            polynomial = interp_newton(knots, values)
-
-            approx[(knots[0], knots[-1])] = polynomial
-        # if there is the same interval, it will be overridden with the same polynomial
-        knots = self.t[0:r + 1]
-        values = self.y[0:r + 1]
-        polynomial = interp_newton(knots, values)
-        approx[(knots[0], knots[-1])] = polynomial
-        # from v_1 to T
-        i = self.i_max + 2 * r + 1
-        while i < len(self.t) - r:
-            knots = self.t[i:i + r + 1]
-            values = self.y[i:i + r + 1]
-            polynomial = interp_newton(knots, values)
-
-            approx[(knots[0], knots[-1])] = polynomial
-            # i += r
-            i += 1
-        # if there is the same interval, it will be overridden with the same polynomial
-        knots = self.t[-r:]
-        values = self.y[-r:]
-        polynomial = interp_newton(knots, values)
-        approx[(knots[0], knots[-1])] = polynomial
-        sorted_intervals = sorted(approx.keys(), key=lambda x: x[0])
-        temp = []
-        for interval in sorted_intervals:
-            temp.append([interval[0], approx[interval]])
-        np_approx = np.array(temp)
-
-        def final_approximation(t):
-            ii = bisect.bisect_right(np_approx[:, 0], t) - 1
-            return np_approx[ii, 1](t)
-
-        return final_approximation
-
-    def create_approximation_3(self):
-        approx = []
-        r = self.example.f__r
-        period = self.example.f__b - self.example.f__a
-        # -1 -> because t[0] == t[-1]
-        rolled_t = np.concatenate((self.t[self.i_max + r + 1 + 1:-1], self.t[:self.i_max]))
-        rolled_y = np.concatenate((self.y[self.i_max + r + 1 + 1:-1], self.y[:self.i_max]))
-
-        approx_before_ksi = (self.t[self.i_max - r], self.p_neg)
-        approx_after_ksi = (self.ksi, self.p_pos)
-
-        for i in range(len(rolled_t) - r):
-            begin, end = i, i + r
-
-            knots = rolled_t[begin:end + 1]
-            if knots[-1] < knots[0]:
-                knots = [knot if knot >= knots[0] else (knot + period) for knot in knots]
-            values = rolled_y[begin:end + 1]
-            polynomial = interp_newton(knots, values)
-
-            approx.append((knots[0], polynomial))
-
-        approx.append(approx_before_ksi)
-        approx.append(approx_after_ksi)
-
-        index = 0
-        while index < len(approx):
-            if approx[index][0] == self.t[0]:
-                break  # index of beginning of the first interval from original mesh in rolled_t
-            index += 1
-        np_approx = np.concatenate((approx[index:], approx[:index]))
-
-        def final_approximation(t):
-            if self.t[0] > t > self.t[-1]:
-                raise Exception("value {} is outside function domain".format(t))
-
-            ii = bisect.bisect_right(np_approx[:, 0], t)
-            return np_approx[ii - 1, 1](t)
-
-        return final_approximation
 
     def step1(self):
         i_max = np.argmax(self.divided_diff())
@@ -286,6 +157,47 @@ class Alg2015:
         self.ksi = ksi
         logger.info("step3 - interval (u_3, v_3): [{:.14f} {:.14f}]".format(self.u_3, self.v_3))
         logger.info("step3 - ksi: {:.14f}".format(self.ksi))
+
+    def create_approximation(self):
+        approx = []
+        r = self.example.f__r
+        period = self.example.f__b - self.example.f__a
+        # -1 -> because t[0] == t[-1]
+        rolled_t = np.concatenate((self.t[self.i_max + r + 1 + 1:-1], self.t[:self.i_max]))
+        rolled_y = np.concatenate((self.y[self.i_max + r + 1 + 1:-1], self.y[:self.i_max]))
+
+        approx_before_ksi = (self.t[self.i_max - r], self.p_neg)
+        approx_after_ksi = (self.ksi, self.p_pos)
+
+        for i in range(len(rolled_t) - r):
+            begin, end = i, i + r
+
+            knots = rolled_t[begin:end + 1]
+            if knots[-1] < knots[0]:
+                knots = [knot if knot >= knots[0] else (knot + period) for knot in knots]
+            values = rolled_y[begin:end + 1]
+            polynomial = interp_newton(knots, values)
+
+            approx.append((knots[0], polynomial))
+
+        approx.append(approx_before_ksi)
+        approx.append(approx_after_ksi)
+
+        index = 0
+        while index < len(approx):
+            if approx[index][0] == self.t[0]:
+                break  # index of beginning of the first interval from original mesh in rolled_t
+            index += 1
+        np_approx = np.concatenate((approx[index:], approx[:index]))
+
+        def final_approximation(t):
+            if self.t[-1] < t < self.t[0]:
+                raise Exception("value {} is outside function domain".format(t))
+
+            ii = bisect.bisect_right(np_approx[:, 0], t)
+            return np_approx[ii - 1, 1](t)
+
+        return final_approximation
 
     def divided_diff(self):
         table = [self.y]

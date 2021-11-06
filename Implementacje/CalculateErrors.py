@@ -79,7 +79,7 @@ class ResultsCollector:
         fig, ax = plt.subplots()
 
         sorted_noises = sorted(self.log10_m_for_noise.keys(), key=lambda x: (x is not None, x), reverse=False)
-        ref_noise = sorted_noises[0]  # we need s noise to reference data in dictionaries
+        ref_noise = sorted_noises[0]  # we need a noise to reference data in dictionaries
 
         x_min, x_max = min(self.log10_m_for_noise[ref_noise]), max(self.log10_m_for_noise[ref_noise])
 
@@ -99,8 +99,8 @@ class ResultsCollector:
                 c=colors[subplot_nr],
                 marker=markers[subplot_nr],
                 linewidth=1,
-                label=r'$\delta$=' + ("{:.0e}".format(key_noise) if key_noise is not None else '0')
-                # , alpha=0.5
+                label=r'$\delta$=' + ("{:.0e}".format(key_noise) if key_noise is not None else '0'),
+                alpha=0.5
             )
             subplot_nr += 1
 
@@ -241,22 +241,24 @@ def calculate(repeat_count, knots_counts, deltas, algorithm_name, example_fun_na
 
 def main():
     apply_global_plot_styles()
+    logging.basicConfig(level=logging.INFO, filename='Calculate.log', format="%(asctime)s:%(message)s")
+    logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 
-    log10_m_array = np.linspace(1.4, 3.5, num=25)  # 10 ** 4.7 =~ 50118
+    log10_m_array = np.linspace(1.4, 4.0, num=30)  # 10 ** 4.7 =~ 50118
 
     # Entry data for calculations
     m_array = [int(10 ** log10_m) for log10_m in log10_m_array]
     noises = [None, 1e-12, 1e-8, 1e-4]
     repeat_count = 100
-    alg = 'alg2015'
-    example = 'Example1'
+    alg = 'alg2014'
+    example = 'Example2'
     p_norm = 'infinity'
-    r = 4
+    r = 3
 
     create_example(example).plot()
 
     start_datetime = datetime.now()
-    logging.info('Started at %s', start_datetime.strftime("%d/%m/%Y %H:%M:%S"))
+    logging.info('Started at {}'.format(start_datetime.strftime("%d/%m/%Y %H:%M:%S")))
 
     results_collector = calculate(repeat_count, m_array, noises, alg, example, p=p_norm, parallel=True, f__r=r)
     results_collector.plot_results(save=True)
@@ -264,17 +266,11 @@ def main():
     end_datetime = datetime.now()
     processing_time = end_datetime - start_datetime
 
-    logging.info('Finished at %s (execution time: %s)',
-                 end_datetime.strftime("%d/%m/%Y %H:%M:%S"),
-                 str(processing_time))
+    logging.info('Finished at {} (execution time: {})'.format(
+        end_datetime.strftime("%d/%m/%Y %H:%M:%S"), str(processing_time)))
 
     return results_collector
 
 
 if __name__ == '__main__':
-    # print logs to file
-    logging.basicConfig(level=logging.INFO, filename='Calculate.log', format="%(asctime)s:%(message)s")
-    # print logs to console
-    logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
-
     results = main()

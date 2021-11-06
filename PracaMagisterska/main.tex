@@ -17,6 +17,7 @@
 \DeclareMathOperator*{\esssup}{ess\,sup}
 \DeclareMathOperator*{\argmax}{arg\,max}
 \DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\conv}{conv}
 \usepackage{amssymb}
 \usepackage{bbm}
 \usepackage{latexsym}
@@ -535,7 +536,7 @@
         w_{g}^{s}([\alpha, \beta])(x)=\sum_{i=0}^{s} g\left(x_{i}\right) \Phi_{i}(x), \quad x \in \R,
     \end{equation}
     gdzie
-    \begin{equation*}
+    \begin{equation*} \label{eq:35:baza_lagrangea}
         \Phi_{i}(x)=\prod_{k=0, k \neq i}^{s} \frac{x-x_{k}}{x_{i}-x_{k}}, \quad i=0,1, \ldots, s.
     \end{equation*}
 
@@ -595,21 +596,23 @@
 \section{Algorytm oparty na różnicach dzielonych}
 
 
-    W tym rozdziale opiszemy algorytm bazujący na informacji zaburzonej przedstawiony w artykule \cite{AoP}. Analizowany algorytm używa co najwyżej $n$ wartości funkcji z precyzją $\delta $ oraz w najgorszym przypadku ma błąd proporcjonalny do $\max{(\delta, n^{-1 / (r + \varrho) })}$ w klasie funkcji $\F^D_{r,\varrho }$ dla $p < \infty$ oraz w klasie $\F^C_{r,\varrho }$ dla $p \leq \infty$. Do wykrycia przedziału z punktem osobliwym, algorytm wykorzystuje różnice dzielone.
+    W tym rozdziale opiszemy algorytm bazujący na informacji zaburzonej przedstawiony w artykule \cite{AoP}. Analizowany algorytm używa co najwyżej $n$ wartości funkcji z precyzją $\delta $ oraz w najgorszym przypadku ma błąd proporcjonalny do $\max{(\delta, n^{-(r + \varrho) })}$ w klasie funkcji $\F^D_{r,\varrho }$ dla $p < \infty$ oraz w klasie $\F^C_{r,\varrho }$ dla $p \leq \infty$. Do wykrycia przedziału z punktem osobliwym, algorytm wykorzystuje różnice dzielone zdefiniowane następująco.
     
     Niech $m \geq 2r + 1$, $h = \frac{T}{m}$ oraz $t_{i} = ih$ dla każdego $i$. Przez $d_{i}$ oznaczmy różnicę dzieloną stopnia $r+1$ bazującą na wartościach $f(t_{i})$:
     \begin{equation} \label{eq:30:roznica_dzielna}
         d_{i} = f[t_{i}, \dots, t_{i+r+1}] = \sum_{j = 1}^{i+r+1} f(t_{j}) \prod_{\substack{k=1 \\ k \neq j}}^{i+r+1}(t_{k}-t_{j})^{-1}.
     \end{equation}
 
-    Następnie oznaczmy przez $\tilde{d_i}$ (niedokładną) różnicę dzieloną stopnia $r+1$ bazującą na wartościach $y_{j} = f(t_{j}) + e_{j}$, gdzie $|e_{j}| \leq \delta$
+    Następnie oznaczmy przez $\tilde{d_i}$ (niedokładną) różnicę dzieloną stopnia $r+1$ bazującą na wartościach $y_{j} = f(t_{j}) + e_{j}$, gdzie $|e_{j}| \leq \delta$,
     \begin{equation} \label{eq:31:niedokladna_roznica_dzielna}
         \tilde{d_{i}} = \tilde{f}[t_{i}, \dots, t_{i+r+1}] = \sum_{j = 1}^{i+r+1} y_{j} \prod_{\substack{k=1 \\ k \neq j}}^{i+r+1}(t_{k}-t_{j})^{-1}.
     \end{equation}
 
-    Jak wcześniej, długość przedziału w początkowym podziale wynosi $h = T / m$, ale dodatkowo $m \geq 2r + 1$, gdzie $m$ jest początkową gęstością siatki. Dodatkowo, niech $\omega  = \omega(h)$ spełnia $0 < \omega < (r + 1)h $.
-
-    Na początku, algorytm aproksymuje punkt osobliwy $\po_f$. Jest to realizowane w trzech krokach. W kroku 1. przy pomocy siatki o rozmiarze długości $h$ i różnic dzielonych lokalizowany jest punkt $\po_f$ na przedziale $[u_1, v_1]$ o długości $(r + 1)h$. W kroku 2. używamy wielomianów interpolujących $\tilde{p}_+$ i $\tilde{p}_-$ do zwężenia tego przedziału do $[u_2, v_2]$. Krok 3. produkuje przedział $[u_3, v_3] \subseteq [u_2, v_2]$, w którym różnica $|\tilde{p}_{+} - \tilde{p}_{-}|$ jest nierosnąca na $[u_3, \xi]$ i niemalejąca na $[\xi, v_3]$, gdzie $\xi$ jest finalną aproksymacją $\po_f$.
+    Algorym używa podziału o ilości punktów i długości przedziałów wprowadzonych jak w definicji różnic dzielonych. 
+    
+    Dodatkowo, wielomiany interpolacyjne związane z algorytmem $\varphi^{KP}$ bedziemy oznaczać przez $p$, jeśli bazują na informacji dokładnej, oraz przez $\tilde{p}$ dla informacji niedokładnej. Ostatnią zmienną potrzebną do dziłania algorytmu jest $\omega  = \omega(h)$ spełniąca $0 < \omega < (r + 1)h $.
+    
+    Na początku, algorytm aproksymuje punkt osobliwy $\po_f$. Jest to realizowane w trzech krokach. W pierwszym kroku, przy pomocy siatki o rozmiarze długości $h$ i różnic dzielonych lokalizowany jest punkt $\po_f$ na przedziale $[u_1, v_1]$ o długości $(r + 1)h$. W kroku drugim używamy wielomianów interpolacyjnych $\tilde{p}_+$ i $\tilde{p}_-$ do zwężenia tego przedziału do $[u_2, v_2]$. Krok trzeci produkuje przedział $[u_3, v_3] \subseteq [u_2, v_2]$, w którym różnica $|\tilde{p}_{+} - \tilde{p}_{-}|$ jest nierosnąca na $[u_3, \xi]$ i niemalejąca na $[\xi, v_3]$, gdzie $\xi$ jest finalną aproksymacją $\po_f$.
 
     Oznaczenia $\argmax_{j} \psi_{j}$ oraz $\argmin_{j} \psi_{j}$ użyte w algorytmie oznaczają argument $j$ maksymalizujący oraz minimalizujący $\psi_{j}$ względem $j$.
 
@@ -968,9 +971,44 @@
 
 \section{Analiza algorytmu opartego o różnice dzielone}
 
-    Twierdzenia i lematy w tym rozdziale pochodzą z artykułu \cite{AoP}.
 
-    Zanim przejdziemy do analizy samego algorytmu, przedstawimy właściwość niedokładnej różnicy dzielonej \eqref{eq:31:niedokladna_roznica_dzielna}.
+    Zanim przejdziemy do analizy algorytmu, przypomnijmy znaną własność różnic dzielonych.
+
+    Niech $t_{0}, \ldots, t_{r}$ będą parami rozłączynymi punktami należącymi do przedziału $[0, T]$ oraz niech $f$ będzie $r$-krotnie różniczowalną funkcją na tym przedziale. Wtedy istnieje punkt $\xi \in \conv (t_{0}, \ldots, t_{r}) \coloneqq \left( \min \{t_{0}, \ldots, t_{r}\}, \max \{t_{0}, \ldots, t_{r}\} \right)$, taki że
+    \begin{equation} \label{eq:33:wartosc_srednia_roz_dziel}
+        f\left[ t_{0}, \ldots, t_{r} \right] = \frac{f^{(r)}(\xi)}{r!}.
+    \end{equation}
+    Przypomnijmy również, że błąd interpolacji wielomianowej wyraża się wzorem
+    \begin{equation*} \label{eq:34:blad_interpolacji_lagrangea}
+        f(t) - p(t) = f[t, t_{0}, \ldots, t_{r}] \prod_{j = 0}^{r} (t - t_{i}),
+    \end{equation*}
+    gdzie $p$ jest wielomianem interpolacyjnym opartym na punktach $t_{0}, \ldots, t_{r}$.
+
+    Wprowadźmy jeszcze jedną własność różnic dzielonych, która pochodzi z artukułu \cite{UA}.
+    \begin{lemma} \label{lem:4:wlasnosc_roznic_dzielonych_z_art_2009}
+        Niech $f: [a,b] \rightarrow \R$ oraz $a < c_{0} <  c_{1} < \ldots < c_{k}$ dla $k \geq r$. Wtedyd dla podciągu $0 < j_{0} < j_{i} < \ldots < j_{r} \leq k$ mamy
+        \begin{equation*}
+            \left| f[c_{j_{0}}, c_{j_{1}}, \ldots, c_{j_{r}}] \right| \leq \max_{0 \leq i \leq k-r} \left| f[c_{i}, c_{i+1}, \ldots, c_{i+r}] \right|.
+        \end{equation*}
+    \end{lemma}
+    \begin{proof}
+        Przypuśćmy, że teza nie jest prawdziwa. \\
+        Bez straty ogólności możemy założyć, że
+        \begin{equation*}
+            f[c_{j_{0}}, c_{j_{1}}, \ldots, c_{j_{r}}]> 0.
+        \end{equation*}
+        Niech $p_{f}$ będzie wielomianem stopnia $r$ interpolującym $f$ w $t_{j}, \ldots, t_{j+r}$. Wtedy
+        \begin{equation*}
+            \left( f-p_{f} \right)[c_{i}, c_{i+1}, \ldots, c_{i+r}] < 0, \quad \text{ dla }\; 0 \leq i \leq k-r.
+        \end{equation*}
+        Z tego wynika, że różnica dzielona rzędu $r-1$ funkcji $\left( f-p_{f} \right)[c_{i}, c_{i+1}, \ldots, c_{i+r}]$, dla $i \leq i \leq k+1-r$, zmienia znak co najwyżej raz (przyjęcie wartości równej 0 również jest uznawane za zmienę znaku), różnica dzielona rzędu $r-2$ zmienia znak co najwyżej dwa razy, i tak dalej. \\
+        Końcowo, $(f-p_{f})(c_{i})$, dla $0 \leq i \leq k$, zmienia znak co najwyżej $r$ razy. Otrzymujemy sprzeczność, ponieważ $f(c_{j}) = p_{f}(c_{j})$, dla $0 \leq i \leq r$.
+
+    \end{proof}
+
+    Analiza algorytmu z pracy wykorzystujęcego różnice dzielone do lokalizacji osobliwości opiera się na właśwościach interpolacji z użyciem zaburzonej informacji oraz punktowej analizie błędu aproksymacji. Twierdzenia i lematy w tym rozdziale zostały przedstawione w artykule \cite{AoP}. Zacznijmy od przedstawiania kilku lematów dotyczących różnic dzielonych, zdefiniowanych jak w \eqref{eq:31:niedokladna_roznica_dzielna}, i błędu interpolacji, gdy mamy do czynienia z informacją niedokładną.
+    
+    Poniższy lemat mówi, że wartość zburzonej różnicy dzielonej dla funkcji regularnej na przedziale jest ograniczona ze względu na precyzję z jaką otrzymujemy wartości funkcji oraz przez stałą zależną od parametrów klasy.
 
     \begin{lemma} \label{lem:algMP_1}
         Jeżeli $f \in H_{r, \varrho}(t_{i}, t_{i+r+1})$, wtedy
@@ -979,27 +1017,30 @@
         \end{equation*}
     \end{lemma}
     \begin{proof}
-        Korzystając z nierówności trójkąta $|\tilde{d_{i}}|  \leq |d_{i}| + |\tilde{d_{i}} - d_{i}|$ możemy oszacować pierwszy człon:
+        Z nierówności trójkąta mamy $|\tilde{d_{i}}|  \leq |d_{i}| + |\tilde{d_{i}} - d_{i}|$.
+        Wykorzystując własność \eqref{eq:33:wartosc_srednia_roz_dziel} oraz Hölderowskość funkcji $f$ otrzymujemy
         \begin{equation}
             \begin{aligned}
-            \left|d_{i}\right| &=\frac{\left|f\left[x_{i+1}, \ldots, x_{i+r+1}\right]-f\left[x_{i}, \ldots, x_{i+r}\right]\right|}{x_{i+r+1}-x_{i}} 
-                = \frac{1}{r !} \frac{\left|f^{(r)}\left(\xi_{1}\right)-f^{(r)}\left(\xi_{2}\right)\right|}{x_{i+r+1}-x_{i}} \\
-            & \leq \frac{c\left(g_{f}\right)}{r !} \frac{\left|\xi_{1}-\xi_{2}\right|^{\varrho}}{x_{i+r+1}-x_{i}} 
-                \leq \frac{c\left(g_{f}\right)}{r !}\left(x_{i+r+1}-x_{i}\right)^{\varrho-1} 
-                \leq \frac{c\left(g_{f}\right)(r+1)^{\varrho}}{(r+1) !} h^{\varrho-1}
+            \left|d_{i}\right| &=\frac{\left|f\left[t_{i+1}, \ldots, t_{i+r+1}\right]-f\left[t_{i}, \ldots, t_{i+r}\right]\right|}{t_{i+r+1}-t_{i}} \\
+                & = \frac{1}{r !} \frac{\left|f^{(r)}\left(\xi_{1}\right)-f^{(r)}\left(\xi_{2}\right)\right|}{t_{i+r+1}-t_{i}}
+                \leq \frac{c\left(g_{f}\right)}{r !} \frac{\left|\xi_{1}-\xi_{2}\right|^{\varrho}}{t_{i+r+1}-t_{i}},
             \end{aligned}
         \end{equation}
-        oraz drugi człon
+        a ponieważ $\xi_{1} \in \conv(t_{i+1}, \ldots, t_{i+r+1})$ i $\xi_{2} \in \conv(t_{i}, \ldots, t_{i+r})$, to $|\xi_{1}- \xi_{2}| \leq t_{i+r+1} - t_{i}$, stąd pierwszy człon nierówności trójkąta możemy oszacować przez
+        \begin{equation*}
+            \left|d_{i}\right| \leq \frac{c\left(g_{f}\right)}{r !}\left(t_{i+r+1}-t_{i}\right)^{\varrho-1} \leq \frac{c\left(g_{f}\right)(r+1)^{\varrho}}{(r+1) !} h^{\varrho-1}.
+        \end{equation*}
+        Oszacowanie na drugi człon wynika z definicji różnicy dzielonej zaburzonej i niezaburzonej, gdzie $y_{y} = f(t_{i}) + e_{j}$ dla $|e_{j}| \leq \delta$,
         \begin{equation}
             \begin{aligned}
-            \left|\tilde{d}_{i}-d_{i}\right| & =h^{-(r+1)}\left|\sum_{i=0}^{r+1} e_{i} \prod_{\ell=0 \atop \ell \neq i}^{r+1}(\ell-j)^{-1}\right| \\
-            & \leq \delta h^{-(r+1)} \sum_{i=0}^{r+1} \prod_{\ell=0 \atop \ell \neq i}^{r+1}|\ell-j|^{-1}=\delta \frac{2^{r+1}}{(r+1) !} h^{-(r+1)},
+            \left|\tilde{d}_{i}-d_{i}\right| & = \left| \left( \sum_{j = i}^{i+r+1} f(t_{j}) - \sum_{j = i}^{i+r+1} \left(f(t_{j}) + e_{j}\right) \right) \prod_{\substack{\ell = i \\ \ell \neq j}}^{i+r+1} (t_{\ell} - t_{j})^{-1} \right| \\
+                &= h^{-(r+1)}\left|\sum_{j=0}^{r+1} e_{j} \prod_{\ell=0 \atop \ell \neq j}^{r+1}(\ell-j)^{-1}\right| \leq \delta h^{-(r+1)} \sum_{j=0}^{r+1} \prod_{\ell=0 \atop \ell \neq j}^{r+1}|\ell-j|^{-1}=\delta \frac{2^{r+1}}{(r+1) !} h^{-(r+1)},
             \end{aligned}
         \end{equation}
         co dowodzi lemat.
     \end{proof}
 
-    Teraz oszacujemy błąd interpolacji i ekstrapolacji w obecności zaburzenia wartości funkcji. Niech $p_{i}$ i $\tilde{p_{i}}$ odpowiadają wielomianom stopnia co najwyżej $r$ interpolujących $f$ opartych na dokładnych i niedokładnych wartościach funkcji $f$ w punktach $t_{i}, t_{i+1}, \dots, t_{i+r}$. Dla $r \geq 1$, wprowadźmy oznaczenia: 
+    Teraz oszacujemy błąd interpolacji i ekstrapolacji w obecności zaburzenia wartości funkcji. Niech $p_{i}$ i $\tilde{p_{i}}$ odpowiadają wielomianom stopnia co najwyżej $r$ interpolujących $f$ opartych na odpowiednio dokładnych i niedokładnych wartościach funkcji $f$ w punktach $t_{i}, t_{i+1}, \dots, t_{i+r}$. Dla $r \geq 1$, wprowadźmy oznaczenia: 
     \begin{equation*}
         \beta_{r} = \max_{0 \leq t \leq r} \left|\prod_{k=0}^{r} (t-k)\right|, \quad
         \Lambda_{r} = \max_{0 \leq t \leq r} \sum_{k=0}^{r} \prod_{\substack{\ell=0 \\ \ell \neq k}}^{r} \left| \frac{t-\ell}{k-\ell} \right|, \quad
@@ -1008,51 +1049,71 @@
 
     \begin{lemma} \label{lem:algMP_2}
         Niech $f \in H_{0, \varrho}$, wtedy: \\
-        $dla \; x \in [t_{i-\frac{1}{2}}, t_{i + \frac{1}{2}}] :$
-        \begin{equation*}
-            |f(x) - \tilde{p}_{1}(x)| \leq C_{0, \varrho}(f) h^{\varrho} + \delta, \quad C_{0, \varrho}(f) = c(g_{f}) 2^{-\varrho}, \\
-        \end{equation*}
-        $dla \; x \in [t_{i-1}, t_{i - \frac{1}{2}}) \cup (t_{i + \frac{1}{2}}, t_{i+1}]  :$
-        \begin{equation*}
-            |f(x) - \tilde{p}_{i}(x)| \leq \ {C} _{0, \varrho}(f) h^{\varrho}  + \delta, \quad \bar{C} _{0, \varrho}(f) = c(g_{f}). \\
-        \end{equation*}
+        dla $x \in [t_{i-\frac{1}{2}}, t_{i + \frac{1}{2}}]$:
+        \begin{flalign*}
+            \qquad |f(x) - \tilde{p}_{i}(x)| \leq C_{0, \varrho}(f) h^{\varrho} + \delta, \quad C_{0, \varrho}(f) = c(g_{f}) 2^{-\varrho}, &&
+        \end{flalign*}
+        dla $x \in [t_{i-1}, t_{i - \frac{1}{2}}) \cup (t_{i + \frac{1}{2}}, t_{i+1}]$:
+        \begin{flalign*}
+            \qquad |f(x) - \tilde{p}_{i}(x)| \leq \ {C} _{0, \varrho}(f) h^{\varrho}  + \delta, \quad \bar{C} _{0, \varrho}(f) = c(g_{f}). &&
+        \end{flalign*}
         Niech $f \in H_{r, \varrho}$ i $r \geq 1$, wtedy: \\
-        $dla \; x \in [t_{i}, t_{i + r}] : $
-        \begin{equation*}
-            |f(x) - \tilde{p}_{i}(x)| \leq C_{r, \varrho}(f) h^{r+\varrho} + \delta\Lambda_{r}, \quad C_{r, \varrho}(f) = c(g_{f}) 2^{-\varrho}, \\
-        \end{equation*}
-        $dla \; x \in [t_{i-r-1}, t_{i}) \cup (t_{i + r}, t_{i+2r+1}]  :$
-        \begin{equation*}
-            |f(x) - \tilde{p}_{i}(x)| \leq \bar{C} _{r, \varrho}(f) h^{r+\varrho} + \delta\bar{\Lambda}_{r}, \bar{C} _{r, \varrho}(f) = c(g_{f}) \frac{(2r+1)!(2r+1)^{\varrho}}{r(r!)^{2}}. \\
-        \end{equation*}
+        dla $x \in [t_{i}, t_{i + r}]$:
+        \begin{flalign*}
+            \qquad |f(x) - \tilde{p}_{i}(x)| \leq C_{r, \varrho}(f) h^{r+\varrho} + \delta\Lambda_{r}, \quad C_{r, \varrho}(f) = c(g_{f}) 2^{-\varrho}, &&
+        \end{flalign*}
+        dla $x \in [t_{i-r-1}, t_{i}) \cup (t_{i + r}, t_{i+2r+1}]$:
+        \begin{flalign*}
+            \qquad |f(x) - \tilde{p}_{i}(x)| \leq \bar{C} _{r, \varrho}(f) h^{r+\varrho} + \delta\bar{\Lambda}_{r}, \quad \bar{C} _{r, \varrho}(f) = c(g_{f}) \frac{(2r+1)!(2r+1)^{\varrho}}{r(r!)^{2}}. &&
+        \end{flalign*}
     \end{lemma}
 
     \begin{proof}
-        Przypadek dla $r=0$ jest oczywisty. Niech $r \geq 1$, korzystając z nierówności trójkąta:
+        W przypadku, gdy $r=0$ interpolujemy funkcją stałą, więc błąd interpolacji wynosi
+        \begin{equation*}
+            \begin{aligned}                
+                |f(x) - \tilde{p}(x)| &= |f(x) - f(t_{i}) - e_{i}| \leq |f(x) - f(t_{i})| + |e_{i}| \\
+                    &\leq c(g_{f}) \left|t_{i-\frac{1}{2}} - t_{i}\right|^{\varrho} + |e_{i}| \leq c(g_{f}) 2^{-\varrho}h^{\varrho} + \delta.
+            \end{aligned}
+        \end{equation*}
+        Dla $x \in [t_{i-1}, t_{i - \frac{1}{2}})$
+        Niech $r \geq 1$, korzystając z nierówności trójkąta
         \begin{equation*}
             \left|f(x)-\tilde{p}_{i}(x)\right| \leq\left|f(x)-p_{i}(x)\right|+\left|\tilde{p}_{i}(x)-p_{i}(x)\right|.
         \end{equation*}
-        Jeżeli $x \in\left[t_{i}, t_{i+r}\right]$, wtedy, z wyrażenia na błąd interpolacji Lagrange'a dla pierwszego członu powyższej sumy, mamy:
-        \begin{equation*}
+        Jeżeli $x \in\left[t_{i}, t_{i+r}\right]$, wtedy z wyrażenia na błąd interpolacji Lagrange'a \eqref{eq:34:blad_interpolacji_lagrangea} dla pierwszego członu powyższej sumy, mamy:
+        \begin{equation} \label{eq:36}
             \begin{aligned}
                 \left|f(x)-p_{i}(x)\right| &=\left|\left(x-t_{i}\right) \cdots\left(x-t_{i+r}\right) f\left[t_{i}, \ldots, t_{i+r}, x\right]\right| \\
                 & \leq \beta_{r} h^{r+1} \frac{\left|f\left[t_{i+1}, \ldots, t_{i+r}, x\right]-f\left[t_{i}, \ldots, t_{i+r-1}, x\right]\right|}{t_{i+r}-t_{i}} \\
-                & \leq \beta_{r} h^{r+1} \frac{c\left(g_{f}\right)}{r^{1-\varrho} r !} h^{\varrho-1}=C_{r, \varrho}(f) h^{r+\varrho},
-            \end{aligned}                
-        \end{equation*}
-        a dla drugiego człony mamy:
-        \begin{equation} \label{eq:1}
-            \left|\tilde{p}_{i}(x)-p_{i}(x)\right|=\left|\sum_{k=i}^{i+r} e_{k} \prod_{s=i \atop s \neq k}^{i+r} \frac{x-t_{s}}{t_{k}-t_{s}}\right| \leq \delta \Lambda_{r}.
+                & \leq \beta_{r} h^{r+1} \frac{1}{r!} \frac{\left|f^{(r)}(\xi_{1})-f^{(r)}(\xi_{2})\right|}{t_{i+r}-t_{i}} 
+                    \leq \beta_{r} h^{r+1} \frac{c(g_{f})}{r!} \frac{\left|\xi_{1}-\xi_{2}\right|^{\varrho}}{t_{i+r}-t_{i}}, \\
+                & \leq \beta_{r} h^{r+1} \frac{c\left(g_{f}\right)}{r^{1-\varrho} r !} h^{\varrho-1}=C_{r, \varrho}(f) h^{r+\varrho}.
+            \end{aligned}
         \end{equation}
+        gdzie $\xi_{1} \in \conv(t_{i+1}, \ldots, t_{i+r})$ i $\xi_{2} \in \conv(t_{i}, \ldots, t_{i+r-1})$.
+
+        Oszacowanie na drugi człon wynika z definicji wielomianów Lagrange'a
+        \begin{equation} \label{eq:1}
+            \begin{aligned}
+                \left|\tilde{p}_{i}(x)-p_{i}(x)\right| &=\left|\sum_{k=i}^{i+r} f(x_{k}) \Phi_{k}(x) - \sum_{k=i}^{i+r} (f(x_{k}) + e_{k}) \Phi_{k}(x)\right| \\
+                    & \leq \left|\sum_{k=i}^{i+r} e_{k} \Phi_{k}(x)\right| \leq \delta \Lambda_{r},
+            \end{aligned}
+        \end{equation}
+        gdzie $\Phi_{i}$ jest zdefiniowane jak w \eqref{eq:35:baza_lagrangea}.
+
+        \noindent
         Przypadek dla $x \in \left[ t_{i-r-1}, t_{i} \right) \cup \left( t_{i+r}, t_{i+2r+1} \right]$ jest analogiczny.
     \end{proof}
+
+    Rozważmy teraz błąd interpolacji i ekstrapolacji, przy obecności punktu osobliwego w przedziale zawierającym węzły interpolacji.
 
     \begin{lemma} \label{lem:algMP_3}
         Niech $f \in F_{r, \varrho}$ oraz 
         \begin{equation*}
             \po_{f} \in \begin{cases}
-                (t_{i-\frac{1}{2}}, t_{i + \frac{1}{2}}]    &\text{ gdy } r=0, \\
-                (t_{i}, t_{i - r}]                          &\text{ gdy } r \geq 1. \\
+                (t_{i-\frac{1}{2}}, t_{i + \frac{1}{2}}],    &\text{ gdy } r=0, \\
+                (t_{i}, t_{i + r}],                          &\text{ gdy } r \geq 1. \\
             \end{cases}
         \end{equation*}
         Przypuśćmy, że 
@@ -1063,26 +1124,36 @@
         \begin{equation*}
             |f(x) - \tilde{p}_{i}(x)| \leq D_{r}(B, f)h^{r+\varrho} + \delta\Lambda_{r},
         \end{equation*}
-        gdzie $D_{0}(B,f) = c(g_{f}) + B$ i
+        gdzie 
         \begin{equation*}
-            D_{r}(B, f)=c\left(g_{f}\right) \frac{\beta_{r}(r+1)^{\varrho}}{r r !}+B\left(2^{r+1}-1\right) \frac{(2 r) !}{(r-1) !}, \quad \text { dla } r \geq 1.
+            D_{r}(B, f)=\begin{cases} 
+                c(g_{f}) + B,   &\text { gdy } r = 0, \\
+                c(g_{f}) \frac{\beta_{r}(r+1)^{\varrho}}{r r !}+B\left(2^{r+1}-1\right) \frac{(2 r) !}{(r-1) !},    &\text { gdy } r \geq 1.
+            \end{cases}
         \end{equation*}
     \end{lemma}
     \begin{proof}
-        Przypadki, gdy $\po_{f} \leq x$ i $\po_{f} > x$ są analogiczne. Weźmy $\po_{f} \leq x$. Jeżeli $r=0$, wtedy
+        Przypadki, gdy $\po_{f} \leq x$ i $\po_{f} > x$ są analogiczne. Weźmy $\po_{f} \leq x$. Jeżeli $r=0$, wtedy z nierówności trójkąta mamy
         \begin{equation*}
-            \begin{aligned}
-                \left|f(x)-\tilde{p}_{i}\right| & \leq\left|f(x)-p_{i+1}\right|+\left|p_{i+1}-\tilde{p}_{i+1}\right|+\left|\tilde{p}_{i+1}-\tilde{p}_{i}\right| \\
-                & \leq c\left(g_{f}\right) h^{\varrho}+\delta+B h^{\varrho}=\left(c\left(g_{f}\right)+B\right) h^{\varrho}+\delta.
-            \end{aligned}    
+            \left|f(x)-\tilde{p}_{i}(x)\right| \leq \left|f(x)-p_{i+1}(x)\right|+\left|p_{i+1}(x)-\tilde{p}_{i+1}(x)\right|+\left|\tilde{p}_{i+1}(x)-\tilde{p}_{i}(x)\right|,
         \end{equation*}
-        Pokazaliśmy pierwszą część lematu.
+        gdzie $p_{i+1}(x) = f(t_{i+1})$, $\tilde{p}_{i+1}(x) = \tilde{f}(t_{i+1}) = f(t_{i+1}) + e_{i+1}$ i $\tilde{p}_{i}(x) = \tilde{f}(t_{i})$. \\
+        Zauważmy, że
+        \begin{equation*}
+            \left|\tilde{p}_{i+1}(x)-\tilde{p}_{i}(x)\right| = \frac{|\tilde{f}(t_{i+1})-\tilde{f}(t_{i})|}{t_{i+1} - t_{i}} (t_{i+1} - t_{i}) = |\tilde{d}_{i}|h \leq Bh^{\varrho}.
+        \end{equation*}
+        Korzystając dodatkowo z regularności $f$ oraz ograniczenia na zaburzenie, otrzymujemy oszacowanie
+        \begin{equation*}
+            \left|f(x)-\tilde{p}_{i}(x)\right| \leq  c(g_{f}) h^{\varrho} + \delta + Bh^{\varrho} =  (c(g_{f}) + B)h^{\varrho} + \delta,
+        \end{equation*}
+        co pokazuje pierwszą część lematu.
+
         Załóżmy, że $r \geq 1$ i $\po_{f} \leq x<t_{i+r}$. Wybierzmy najmniejszy indeks $j$ taki, że $\po_{f} \leq t_{j}$. Oczywiście $i+1 \leq j \leq i+r$ oraz $x \in\left[t_{j-1}, t_{j+r}\right]$. 
         Otrzymujemy
         \begin{equation} \label{eq:6}
             \left|f(x)-\tilde{p}_{i}(x)\right| \leq\left|f(x)-p_{j}(x)\right|+\left|p_{j}(x)-\tilde{p}_{j}(x)\right|+\left|\tilde{p}_{j}(x)-\tilde{p}_{i}(x)\right|.
         \end{equation}
-        A ponieważ $\po_{f} \notin\left(t_{j}, t_{j+r}\right]$, to
+        A ponieważ $\po_{f} \notin\left(t_{j}, t_{j+r}\right]$, to postępując analogicznie jak w \eqref{eq:36}, otrzymujemy
         \begin{equation*}
             \left|f(x)-p_{j}(x)\right| \leq c\left(g_{f}\right) \beta_{r} h^{r+1} \frac{1}{r !} \frac{\left(t_{j+r}-t_{j-1}\right)^{\varrho}}{t_{j+r}-t_{j}}=C_{r, \varrho}(f)\left(1+\frac{1}{r}\right)^{\varrho} h^{r+\varrho}.
         \end{equation*}

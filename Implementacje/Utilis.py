@@ -53,8 +53,10 @@ def norm_infinity(f, interval, singularity=None):
         # more dense close to edge and singularity
         if current < start + margin or current > stop - margin or is_near_singularity(current, singularity, margin):
             current += (step + randoms[counter % len(randoms)]) / step_reduction_ratio
+
             # TODO delete below commented code. It was added for debugging purposes.
-            # current = singularity_interval[1]
+            # if is_near_singularity(current, singularity, margin):
+            #     current = singularity + margin
             # logger.info("skipping interval with singularity during calculating error")
         else:
             current += step + randoms[counter % len(randoms)]
