@@ -714,8 +714,8 @@
         W tym celu zdefiniujmy funkcję
         \begin{equation} \label{eq:8:tilde_g_z_minusem}
             \tilde{g}(t)= \begin{cases}
-                g(t)            & \text { gdy } t \in\left[\alpha, \hat{t}_{g}\right), \\ 
-                g(t)-s_{g}(t)   & \text { gdy } t \in\left[\hat{t}_{g}, \beta\right].
+                g(t),            & \text { gdy } t \in\left[\alpha, \hat{t}_{g}\right), \\ 
+                g(t)-s_{g}(t),   & \text { gdy } t \in\left[\hat{t}_{g}, \beta\right].
             \end{cases}
         \end{equation}
         Z \eqref{eq:32:druga_def_G_r_rho} wiemy, że $\tilde{g} \in G_{r, \varrho}^{\reg}([\alpha, \beta])$. Niech $t_{k}=\alpha+(\beta-\alpha) k / s$, $k=0,1, \ldots, s$ będą węzłami dla interpolacji $w_{g}^{s}([\alpha, \beta])$ na przedziale $[\alpha, \beta]$. Zdefiniujmy
@@ -734,7 +734,7 @@
         \begin{equation*} \label{eq:11}
             w_{\tilde{g}}^{s}([\alpha, \beta])(t)=w_{g}^{s}([\alpha, \beta])(t)-\sum_{i=j^{*}}^{s} s_{g}\left(t_{i}\right) \Phi_{i}(t).
         \end{equation*}
-        Z \eqref{eq:8} i \eqref{eq:10} otrzymujemy, że dla $t \in [\alpha, \beta]$ mamy
+        Z \eqref{eq:8:tilde_g_z_minusem} i \eqref{eq:10} otrzymujemy, że dla $t \in [\alpha, \beta]$ mamy
         \begin{equation*} \label{eq:12}
             \begin{aligned}
                 g(t)-w_{g}^{s}([\alpha, \beta])(t)=&(g(t)-\tilde{g}(t))+\left(\tilde{g}(t)-w_{\tilde{g}}^{s}([\alpha, \beta])(t)\right) \\
@@ -1035,7 +1035,7 @@
         \begin{equation}
             \begin{aligned}
             \left|\tilde{d}_{i}-d_{i}\right| & = \left| \left( \sum_{j = i}^{i+r+1} f(t_{j}) - \sum_{j = i}^{i+r+1} \left(f(t_{j}) + e_{j}\right) \right) \prod_{\substack{\ell = i \\ \ell \neq j}}^{i+r+1} (t_{\ell} - t_{j})^{-1} \right| \\
-                &= h^{-(r+1)}\left|\sum_{j=0}^{r+1} e_{j} \prod_{\ell=0 \atop \ell \neq j}^{r+1}(\ell-j)^{-1}\right| \leq \delta h^{-(r+1)} \sum_{j=0}^{r+1} \prod_{\ell=0 \atop \ell \neq j}^{r+1}|\ell-j|^{-1}=\delta \frac{2^{r+1}}{(r+1) !} h^{-(r+1)},
+                &= h^{-(r+1)}\left|\sum_{j=0}^{r+1} e_{j} \prod_{\substack{\ell=0 \\ \ell \neq j}}^{r+1}(\ell-j)^{-1}\right| \leq \delta h^{-(r+1)} \sum_{j=0}^{r+1} \prod_{\substack{\ell=0 \\ \ell \neq j}}^{r+1}|\ell-j|^{-1}=\delta \frac{2^{r+1}}{(r+1) !} h^{-(r+1)},
             \end{aligned}
         \end{equation}
         co dowodzi lemat.
@@ -1176,13 +1176,13 @@
         Także ostatni człon nierówności \eqref{eq:6} możemy oszacować następująco
         \begin{equation} \label{eq:28}
             \begin{aligned}
-                \left|\tilde{p}_{j}(x)-\tilde{p}_{i}(x)\right| &=\left|\sum_{k=j}^{j+r}\left(\tilde{p}_{j}\left(t_{k}\right)-\tilde{p}_{i}\left(t_{k}\right)\right) \prod_{s=j \atop s \neq k}^{j+r} \frac{x-t_{s}}{t_{k}-t_{s}}\right| \\
-                & \leq\left(\max _{j \leq k \leq j+r}\left|y_{k}-\tilde{p}_{i}\left(t_{k}\right)\right|\right)\left(\max _{0 \leq t \leq r+1} \sum_{k=0}^{r} \prod_{s=0 \atop s \neq k}^{r}\left|\frac{t-s}{k-s}\right|\right).
+                \left|\tilde{p}_{j}(x)-\tilde{p}_{i}(x)\right| &=\left|\sum_{k=j}^{j+r}\left(\tilde{p}_{j}\left(t_{k}\right)-\tilde{p}_{i}\left(t_{k}\right)\right) \prod_{\substack{s=j \\ s \neq k}}^{j+r} \frac{x-t_{s}}{t_{k}-t_{s}}\right| \\
+                & \leq\left(\max _{j \leq k \leq j+r}\left|y_{k}-\tilde{p}_{i}\left(t_{k}\right)\right|\right)\left(\max _{0 \leq t \leq r+1} \sum_{k=0}^{r} \prod_{\substack{s=0 \\ s \neq k}}^{r}\left|\frac{t-s}{k-s}\right|\right).
             \end{aligned}                
         \end{equation}
         Pierwsze maksimum z powyższego równania jest oszacowane poprzez \eqref{eq:5}. Natomiast drugie maksimum jest osiągane dla $t=r+1$ i jest równe
         \begin{equation*}
-            \sum_{k=0}^{r} \prod_{s=0 \atop s \neq k}^{r}\left|\frac{r+1-s}{k-s}\right|=\sum_{k=0}^{r}\left(\begin{array}{c} r+1 \\ k\end{array}\right)=2^{r+1}-1.
+            \sum_{k=0}^{r} \prod_{\substack{s=0 \\ s \neq k}}^{r}\left|\frac{r+1-s}{k-s}\right|=\sum_{k=0}^{r}\left(\begin{array}{c} r+1 \\ k\end{array}\right)=2^{r+1}-1.
         \end{equation*}
         Stąd
         \begin{equation*}
