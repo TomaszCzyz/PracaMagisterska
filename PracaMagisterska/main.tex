@@ -480,13 +480,13 @@
     \end{equation}
     gdzie
     \begin{equation*} \label{eq:35:baza_lagrangea}
-        \Phi_{i}(x)=\prod_{k=0, k \neq i}^{s} \frac{x-x_{k}}{x_{i}-x_{k}}, \quad i=0,1, \ldots, s.
+        \Phi_{i}(x)=\prod_{\substack{k=0\\ k \neq i}}^{s} \frac{x-x_{k}}{x_{i}-x_{k}}, \quad i=0,1, \ldots, s.
     \end{equation*}
 
     Algorytm przedstawiony w pracy \cite{CoDF} lokalizuje osobliwość przy pomocy wielomianów Lagrange'a $w_{g}^{r}$. Na wejściu algorytm otrzymuje $g \in \G([a,b])$, przedział $[a,b]$, regularność $r$ oraz współczynnik Höldera $\varrho$. Kluczowym elementem algorytmu jest zdefiniowana poniżej wielkość (\textit{test}), która jest użyta do wykrycia punktu osobliwego.
     \begin{equation}
         \label{eqn:test}
-        A_{g}(\alpha, \bar{\alpha}, \bar{\beta}, \beta)=\max _{0 \leq j \leq r} \frac{\left\|w_{g}^{r}([\bar{\beta}, b])\left(z_{j}\right)-w_{g}^{r}([\alpha, \bar{\alpha}])\left(z_{j}\right)\right\|}{\bar{h}^{r+\varrho}},
+        A_{g}(\alpha, \bar{\alpha}, \bar{\beta}, \beta)=\max _{0 \leq j \leq r} \frac{\left\|w_{g}^{r}([\bar{\beta}, \beta])\left(z_{j}\right)-w_{g}^{r}([\alpha, \bar{\alpha}])\left(z_{j}\right)\right\|}{\bar{h}^{r+\varrho}},
     \end{equation}
     gdzie $\alpha<\bar{\alpha}<\bar{\beta}<\beta$, $z_{j} = \bar{\alpha} + (\bar{\beta} - \bar{\alpha})j/r$, dla $j=0,1,\dots,r$ oraz $\bar{h} = \beta - \alpha$ jest długością przedziału, na którym \textit{test} jest zdefiniowany.
 
@@ -510,9 +510,9 @@
     \begin{table}[H]
         \begin{tabular}{p{0.045\linewidth} p{0.85\linewidth}}
         \textit{K2:}    & Niech $[t_{k}, t_{k+1}]$ będzie przedziałem odpowiadającym $A$ z \textit{K1} \\
-                        & Niech $[\alpha,\beta] = [t_{k}, t_{k+1}]$ oraz $B = B \cup \{\alpha, \beta\}$ \\
+                        & Niech $[\alpha,\beta] \coloneqq [t_{k}, t_{k+1}]$ oraz $B \coloneqq B \cup \{\alpha, \beta\}$ \\
                         & \textbf{dopóki} $\beta - \alpha > 4\omega$ \textbf{wykonuj}: \\
-                        & $\quad$Oblicz $v = (\alpha + \beta) / 2$ oraz $B = B \cup \{v\}$ \\
+                        & $\quad$Oblicz $v \coloneqq (\alpha + \beta) / 2$ oraz $B \coloneqq B \cup \{v\}$ \\
                         & $\quad$\textbf{jeżeli} $A_{g}(\alpha, \alpha + \omega, v - \omega, v) = A_{g}(v, v + \omega, \beta - \omega, \beta)$ \textbf{wtedy} \\
                         & $\quad$$\quad$ idź do \textit{K3} \\
                         & $\quad$\textbf{w p.p.} \\
@@ -522,7 +522,7 @@
     \end{table} \vspace{-20pt}
     \begin{table}[H]
         \begin{tabular}{p{0.045\linewidth} p{0.85\linewidth}}
-        \textit{K3:}    & Niech $\bar{M} = \left\{ t_{0}, \dots, t_{m} \right\} \cup B$ będzie podziałem. Do oznaczenia kolejnych punktów $\bar{M}$ użyjemy tych samych oznaczeń co dla podziału początkowego, tzn. $\alpha = t_{0} < t_{1} < \ldots < t_{k} = \beta$, gdzie $k = m + \mathcal{O}(\log m)$. \\
+        \textit{K3:}    & Niech $\bar{M} \coloneqq \left\{ t_{0}, \dots, t_{m} \right\} \cup B$ będzie podziałem. Do oznaczenia kolejnych punktów $\bar{M}$ użyjemy tych samych oznaczeń co dla podziału początkowego, tzn. $\alpha = t_{0} < t_{1} < \ldots < t_{k} = \beta$, gdzie $k = m + \mathcal{O}(\log m)$. \\
         & Finalna aproksymacja dana jest wzorem \\ \vspace{-15pt}
                         $$\varphi^{KP}(x)= \begin{cases}
                             g\left(t_{i}\right),                                                 &\text{gdy } x \in \left[t_{i}, t_{i+1}\right) \land t_{i+1}-t_{i} \leq 4 \omega, \\ 
@@ -547,7 +547,7 @@
         d_{i} = f[t_{i}, \dots, t_{i+r+1}] = \sum_{j = 1}^{i+r+1} f(t_{j}) \prod_{\substack{k=1 \\ k \neq j}}^{i+r+1}(t_{k}-t_{j})^{-1}.
     \end{equation}
 
-    Następnie oznaczmy przez $\tilde{d_i}$ (niedokładną) różnicę dzieloną stopnia $r+1$ bazującą na wartościach $y_{j} = f(t_{j}) + e_{j}$, gdzie $|e_{j}| \leq \delta$,
+    Następnie oznaczmy przez $\tilde{d_i}$ (niedokładną) różnicę dzieloną stopnia $r+1$ bazującą na wartościach $y_{j} = \tilde{f}(t_{j}) \coloneqq f(t_{j}) + e_{j}$, gdzie $|e_{j}| \leq \delta$,
     \begin{equation} \label{eq:31:niedokladna_roznica_dzielna}
         \tilde{d_{i}} = \tilde{f}[t_{i}, \dots, t_{i+r+1}] = \sum_{j = 1}^{i+r+1} y_{j} \prod_{\substack{k=1 \\ k \neq j}}^{i+r+1}(t_{k}-t_{j})^{-1}.
     \end{equation}
@@ -584,7 +584,7 @@
                         & $\quad$\textbf{w p.p.} \\
                         & $\quad\quad$$v:= z_{j^*}$ \\
                         & \textbf{koniec} \\
-                        & Niech $u_2 = u$ i $v_2 = v$. \\
+                        & Niech $u_2 \coloneqq u$ i $v_2 \coloneqq v$. \\
         \end{tabular}
     \end{table} \vspace{-20pt}
     \begin{table}[H]
@@ -598,7 +598,7 @@
                         & $\quad$\textbf{w p.p.} \\
                         & $\quad\quad$$v:= z$ \\
                         & \textbf{koniec} \\
-                        & Niech $u_3 = u$ i $v_3 = v$.
+                        & Niech $u_3 \coloneqq u$ i $v_3 \coloneqq v$.
         \end{tabular}
     \end{table}
 
@@ -610,8 +610,8 @@
     Niech $N_{h}^{*}(y_{h})$ będzie operatorem informacji odpowiadający naszemu algorytmowi. Aproksymacja $\varphi_{h}^{*}(y_{h})$ funkcji $f$ dla informacji $y_{h}$ o $f$, tj. dla $y_{h} \in N_{h}^{*}(f)$ jest konstruowana w następujący sposób. Na przedziale $[u_{1}, v_{1})$ ekstrapolujemy
     \begin{equation*}
         \varphi_{h}^{*}\left(y_{h}\right)= \begin{cases}
-            \tilde{p}_{-}(x) & \text { gdy } u_{1} \leq x< \xi, \\
-            \tilde{p}_{+}(x) & \text { gdy } \xi \leq x<v_{1}.
+            \tilde{p}_{-}(x),  &\text { gdy } u_{1} \leq x< \xi, \\
+            \tilde{p}_{+}(x),  &\text { gdy } \xi \leq x<v_{1}.
         \end{cases}
     \end{equation*}
     Poza przedziałem $[u_{1}, v_{1})$ stosujemy interpolacje funkcjami sklejanymi o stopniu $r$, bazujących na $r+1$ kolejnych punktach $t_{i}, \ldots, t_{i+r}$, takich że $x \in [t_{i},t_{i+r})$ i $t_{j} \notin (u_{1},v_{1})$ dla $1 \leq j \leq i+r$. W przypadku gdy $r=0$ bierzmy $x$, takie że $|x-t_{i}| \leq h/2$.
@@ -861,6 +861,8 @@
         Wiemy, że $s_{g}(t)=\sum_{j=1}^{r} \frac{1}{j !} \Delta_{g}^{j}\left(t-\hat{t}_{g}\right)^{j}$. Jeżeli $\hat{t}_{g} \in(\alpha, \alpha+\omega]$, wtedy $\left\|s_{g}(t)\right\|=\mathcal{O}(\omega)$ dla $t \in\left[\alpha, \hat{t}_{g}\right) .$ To samo zachodzi dla $t \in\left[\hat{t}_{g}, \beta\right]$, jeśli $\hat{t}_{g} \in[\beta-\omega, \beta)$. Z lematu \ref{lem:1:2014} otrzymujemy szukaną nierówność
     \end{proof}
 
+    Następny lemat wprowadza ograniczenie na normę pochodnych wielomianu Lagrange'a analogiczne do \eqref{eq:20}, ale dla przypadku punktu osobliwego znajdującego się w skraju przedziału.
+
     \begin{lemma} \label{lem:3}
         Istnieje stała $C$ taka, że dla wszysktich $[\alpha, \beta] \subset [a, b], 0 \leq \omega \leq \min \{1, \bar{h}\}$ i $g \in \Galphabeta$ z $\Delta_{g}^{0}=0$ dla $j=0,1, \ldots, s$ i $s=0,1, \ldots, r$ zachodzi
         \begin{equation*}
@@ -868,11 +870,11 @@
         \end{equation*}
     \end{lemma}
     \begin{proof}
-        Załóżmy, że $\hat{t}_{g} \in (\alpha, \alpha+\omega]$. Weżmy $\tilde{g}$ zdefiniowaną jak w \eqref{eq:15:tilde_g_z_plusem}. Wtedy dla $t \in[\alpha, \beta]$ zachodzi
+        Załóżmy, że $\hat{t}_{g} \in (\alpha, \alpha+\omega]$. Weźmy $\tilde{g}$ zdefiniowaną jak w \eqref{eq:15:tilde_g_z_plusem}. Wtedy dla $t \in[\alpha, \beta]$ zachodzi
         \begin{equation} \label{eq:24}
             \left\|\left(w_{\tilde{g}}^{s}([\alpha, \beta])\right)^{(j)}(t)-\left(w_{g}^{s}([\alpha, \beta])\right)^{(j)}(t)\right\| \leq \max _{0 \leq k \leq j^{*}-1}\left\|s_{g}\left(t_{k}\right)\right\| \sum_{k=0}^{j^{*}-1}\left|\Phi_{k}^{(j)}(t)\right| \leq \bar{C} \omega \bar{h}^{-j}
         \end{equation}
-        gdzie $j^{*}$ jest zdefiniowana jak w \eqref{eq:9} i $\bar{C}$  zależy tylko od parametrów klasy $\Galphabeta$. Teza wynika z \eqref{eq:22} i \eqref{eq:23}. Jeżeli $\hat{t}_{g} \in[\beta-\omega, \beta)$, wtedy bierzemy $\tilde{g}$ zdefiniowaną w \eqref{eq:15:tilde_g_z_plusem} i postępujemy analogicznie.
+        gdzie $j^{*}$ jest zdefiniowana jak w \eqref{eq:9} i $\bar{C}$  zależy tylko od parametrów klasy $\Galphabeta$. Teza wynika z \eqref{eq:22} i \eqref{eq:23}. Jeżeli $\hat{t}_{g} \in[\beta-\omega, \beta)$, wtedy bierzemy $\tilde{g}$ zdefiniowaną w \eqref{eq:8:tilde_g_z_minusem} i postępujemy analogicznie.
     \end{proof}
 
     Za pomocą wprowadzonych lematów możemy teraz udowodnić ograniczenie górne dla $\varphi^{KP}$.
@@ -909,7 +911,7 @@
     \end{proof}
 
     \begin{uw}
-        Twierdzenie \ref{thm:1:ograniczenia_z_gory}\ref{thm:1:iii} zachodzi również dla funkcji $g$, która ma skok w punkcie $t_{i}$ początkowego podziału $M$ oraz ma niezerowy wielomian $s_{g}$ dla co najwyżej jednego nieznanego punktu $t_{g}$, $t_{g} \neq t_{i} \; \forall_{i}$.
+        Twierdzenie \ref{thm:1:ograniczenia_z_gory}\ref{thm:1:iii} zachodzi również dla funkcji $g$, która ma skok w punktach $t_{i}$ początkowego podziału $M$ oraz ma niezerowy wielomian $s_{g}$ dla co najwyżej jednego nieznanego punktu $t_{g}$, $t_{g} \neq t_{i} \; \forall_{i}$.
     \end{uw}
 
 
@@ -985,7 +987,8 @@
         co dowodzi lemat.
     \end{proof}
 
-    Teraz oszacujemy błąd interpolacji i ekstrapolacji w obecności zaburzenia wartości funkcji. Niech $p_{i}$ i $\tilde{p_{i}}$ odpowiadają wielomianom stopnia co najwyżej $r$ opartych na odpowiednio dokładnych i niedokładnych wartościach funkcji $f$ w punktach $t_{i}, t_{i+1}, \dots, t_{i+r}$. Dla $r \geq 1$, wprowadźmy oznaczenia: 
+    Teraz oszacujemy błąd interpolacji i ekstrapolacji w obecności zaburzenia wartości funkcji. Niech $p_{i}$ i $\tilde{p_{i}}$ odpowiadają wielomianom stopnia co najwyżej $r$ opartych na odpowiednio dokładnych i niedokładnych wartościach funkcji $f$ w punktach $t_{i}, t_{i+1}, \dots, t_{i+r}$.
+    Dla $r \geq 1$, wprowadźmy oznaczenia: 
     \begin{equation*}
         \beta_{r} = \max_{0 \leq t \leq r} \left|\prod_{k=0}^{r} (t-k)\right|, \quad
         \Lambda_{r} = \max_{0 \leq t \leq r} \sum_{k=0}^{r} \prod_{\substack{\ell=0 \\ \ell \neq k}}^{r} \left| \frac{t-\ell}{k-\ell} \right|, \quad
@@ -1145,12 +1148,13 @@
     Uzasadnienie tego wyjaśnimy poźniej, zobacz uwagę \ref{uw:2}.
 
     \textit{Przypadek I}: $\po_{f} \notin (u_{1}, v_{1}]$.
-    Przy takich założeniach, z lematu \eqref{lem:algMP_1} oraz z \eqref{eq:algMP_7} mamy, że
+    Przy takich założeniach, z lematu \ref{lem:algMP_1} oraz z \eqref{eq:algMP_7} mamy, że
     \begin{equation*}
         |\tilde{d}_{i}| \leq B_{r}(b, f) h^{\varrho-1}, \quad \text{ gdzie } B_{r}(b, f)=\frac{c\left(g_{f}\right)(r+1)^{\varrho}+b 2^{r+1}}{(r+1) !}.
     \end{equation*}
 
     Przypuśćmy, że $\varphi_{h}^{*}(y)(x) = \tilde{p}_{i}(x)$ dla pewnego $i$. Jeżeli $x \notin [u_{1}, v_{1})$, wtedy $x \in [t_{i}, t_{i+r})$ (albo $x \in [t_{i-1/2}, t_{i+1/2})$ dla $r=0$) oraz $[t_{i}, t_{i+r}] \cap (u_{1}, v_{1}) = \emptyset$. Wtedy z lematów \ref{lem:algMP_2} i \ref{lem:algMP_3} wiemy, że błąd aproksymacji w punkcie $x$ jest ograniczony z góry przez $C_{r,\varrho}(f)h^{r+\varrho} + \delta \Lambda_{r}$ dla $t_{f} \notin (t_{i}, t_{i+r}]$ (albo $\po_{f} \notin [x_{i-1/2}, x_{i+1/2})$ dla $r=0$) lub przez $E_{r}(f)h^{r+\varrho} + \delta \Lambda_{r}$ , gdy $\po_{f} \in (t_{i}, t_{i+r}] $, gdzie $E_{r}(f) = D_{r}(B_{r}(b, f), f)$.\\
+    
     Z drugiej strony, jeżeli $x \in [u_{1}, v_{1})$, wtedy znów z lematu \ref{lem:algMP_3} wiemy, że błąd jest ograniczony przez $\bar{C}_{r, \varrho} h^{r+\varrho}+\delta \bar{\Lambda}_{r}$ dla $\po_{f} \notin \left(t_{i}, t_{i+r}\right]\left(\right.$ albo $\po_{f} \notin\left(t_{i-1 / 2}, t_{i+1 / 2}\right]$ dla $\left.r=0\right)$, lub przez $E_{r}(f) h^{r+\varrho}+\delta \Lambda_{r}$ w przeciwnym przypadku.
 
     \textit{Przypadek II}: $\po_{f} \in (u_{1}, v_{1}]$.
@@ -1158,7 +1162,7 @@
     \begin{equation*}
         u_{1} < \po_{f} \leq \xi \leq v_{1}.
     \end{equation*}
-    Z lematu \ref{lem:algMP_2} dla $x \notin [u_{1}, v_{1})$ wiemy, że błąd jest ograniczony z góry przez $C_{r, \varrho}(f) h^{r+\varrho}+\delta \Lambda_{r}$ a dla $x \in [u_{1}, \po_{f}) \cap [\xi, v_{1})$ przez $\bar{C}_{r, \varrho} h^{r+\varrho}+\delta \bar{\Lambda}_{r}$. Z tego powodu możemy założyć, że 
+    Z lematu \ref{lem:algMP_2} dla $x \notin [u_{1}, v_{1})$ wiemy, że błąd jest ograniczony z góry przez $C_{r, \varrho}(f) h^{r+\varrho}+\delta \Lambda_{r}$ a dla $x \in [u_{1}, \po_{f}) \cup [\xi, v_{1})$ przez $\bar{C}_{r, \varrho} h^{r+\varrho}+\delta \bar{\Lambda}_{r}$. Z tego powodu możemy założyć, że 
     \begin{equation} \label{eq:37}
         x \in [\po_{f}, \xi).
     \end{equation}

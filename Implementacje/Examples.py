@@ -20,8 +20,8 @@ class ExampleFunction(ABC):
         pass
 
     def plot(self):
-        mesh = np.arange(self.f__a, self.f__b, 0.03, dtype='float64')
-        plt.scatter(mesh, self.fun(mesh), s=2)
+        mesh = np.arange(self.f__a, self.f__b, 0.005, dtype='float64')
+        plt.scatter(mesh, self.fun(mesh), s=1)
         plt.title(type(self).__name__)
         plt.show()
 
@@ -35,7 +35,7 @@ class Example1(ExampleFunction):
             f__rho=1,
             f__noise=f__noise,
             f__class='discontinuous',
-            singularity=3.14
+            singularity=np.pi
         )
 
     @staticmethod
@@ -58,7 +58,7 @@ class Example2(ExampleFunction):
             f__rho=1,
             f__noise=f__noise,
             f__class='continuous',
-            singularity=3.14
+            singularity=np.pi
         )
 
     @staticmethod
@@ -73,20 +73,29 @@ class Example2(ExampleFunction):
 
 
 class Example3(ExampleFunction):
-    def __init__(self, f__noise=None, f__r=3):
+    def __init__(self, f__noise=None, f__r=3, x_0=0.5):
+        f__a = 0.0
+        f__b = 4.0 - x_0
         super().__init__(
-            f__a=0.0,
-            f__b=2.0,
+            f__a=f__a,
+            f__b=f__b,
             f__r=f__r,
             f__rho=1,
             f__noise=f__noise,
-            f__class='continuous',
-            singularity=1.0
+            f__class='discontinuous',
+            singularity=(f__b - f__a) / 2 + np.random.default_rng().uniform(-0.1, 0.1)
         )
+        self.x_0 = x_0
 
-    @staticmethod
-    def raw_f(xx):
-        return abs(xx - 1.0) + (xx - 1.0) / 2.0 - (xx - 1.0) ** 2
+    def raw_f(self, xx):
+        def inner_f(xxx):
+            return 2 * (0.5 - (1 / np.pi) * (
+                    np.sin(np.pi * xxx) + (1 / 2) * np.sin(2 * np.pi * xxx) + (1 / 3) * np.sin(3 * np.pi * xxx)))
+
+        if self.f__a <= xx <= self.singularity:
+            return inner_f(xx)
+        if self.singularity <= xx <= self.f__b:
+            return inner_f(xx + self.x_0)
 
     def fun(self, x):
         return f_values_with_noise(self.raw_f, self.f__noise, x)
@@ -94,96 +103,20 @@ class Example3(ExampleFunction):
 
 class Example4(ExampleFunction):
     def __init__(self, f__noise=None, f__r=3):
+        f__a = 0.0
+        f__b = 2 * np.pi
         super().__init__(
-            f__a=0.0,
-            f__b=8.0,
-            f__r=f__r,
-            f__rho=1,
-            f__noise=f__noise,
-            f__class='discontinuous',
-            singularity=4.0
-        )
-
-    @staticmethod
-    def raw_f(xx):
-        if xx == 0:
-            return 0
-        if 0 < xx < 4:
-            return (1 / 3) * (xx ** 2) * np.log(0.25 * xx)
-        if 4 <= xx <= 8:
-            return np.e ** (-1.0 * ((xx - 6.0) ** 2))
-
-    def fun(self, x):
-        return f_values_with_noise(self.raw_f, self.f__noise, x)
-
-
-class Example5(ExampleFunction):
-    def __init__(self, f__noise=None, f__r=3):
-        super().__init__(
-            f__a=0.0,
-            f__b=8.0,
-            f__r=f__r,
-            f__rho=1,
-            f__noise=f__noise,
-            f__class='discontinuous',
-            singularity=4.0
-        )
-
-    @staticmethod
-    def raw_f(xx):
-        if xx == 0:
-            return 0
-        if 0 < xx < 4:
-            return (1 / 3) * (xx ** 2) * np.log(0.25 * xx)
-        if 4 <= xx <= 8:
-            return -1.0 * np.e ** (-1.0 * ((xx - 6.0) ** 2)) + 1.0
-
-    def fun(self, x):
-        return f_values_with_noise(self.raw_f, self.f__noise, x)
-
-
-class Example6(ExampleFunction):
-    def __init__(self, f__noise=None, f__r=3):
-        super().__init__(
-            f__a=0.0,
-            f__b=8.0,
-            f__r=f__r,
-            f__rho=1,
-            f__noise=f__noise,
-            f__class='continuous'
-        )
-
-    @staticmethod
-    def raw_f(xx):
-        if 0 <= xx <= 2:
-            return np.arctan(2 - 4)
-        if 2 < xx < 6:
-            return np.arctan(xx - 4)
-        if 6 <= xx <= 8:
-            return np.arctan(6 - 4)
-
-    def fun(self, x):
-        return f_values_with_noise(self.raw_f, self.f__noise, x)
-
-
-class Example7(ExampleFunction):
-    def __init__(self, f__noise=None, f__r=3):
-        super().__init__(
-            f__a=0.0,
-            f__b=8.0,
+            f__a=f__a,
+            f__b=f__b,
             f__r=f__r,
             f__rho=1,
             f__noise=f__noise,
             f__class='continuous',
-            singularity=2.0
+            singularity=rng.uniform(f__a + 1.5, f__b - 1.5)
         )
 
-    @staticmethod
-    def raw_f(xx):
-        if 0 <= xx <= 2:
-            return np.arctan(2 - 4)
-        if 2 < xx <= 8:
-            return np.arctan(xx - 4)
+    def raw_f(self, xx):
+        return np.cos(xx) + np.e ** (-8 * abs(xx - self.singularity))
 
     def fun(self, x):
         return f_values_with_noise(self.raw_f, self.f__noise, x)

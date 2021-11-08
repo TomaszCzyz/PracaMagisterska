@@ -9,7 +9,7 @@ import numpy as np
 
 # These Examples are only seemingly unused.
 # They are instantiate by globals() function for all classes with name like 'Example*'
-from Examples import Example1, Example2, Example3, Example4, Example5, Example6, Example7
+from Examples import Example1, Example2, Example3, Example4
 from Utilis import worst_case_error_n
 from alg2014.Alg2014_implementation import Alg2014
 from alg2015.Alg2015_implementation import Alg2015
@@ -244,16 +244,17 @@ def main():
     logging.basicConfig(level=logging.INFO, filename='Calculate.log', format="%(asctime)s:%(message)s")
     logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 
-    log10_m_array = np.linspace(1.4, 4.0, num=30)  # 10 ** 4.7 =~ 50118
+    log10_m_array = np.linspace(1.4, 4.1, num=30)  # 10 ** 4.7 =~ 50118; 10 ** 3.83 =~ 6827
+    # log10_m_array = [2.5]
 
     # Entry data for calculations
     m_array = [int(10 ** log10_m) for log10_m in log10_m_array]
     noises = [None, 1e-12, 1e-8, 1e-4]
-    repeat_count = 100
-    alg = 'alg2014'
-    example = 'Example2'
+    repeat_count = 10
+    alg = 'alg2015'
+    example = 'Example4'
     p_norm = 'infinity'
-    r = 3
+    r = 4
 
     create_example(example).plot()
 

@@ -123,6 +123,17 @@ def divided_diff_coeffs(x, y):
     return coeffs
 
 
+def divided_diff_coeffs_my(x, y):
+    n = len(y)
+    table = [y]
+    for i in range(n-1):
+        next_row = [[(table[i][j + 1] - table[i][j]) / (x[j + i + 1] - x[j])
+                     for j in range(0, n - i - 1)]]
+        table = table + next_row
+
+    return [elem[0] for elem in table]
+
+
 def newton_poly(coeffs, x_data, x):
     """
     Evaluate the newton polynomial at x
@@ -170,17 +181,14 @@ def interp_newton(xvals, yvals):
         iter_yvals = iter_data
         depth += 1
 
-    def f(ii):
-        terms = []
+    def f(xx):
         return_val = 0
 
         for j in range(len(coeffs)):
-
             iterval = coeffs[j]
             iterxvals = xvals[:j]
             for k in iterxvals:
-                iterval *= (ii - k)
-            terms.append(iterval)
+                iterval *= (xx - k)
             return_val += iterval
 
         return return_val
