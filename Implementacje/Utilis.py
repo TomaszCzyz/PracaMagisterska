@@ -30,7 +30,7 @@ def norm_infinity(f, interval, singularity=None):
     """
     step = 1e-3
     margin = 0.1
-    randoms = rng.random(100) * step  # predefine random number for performance
+    randoms = rng.random(100) * step  # predefine random numbers for performance
     step_reduction_ratio = 100
 
     start, stop = interval[0], interval[1]
@@ -55,9 +55,9 @@ def norm_infinity(f, interval, singularity=None):
             current += (step + randoms[counter % len(randoms)]) / step_reduction_ratio
 
             # TODO delete below commented code. It was added for debugging purposes.
-            if is_near_singularity(current, singularity, margin):
-                current = singularity + margin
-            logger.info("skipping interval with singularity during calculation of error")
+            # if is_near_singularity(current, singularity, margin):
+            #     current = singularity + margin
+            # logger.info("skipping interval with singularity during calculation of error")
         else:
             current += step + randoms[counter % len(randoms)]
 
@@ -113,7 +113,6 @@ def divided_diff_coeffs(x, y):
     """
     n = len(y)
     coeffs = np.zeros([n, n])
-    # the first column is y
     coeffs[:, 0] = y
 
     for j in range(1, n):
@@ -121,17 +120,6 @@ def divided_diff_coeffs(x, y):
             coeffs[i][j] = (coeffs[i + 1][j - 1] - coeffs[i][j - 1]) / (x[i + j] - x[i])
 
     return coeffs
-
-
-def divided_diff_coeffs_my(x, y):
-    n = len(y)
-    table = [y]
-    for i in range(n-1):
-        next_row = [[(table[i][j + 1] - table[i][j]) / (x[j + i + 1] - x[j])
-                     for j in range(0, n - i - 1)]]
-        table = table + next_row
-
-    return [elem[0] for elem in table]
 
 
 def newton_poly(coeffs, x_data, x):

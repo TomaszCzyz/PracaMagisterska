@@ -6,6 +6,7 @@ from datetime import datetime
 
 import matplotlib.pyplot as plt
 import numpy as np
+import json
 
 # These Examples are only seemingly unused.
 # They are instantiate by globals() function for all classes with name like 'Example*'
@@ -36,10 +37,11 @@ class ResultsCollector:
     If plot_threshold > 100, then no results are printed.
     """
 
-    def __init__(self, max_count, data, plot_threshold=None):
+    def __init__(self, max_count, data, plot_threshold=None, save_results=False):
         self.data = data
         self.tasks_number = max_count
         self.plot_threshold = plot_threshold if plot_threshold is not None else 101
+        self.save_results = save_results
 
         self.example_function = create_example(data['example_fun_name'])
         self.finished_tasks = 0
@@ -71,6 +73,9 @@ class ResultsCollector:
 
         if self.finished_tasks / self.tasks_number >= (self.plot_threshold / 100):
             self.plot_results()
+
+        if self.finished_tasks == self.tasks_number and self.save_results:
+            self.save_results_to_file()
 
     def plot_results(self, save=False):
         """
@@ -118,9 +123,9 @@ class ResultsCollector:
         plt.xlim([x_min - 0.1, x_max + 0.1])
         plt.xticks(np.arange(np.floor(x_min), np.ceil(x_max), 0.5))
         plt.grid(linewidth=0.5, linestyle=':')
-        plt.legend(numpoints=1)
         ax.xaxis.set_tick_params(width=0.5, color='grey')
         ax.yaxis.set_tick_params(width=0.5, color='grey')
+        plt.legend(numpoints=1)
         fig.text(0.5, 0.02, r'$\log_{10}m$', ha='center')
         fig.text(0.01, 0.5, r'$-\log_{10}err$', va='center', rotation='vertical')
 
@@ -158,6 +163,14 @@ class ResultsCollector:
             print("finished task for m={} and noise={}".format(args[1], args[2]))
         print("finished tasks: {}/{}".format(self.finished_tasks, self.tasks_number), end='\r')
 
+    def save_results_to_file(self):
+        path = 'data/error_results.txt'
+
+        with open(path, 'a') as file:
+            file.write("Data from run of {}\n".format(self.data))
+            file.write("log10_m_for_noise dict: {}\n)".format(json.dumps(self.log10_m_for_noise)))
+            file.write("log10_errors_for_noise dict: {}\n)".format(json.dumps(self.log10_errors_for_noise)))
+
 
 def create_example(example_name, delta=None, f__r=4):
     """
@@ -165,7 +178,7 @@ def create_example(example_name, delta=None, f__r=4):
     The purpose of this method is to allow parallel computation for the same function with different noise.
     """
     name = example_name.capitalize()
-    if name[:7] == 'Example':
+    if name[:7].lower() == 'example':
         return globals()[name](delta, f__r)
 
     raise Exception("incorrect example function name")
@@ -201,10 +214,10 @@ def calculate(repeat_count, knots_counts, deltas, algorithm_name, example_fun_na
         'p': p
     }
     tasks_number = len(knots_counts) * len(deltas)
-    results_collector = ResultsCollector(tasks_number, extra_data, plot_threshold=None)
+    results_collector = ResultsCollector(tasks_number, extra_data, plot_threshold=None, save_results=True)
 
     if parallel:
-        with mp.Pool(processes=mp.cpu_count() // 2) as pool:
+        with mp.Pool(processes=mp.cpu_count() - 4) as pool:
             apply_results = []
             for knots_number in reversed(knots_counts):
                 for noise in deltas:
@@ -250,15 +263,14 @@ def main():
     logging.basicConfig(level=logging.INFO, filename='Calculate.log', format="%(asctime)s:%(message)s")
     logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 
-    log10_m_array = np.linspace(1.4, 3.5, num=15)  # 10 ** 4.7 =~ 50118; 10 ** 3.83 =~ 6827
-    # log10_m_array = [2.5]
+    log10_m_array = np.linspace(1.3, 4.0, num=30)  # 10 ** 4.7 =~ 50118; 10 ** 3.83 =~ 6827
 
-    # Entry data for calculations
+    # input data for calculations
     m_array = [int(10 ** log10_m) for log10_m in log10_m_array]
-    noises = [None]  # , 1e-12, 1e-8, 1e-4]
-    repeat_count = 1
+    noises = [None, 1e-12, 1e-8, 1e-4]
+    repeat_count = 200
     alg = 'alg2014mp'
-    example = 'Example2'
+    example = 'Example4'
     p_norm = 'infinity'
     r = 4
 
@@ -267,7 +279,7 @@ def main():
     start_datetime = datetime.now()
     logging.info('Started at {}'.format(start_datetime.strftime("%d/%m/%Y %H:%M:%S")))
 
-    results_collector = calculate(repeat_count, m_array, noises, alg, example, p=p_norm, parallel=False, f__r=r)
+    results_collector = calculate(repeat_count, m_array, noises, alg, example, p=p_norm, parallel=True, f__r=r)
     results_collector.plot_results(save=True)
 
     end_datetime = datetime.now()

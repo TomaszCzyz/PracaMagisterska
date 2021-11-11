@@ -26,7 +26,7 @@ class Alg2015:
         self.p = 10 if p == 'infinity' else p
 
         self.t = np.linspace(self.example.f__a, self.example.f__b, self.m + 1, dtype='float64')
-        self.y = example.fun(self.t)
+        self.y = [example.fun(x) for x in self.t]
         self.h = (self.example.f__b - self.example.f__a) / self.m
 
         # "d" can easily reach edge precision!!!

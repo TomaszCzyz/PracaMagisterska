@@ -9,7 +9,7 @@ from Utilis import interp_newton
 from Utilis_mpmath import divided_diff_coeffs_all_mpmath, newton_poly_mpmath
 
 logger = logging.getLogger(__name__)
-mpmath.mp.dps = 75
+mpmath.mp.dps = 45
 
 
 class Alg2014mp:
@@ -22,7 +22,8 @@ class Alg2014mp:
     approximation = alg.run()
     """
 
-    def __init__(self, example: ExampleFunction, n_knots):
+    def __init__(self, example: ExampleFunction, n_knots, mpmath_dps=None):
+
         self.example = example
         self.m = n_knots
 
@@ -30,6 +31,8 @@ class Alg2014mp:
         self.h = mpmath.mpmathify((self.example.f__b - self.example.f__a) / self.m)
 
         temp_d = mpmath.power(self.h, (self.example.f__r + self.example.f__rho))
+        # we use float64 precision limit, because final approximation is based on "standard" floats
+        # and it will neglect more precise calculation
         self.d = temp_d if temp_d > 1e-14 else 1e-14
 
         # following values could be local, but they are defined as class values
@@ -41,13 +44,19 @@ class Alg2014mp:
         self.m_set = None
 
     def run(self):
-        logger.info("\nexecuting alg2014 dla m={} and noise={}".format(self.m, self.example.f__noise))
+        logger.info("\nexecuting alg2014mp dla m={} and noise={}".format(self.m, self.example.f__noise))
         self.step1()
         self.step2()
         approximation = self.step3()
-        logger.info("executed alg2015")
+        logger.info("executed alg2014mp")
 
         return approximation
+
+    def is_singularity_located_correctly(self):
+        if not self.is_interval_found:
+            return None
+
+        return self.step1_a <= self.example.singularity <= self.step1_b
 
     def step1(self):
         """
@@ -77,7 +86,7 @@ class Alg2014mp:
                     self.t[i + 1] - self.d < self.example.singularity < self.t[i + 1]:
                 logger.info("step1 - singularity was in edge sub-interval")
 
-            # logger.info("step1 - interval(i:{:2}): [{:.14f} {:.14f}], test_result: {:.14f}".format(
+            # logger.info("step1 - interval(i:{:2}): [{} {}], test_result: {}".format(
             #     i, self.t[i], self.t[i + 1], test_result))
 
             if test_result > largest_result:
@@ -213,6 +222,5 @@ class Alg2014mp:
         w2_values_new = newton_poly_mpmath(w2_coeffs, w2_knots, z_arr)
 
         test_values = [mpmath.fabs(w1_values_new[j] - w2_values_new[j]) for j in range(r + 1)]
-        # / ((b0 - a0) ** (r + self.example.f__rho)) <- no need when all studied intervals have the same length
 
         return max(test_values)

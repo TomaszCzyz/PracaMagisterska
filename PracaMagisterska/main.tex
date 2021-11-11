@@ -58,6 +58,8 @@
 %-> Miejsce na nasze makra (jedno z wielu ;). Lepszym pomysłem będzie jednak 
 %-> umieszczenie ich w osobnym pliku i wczytanie poleceniem \input
 %%
+\renewcommand{\figurename}{Rys.}
+
 \newtheorem{thm}{Twierdzenie}[chapter]
 \newtheorem{lemma}[thm]{Lemat}
 \newtheorem{stw}[thm]{Stwierdzenie}
@@ -438,7 +440,7 @@
     Poniższe twierdzenie łączy wyniki artykułów \cite{CoDF} i \cite{AoP} dotyczące górnych ograniczeń na błąd algorytmów.
     
     \begin{thm} \label{thm:1:ograniczenia_z_gory}~%
-        Niech $r+\varrho \geq 1$ oraz niech $\G = \G([a,b])$ z $\Delta_{g}^{0} = 0$. Wtedy zachodzi
+        Niech $r+\varrho \geq 1$ oraz niech $\G = \G([a,b])$ z $\Delta_{g}^{(0)} = 0$. Wtedy zachodzi
         \begin{enumerate}[label=(\roman*)]
             \item \label{thm:1:i}$e_{p}^{\wor}(\varphi^{MP},N,\mathcal{F}_{r,\varrho}^{D}) = \mathcal{O}(\max(\delta, n^{-(r+\varrho)})), \quad dla \: 1 \leq p < \infty$,
             \item \label{thm:1:ii}$e_{\infty}^{\wor}(\varphi^{MP},N,\mathcal{F}_{r,\varrho}^{C}) = \mathcal{O}(\max(\delta, n^{-(r+\varrho)}))$,
@@ -1276,64 +1278,79 @@
 \chapter{Testy numeryczne}
 
 
-    W tym rodziale porównamy działanie algorytmów $\varphi^{KP}$ i $\varphi^{MP}$ w praktyce. Oba algorytmy zostały zaimplementowane z użyciem języka Python, wykorzystając znane biblioteki takie, jak numpy, scipy czy matplotlib. Pewnym ograniczeniem wynikającym z zastosowania tych technologii jest brak natywnego wsparcia dla precyzji większej niż $\mathrm{float64}$, która gwarantuje nam precyzję okolo $\eta = 10^{-15}$. Jest to szczególnie ważne dla algorytmu $\varphi^{KP}$ ze względu na wybór bardzo małych przedziałów do interpolacji wielomianowej. Zauważmy, że dla stałych zdefiniowanych jak w algorytmie, przy danej precyzji $\eta$ nie ma sensu brać $m$ większego niż
+    W tym rodziale porównamy działanie algorytmów $\varphi^{KP}$ i $\varphi^{MP}$ w praktyce. Oba algorytmy zostały zaimplementowane z użyciem języka Python, wykorzystając m.in. popularne biblioteki: numpy, scipy czy matplotlib. Pewnym ograniczeniem wynikającym z zastosowania tych modułów jest brak natywnego wsparcia dla precyzji większej niż $\mathrm{float64}$, która gwarantuje dokładność na poziomie okolo $15$-ego miejsca po przecinku. Okazało się to szczególnie ważne dla algorytmu $\varphi^{KP}$ ze względu na wybór bardzo małych przedziałów do interpolacji wielomianowej. Zauważmy, że dla stałych zdefiniowanych jak w algorytmie, przy danej precyzji $\eta=10^{-15}$ nie ma sensu brać $m$ większego niż
     \begin{equation*}
         \frac{h^{r+\varrho}}{r+1} \geq \eta \Longrightarrow m \leq T((r+1)\eta)^{-\frac{1}{r+\varrho}}.
     \end{equation*}
+
     Algorytmy testowaliśmy na funkcjach:
-    \begin{equation*}
-        f_{1}(x) = \begin{cases}
-            \bar{f}_{1}(x), & \text{ gdy } x \in [0, t_{f}), \\
-            \bar{f}_{1}(x+0.5), & \text{ gdy } x \in [t_{f}, T],\end{cases}
-    \end{equation*}
-    gdzie $\displaystyle \bar{f}_{1}(x) = 1 - \frac{2}{\pi} \sum_{n=1}^{3} \frac{1}{n} \sin(n \pi x)$, $T = 3\frac{1}{2}$ i $t_{f} \in [\frac{T}{2} - \frac{1}{10}, \frac{T}{2} + \frac{1}{10}]$,
+    \begin{flalign*}
+        \qquad f_{1}(x) = \cos(x) + e^{-8 |x - t_{f}|} \qquad x \in [0, 2\pi], t_{f} \in \left[\frac{2}{3}\pi, \frac{4}{3}\pi\right] &&
+    \end{flalign*}
+    \begin{flalign*}
+        \qquad f_{2}(x) = \begin{cases}
+            \bar{f}_{2}(x), & \text{ gdy } x \in [0, t_{f}), \\
+            \bar{f}_{2}(x+0.5), & \text{ gdy } x \in [t_{f}, T],\end{cases} &&
+    \end{flalign*}
+    gdzie $\displaystyle \bar{f}_{2}(x) = 1 - \frac{2}{\pi} \sum_{n=1}^{3} \frac{1}{n} \sin(n \pi x)$, $T = 3\frac{1}{2}$ i $t_{f} \in [\frac{T}{2} - \frac{1}{10}, \frac{T}{2} + \frac{1}{10}]$.
 
-    \begin{equation*}
-        f_{2}(x) = \cos(x) + e^{-8 |x - t_{f}|} \qquad x \in [0, 2\pi] \text{ oraz } t_{f} \in [\frac{2}{3}\pi, \frac{4}{3}\pi]
-    \end{equation*}
-
-    Osobliwość w podnych funkcjach występuje w punkcie $t_{f}$, który jest losowany dla polepszenia jakości testów. Randomizacja położenia osobliwości pozwala na uniknięcie sytuacji, na przykład, gdy wybieramy punkt osobliwy jako węzeł podziału.
-
-    \begin{figure}[h!]
-        \includegraphics[width=.45\linewidth]{przyklad_f1.png}
-        \includegraphics[width=.45\linewidth]{przyklad_f2.png}
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=.49\linewidth]{przyklad_f1.png}
+        \includegraphics[width=.49\linewidth]{przyklad_f2.png}
     \end{figure}
 
-    Oba algorytmu zachowywały teoretyczne tępo zbieżności w przypadku inforamacji dokładnej.
+    Osobliwość w podanych funkcjach występuje w punkcie $t_{f}$. Podczas testów punkt ten był losowany z podanych przedziałów. Dzięki temu zmniejszamy liczbę trywialnych przypadków, takich jak położenie osobliwości węźle czy w jego pobliżu (aprkosymacja funkcją stałą w $\varphi^{KP}$).
+
+    Obie funkcje są okresowe oraz należą zarówno do klasy $\F_{r, \varrho}$, jak i $\G$. jednak dla funkcji $f_{2}$ nie zachodzi $\Delta_{f_{2}}^{(0)} = 0$. Algorytmy były testowane w normach $L^{2}$ i $L^{\infty}$. Dla~każdego zestawu danych wejściowych, tj. dla określonego $m$, $\delta$ i $\varrho$, błąd najgorszego przypadku obliczaliśmy jako maksimum z kilkuset uruchomień algorytmu. W ramach obliczania jednego błędu $t_{f}$ było ustalone.
+
+    Algorytm $\varphi^{MP}$ zachowywał teoretyczne tępo zbieżności dla obu funkcji w obu normach, zobacz rysunki \ref{rys:1:algMP_p2} i \ref{rys:2:algMP_pInf}.
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=.8\linewidth]{Ex4/algMPp2r4.jpg}
+        \caption{zależność błędu od $m$ aproksymacji algorytmu $\varphi^{MP}$ dla funkcji $f_{1}$ w normie $L^{2}$.}
+        \label{rys:1:algMP_p2}
+    \end{figure}
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=.8\linewidth]{Ex3/algMPpInf.jpg}
+        \caption{zależność błędu od $m$ aproksymacji algorytmu $\varphi^{MP}$ dla funkcji $f_{1}$ w normie $L^{\infty}$.}
+        \label{rys:2:algMP_pInf}
+    \end{figure}
+
+    Testując algorytm oparty na wielomianach Lagrange'a, wyniki otrzymywane z użyciem standardowej precyzji, okazały się bardzo nie stabilne. Algorytm miał trudności z poprawnym wyznaczeniem przedziału z punktem osobliwym.
+    Aby potwierdzić, że za wyniki niezgodne z oczekiwaniami odpowiada precyzja obliczeń, zaimplementowaliśmy część algorytmu z użyciem bibliteki mpmath. Pozwala ona na przeprowadzenie obliczeń na liczbach o dowolnej precyzji. W bibliotece mpmath dokładność obliczeń ustawia się parametrem \textit{dps}, oznaczającego \textit{miejsca dziesiętne}(\textit{ang. decimal places}). Zastosowanie danej precyzji odpowiada użyciu typu \textit{float} z matysą rezprezentowaną na okolo $3.33 \cdot \mathrm{dps}$ bitach. Z tą zmianą wiążą się dwie ważne kwestie: wydłużenie czasu obliczeń(mniejsze niż możnaby się spodziewać) oraz brak kompatybilności z innymi bibliotekami (numpy, itp.).
+    Z początku zwiększyliśmy dokładność obliczeń w kroku pierszym algorytmu, jednak nie przyniosło to oczekiwanych efektów. Po wnikliwej analizie okazało się, że drugim problemem jest prawie zerowa (zerowa przy niższej precyzji) zmiana wartości funkcji na bardzo małych przedziałach, podowodująca duże skoki w wartościach różnic dzielonych. Dopiero zwiększenie dokładności otrzymywanych wartości aproksymowanej funkcji rozwiązało problem. Rysunek \ref{rys:3:diff_dps} przedstawia zależność błędu od $m$ przy zmieniającej się precyzji obliczeń dla informacji bez szumu. Zaznaczmy, zwiększonej dokładności używamy tylko do lokalizacji punktu osobliwego oraz dodania nowych punktów w kroku drugim algorytmu. Końcowa aproksymacja nadal bazuje na 'float64'.
+
+    \begin{figure}[h] \label{rys:3:diff_dps}
+        \centering
+        \includegraphics[width=.98\linewidth]{Ex4/errors_for_diff_dps.png}
+        \caption{$-\log_{10}(err)$ vs $log_{10}(m)$ dla funkcji $f_{2}$ z $r = 4$ oraz $\delta = 0$.}
+    \end{figure}
+    
+    Po wprowadzeniu omówionych usprawnień algortm zachowywał wszystkie teoretyczne własności dla informacji nie zburzonej, jednak....
+    % , widoczne na rysunkach [ref] i [ref].
     
     \begin{figure}[h!]
-        \includegraphics[width=.95\linewidth]{Ex3/algKPp2r2.jpg}
+        \centering
+        \includegraphics[width=.8\linewidth]{Ex3/algKPp2r2.jpg}
     \end{figure}
     \begin{figure}[h!]
-        \includegraphics[width=.95\linewidth]{Ex3/algKPpInfr4.jpg}
+        \centering
+        \includegraphics[width=.8\linewidth]{Ex3/algKPpInfr4.jpg}
     \end{figure}
     \begin{figure}[h!]
-        \includegraphics[width=.95\linewidth]{Ex3/algMPp2.png}
-    \end{figure}
-    \begin{figure}[h!]
-        \includegraphics[width=.95\linewidth]{Ex3/algMPpInf.jpg}
+        \centering
+        \includegraphics[width=.8\linewidth]{Ex3/algMPpInf.jpg}
     \end{figure}
 
+
     \begin{figure}[h!]
-        \includegraphics[width=.95\linewidth]{Ex4/algMPp2r4.jpg}
-    \end{figure}
-    \begin{figure}[h!]
-        \includegraphics[width=.95\linewidth]{Ex4/algMPpInfr4.jpg}
+        \includegraphics[width=.8\linewidth]{Ex4/algMPpInfr4.jpg}
     \end{figure}
 
-    \newpage
-    \begin{figure}[h!]
-        \includegraphics[width=.95\linewidth]{Ex2/algKPp2r3.jpg}
-    \end{figure}
-    \begin{figure}[h!]
-        \includegraphics[width=.95\linewidth]{Ex2/algKPpInf.jpg}
-    \end{figure}
-    \begin{figure}[h!]
-        \includegraphics[width=.95\linewidth]{Ex2/algMPp2r4.jpg}
-    \end{figure}
-    \begin{figure}[h!]
-        \includegraphics[width=.95\linewidth]{Ex2/algMPpInfr4.jpg}
-    \end{figure}
+    
+    Inną kwestią jest liczba ewaluacji wartości funkcji dla algorytmów.
 
 
 \mgrclosechapter

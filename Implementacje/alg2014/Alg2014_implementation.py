@@ -5,11 +5,10 @@ import mpmath
 import numpy as np
 
 from Examples import ExampleFunction
-from Utilis import interp_newton, divided_diff_coeffs, newton_poly, divided_diff_coeffs_my
-from Utilis_mpmath import divided_diff_coeffs_all_mpmath, newton_poly_mpmath
+from Utilis import interp_newton, divided_diff_coeffs, newton_poly
 
 logger = logging.getLogger(__name__)
-mpmath.mp.dps = 60
+mpmath.mp.dps = 50
 
 
 class Alg2014:
