@@ -29,7 +29,7 @@ class Alg2015:
         self.y = example.fun(self.t)
         self.h = (self.example.f__b - self.example.f__a) / self.m
 
-        # "d" can easily reach edge precision!!! hence condition in step2
+        # "d" can easily reach edge precision!!!
         if example.f__class == 'continuous':
             self.d = (self.example.f__r + 1) * self.h + 1e-14
         else:

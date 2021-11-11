@@ -12,6 +12,7 @@ import numpy as np
 from Examples import Example1, Example2, Example3, Example4
 from Utilis import worst_case_error_n
 from alg2014.Alg2014_implementation import Alg2014
+from alg2014.Alg2014_implementation_high_prec import Alg2014mp
 from alg2015.Alg2015_implementation import Alg2015
 
 
@@ -176,8 +177,11 @@ def create_algorithm(algorithm_name, example_function, knots_number, p=2):
     """
     if algorithm_name.lower() == 'alg2014':
         return Alg2014(example_function, knots_number)
+    if algorithm_name.lower() == 'alg2014mp':
+        return Alg2014mp(example_function, knots_number)
     if algorithm_name.lower() == 'alg2015':
         return Alg2015(example_function, knots_number, p)
+
     raise Exception("incorrect algorithm name")
 
 
@@ -212,7 +216,8 @@ def calculate(repeat_count, knots_counts, deltas, algorithm_name, example_fun_na
 
                     apply_result = pool.apply_async(
                         func=worst_case_error_n,
-                        args=(alg, 1 if noise is None else repeat_count, p),
+                        # args=(alg, 1 if noise is None else repeat_count, p),
+                        args=(alg, repeat_count, p),
                         callback=results_collector.callback_handler)
 
                     apply_results.append(apply_result)
@@ -231,7 +236,8 @@ def calculate(repeat_count, knots_counts, deltas, algorithm_name, example_fun_na
 
                 result_tuple = worst_case_error_n(
                     alg=alg,
-                    repeat_count=1 if noise is None else repeat_count,
+                    # repeat_count=1 if noise is None else repeat_count,
+                    repeat_count=repeat_count,
                     lp_norm=p
                 )
                 results_collector.callback_handler(result_tuple)
@@ -244,24 +250,24 @@ def main():
     logging.basicConfig(level=logging.INFO, filename='Calculate.log', format="%(asctime)s:%(message)s")
     logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 
-    log10_m_array = np.linspace(1.4, 4.1, num=30)  # 10 ** 4.7 =~ 50118; 10 ** 3.83 =~ 6827
+    log10_m_array = np.linspace(1.4, 3.5, num=15)  # 10 ** 4.7 =~ 50118; 10 ** 3.83 =~ 6827
     # log10_m_array = [2.5]
 
     # Entry data for calculations
     m_array = [int(10 ** log10_m) for log10_m in log10_m_array]
-    noises = [None, 1e-12, 1e-8, 1e-4]
-    repeat_count = 10
-    alg = 'alg2015'
-    example = 'Example4'
+    noises = [None]  # , 1e-12, 1e-8, 1e-4]
+    repeat_count = 1
+    alg = 'alg2014mp'
+    example = 'Example2'
     p_norm = 'infinity'
     r = 4
 
-    create_example(example).plot()
+    # create_example(example).plot()
 
     start_datetime = datetime.now()
     logging.info('Started at {}'.format(start_datetime.strftime("%d/%m/%Y %H:%M:%S")))
 
-    results_collector = calculate(repeat_count, m_array, noises, alg, example, p=p_norm, parallel=True, f__r=r)
+    results_collector = calculate(repeat_count, m_array, noises, alg, example, p=p_norm, parallel=False, f__r=r)
     results_collector.plot_results(save=True)
 
     end_datetime = datetime.now()

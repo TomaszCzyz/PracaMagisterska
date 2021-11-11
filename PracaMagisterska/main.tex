@@ -1276,7 +1276,64 @@
 \chapter{Testy numeryczne}
 
 
-porównanie algorytmów
+    W tym rodziale porównamy działanie algorytmów $\varphi^{KP}$ i $\varphi^{MP}$ w praktyce. Oba algorytmy zostały zaimplementowane z użyciem języka Python, wykorzystając znane biblioteki takie, jak numpy, scipy czy matplotlib. Pewnym ograniczeniem wynikającym z zastosowania tych technologii jest brak natywnego wsparcia dla precyzji większej niż $\mathrm{float64}$, która gwarantuje nam precyzję okolo $\eta = 10^{-15}$. Jest to szczególnie ważne dla algorytmu $\varphi^{KP}$ ze względu na wybór bardzo małych przedziałów do interpolacji wielomianowej. Zauważmy, że dla stałych zdefiniowanych jak w algorytmie, przy danej precyzji $\eta$ nie ma sensu brać $m$ większego niż
+    \begin{equation*}
+        \frac{h^{r+\varrho}}{r+1} \geq \eta \Longrightarrow m \leq T((r+1)\eta)^{-\frac{1}{r+\varrho}}.
+    \end{equation*}
+    Algorytmy testowaliśmy na funkcjach:
+    \begin{equation*}
+        f_{1}(x) = \begin{cases}
+            \bar{f}_{1}(x), & \text{ gdy } x \in [0, t_{f}), \\
+            \bar{f}_{1}(x+0.5), & \text{ gdy } x \in [t_{f}, T],\end{cases}
+    \end{equation*}
+    gdzie $\displaystyle \bar{f}_{1}(x) = 1 - \frac{2}{\pi} \sum_{n=1}^{3} \frac{1}{n} \sin(n \pi x)$, $T = 3\frac{1}{2}$ i $t_{f} \in [\frac{T}{2} - \frac{1}{10}, \frac{T}{2} + \frac{1}{10}]$,
+
+    \begin{equation*}
+        f_{2}(x) = \cos(x) + e^{-8 |x - t_{f}|} \qquad x \in [0, 2\pi] \text{ oraz } t_{f} \in [\frac{2}{3}\pi, \frac{4}{3}\pi]
+    \end{equation*}
+
+    Osobliwość w podnych funkcjach występuje w punkcie $t_{f}$, który jest losowany dla polepszenia jakości testów. Randomizacja położenia osobliwości pozwala na uniknięcie sytuacji, na przykład, gdy wybieramy punkt osobliwy jako węzeł podziału.
+
+    \begin{figure}[h!]
+        \includegraphics[width=.45\linewidth]{przyklad_f1.png}
+        \includegraphics[width=.45\linewidth]{przyklad_f2.png}
+    \end{figure}
+
+    Oba algorytmu zachowywały teoretyczne tępo zbieżności w przypadku inforamacji dokładnej.
+    
+    \begin{figure}[h!]
+        \includegraphics[width=.95\linewidth]{Ex3/algKPp2r2.jpg}
+    \end{figure}
+    \begin{figure}[h!]
+        \includegraphics[width=.95\linewidth]{Ex3/algKPpInfr4.jpg}
+    \end{figure}
+    \begin{figure}[h!]
+        \includegraphics[width=.95\linewidth]{Ex3/algMPp2.png}
+    \end{figure}
+    \begin{figure}[h!]
+        \includegraphics[width=.95\linewidth]{Ex3/algMPpInf.jpg}
+    \end{figure}
+
+    \begin{figure}[h!]
+        \includegraphics[width=.95\linewidth]{Ex4/algMPp2r4.jpg}
+    \end{figure}
+    \begin{figure}[h!]
+        \includegraphics[width=.95\linewidth]{Ex4/algMPpInfr4.jpg}
+    \end{figure}
+
+    \newpage
+    \begin{figure}[h!]
+        \includegraphics[width=.95\linewidth]{Ex2/algKPp2r3.jpg}
+    \end{figure}
+    \begin{figure}[h!]
+        \includegraphics[width=.95\linewidth]{Ex2/algKPpInf.jpg}
+    \end{figure}
+    \begin{figure}[h!]
+        \includegraphics[width=.95\linewidth]{Ex2/algMPp2r4.jpg}
+    \end{figure}
+    \begin{figure}[h!]
+        \includegraphics[width=.95\linewidth]{Ex2/algMPpInfr4.jpg}
+    \end{figure}
 
 
 \mgrclosechapter

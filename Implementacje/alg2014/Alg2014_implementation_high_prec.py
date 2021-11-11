@@ -5,14 +5,14 @@ import mpmath
 import numpy as np
 
 from Examples import ExampleFunction
-from Utilis import interp_newton, divided_diff_coeffs, newton_poly, divided_diff_coeffs_my
+from Utilis import interp_newton
 from Utilis_mpmath import divided_diff_coeffs_all_mpmath, newton_poly_mpmath
 
 logger = logging.getLogger(__name__)
-mpmath.mp.dps = 60
+mpmath.mp.dps = 75
 
 
-class Alg2014:
+class Alg2014mp:
     """
     example - function to approximate (containing data about class parameters, interval and noise)
     n_knots - initial mesh resolution
@@ -26,17 +26,19 @@ class Alg2014:
         self.example = example
         self.m = n_knots
 
-        self.t = np.linspace(self.example.f__a, self.example.f__b, self.m + 1, dtype='float64')
-        self.h = (self.example.f__b - self.example.f__a) / self.m
+        self.t = mpmath.linspace(self.example.f__a, self.example.f__b, self.m + 1)
+        self.h = mpmath.mpmathify((self.example.f__b - self.example.f__a) / self.m)
 
-        temp_d = np.power(self.h, (self.example.f__r + self.example.f__rho))
+        temp_d = mpmath.power(self.h, (self.example.f__r + self.example.f__rho))
         self.d = temp_d if temp_d > 1e-14 else 1e-14
 
         # following values could be local, but they are defined as class values
         # to make monitoring of algorithm easier
-        self.step1_interval = None
+        self.step1_a = None
+        self.step1_b = None
+        self.is_interval_found = False
         self.b_set = None
-        self.m_set = np.array(self.t)
+        self.m_set = None
 
     def run(self):
         logger.info("\nexecuting alg2014 dla m={} and noise={}".format(self.m, self.example.f__noise))
@@ -53,10 +55,10 @@ class Alg2014:
         1. check if exist intervals with diameters greater than 4*d in initial mesh
         2. if yes, find interval with the biggest A_test (A_test result has to be unique)
         """
-        largest_result = 0
-        second_largest_result = 0
-        largest_result_index = 0
-        second_largest_result_index = 0
+        largest_result = mpmath.mpf(0)
+        second_largest_result = mpmath.mpf(0)
+        largest_result_index = mpmath.mpf(0)
+        second_largest_result_index = mpmath.mpf(0)
 
         iter_count = 0
         for i in range(len(self.t) - 1):
@@ -65,7 +67,7 @@ class Alg2014:
                 continue
             iter_count += 1
 
-            test_result = self.a_test_2(
+            test_result = self.a_test_mp(
                 self.t[i],
                 self.t[i] + self.d,
                 self.t[i + 1] - self.d,
@@ -93,13 +95,13 @@ class Alg2014:
             "step1 - (largest(index:{}): {} second largest(index:{}): {})".format(
                 largest_result_index, largest_result, second_largest_result_index, second_largest_result))
 
-        if largest_result - second_largest_result < 1e-14:
-            self.step1_interval = None
+        if mpmath.almosteq(largest_result, second_largest_result):
             logger.info("step1 - largest test result was not unique")
+            return
         else:
-            self.step1_interval = (self.t[largest_result_index], self.t[largest_result_index + 1])
-            logger.info("step1 - interval (u_1, v_1): [{:.14f} {:.14f}]".format(
-                self.step1_interval[0], self.step1_interval[1]))
+            self.step1_a, self.step1_b = self.t[largest_result_index], self.t[largest_result_index + 1]
+            self.is_interval_found = True
+            logger.info("step1 - interval (u_1, v_1): [{} {}]".format(self.step1_a, self.step1_b))
         pass
 
     def step2(self):
@@ -108,24 +110,24 @@ class Alg2014:
         bisection is based on A_test values
         """
 
-        if self.step1_interval is None:
-            return []
+        if self.is_interval_found is False:
+            return
 
-        a_new, b_new = self.step1_interval
-        self.b_set = [a_new, b_new]
+        self.b_set = {self.step1_a, self.step1_b}
+
+        a_new = self.step1_a
+        b_new = self.step1_b
 
         iter_count = 0
         while b_new - a_new > 4 * self.d:
             iter_count += 1
 
             v = (a_new + b_new) / 2
-            self.b_set.append(v)
 
-            a1 = self.a_test_2(a_new, a_new + self.d, v - self.d, v)
-            a2 = self.a_test_2(v, v + self.d, b_new - self.d, b_new)
+            self.b_set.add(v)
 
-            if abs(a1 - a2) < 1e-14:
-                break
+            a1 = self.a_test_mp(a_new, a_new + self.d, v - self.d, v)
+            a2 = self.a_test_mp(v, v + self.d, b_new - self.d, b_new)
 
             if a1 > a2:
                 b_new = v
@@ -139,10 +141,12 @@ class Alg2014:
         """
         step 3 - creating final approximation using initial mesh with appended points from step2
         """
-        if self.b_set is not None and len(self.b_set) >= 2:
-            b_set_sorted = np.sort(self.b_set)
+        if self.is_interval_found is False:
+            self.m_set = self.t[:]
+        else:
+            b_set_sorted = sorted(self.b_set)
             index = bisect.bisect_right(self.t, b_set_sorted[1])
-            self.m_set = np.insert(self.m_set, index, b_set_sorted[1:-1])
+            self.m_set = self.t[:index] + b_set_sorted[1:-1] + self.t[index:]
 
         return self.create_approximation()
 
@@ -153,20 +157,22 @@ class Alg2014:
         Big interval are obtained by dividing intervals of length bigger than 4 * self.d into three parts,
         where edge sub-intervals are "small".
         """
+        set_m_with_floats = [float(self.m_set[i]) for i in range(len(self.m_set))]
+        d_float = float(self.d)
         approx = []
-        current_knot = self.m_set[0]
-        for i in range(len(self.m_set) - 1):
+        current_knot = set_m_with_floats[0]
+        for i in range(len(set_m_with_floats) - 1):
 
-            next_knot = self.m_set[i + 1]
+            next_knot = set_m_with_floats[i + 1]
             approx.append((current_knot, self.example.fun(current_knot)))
 
-            if next_knot - current_knot < 4 * self.d:
+            if next_knot - current_knot < 4 * d_float:
                 continue  # interval is small... no need for extra points
 
-            knot1, knot2 = current_knot + self.d, next_knot - self.d
+            knot1, knot2 = current_knot + d_float, next_knot - d_float
 
             knots = np.linspace(knot1, knot2, self.example.f__r + 1)
-            values = self.example.fun(knots)
+            values = [self.example.fun(x) for x in knots]
             polynomial = interp_newton(knots, values)
 
             approx.append((knot1, polynomial))
@@ -174,11 +180,11 @@ class Alg2014:
 
             current_knot = next_knot
 
-        approx.append((self.m_set[-1], self.example.fun(self.m_set[-1])))
+        approx.append((set_m_with_floats[-1], self.example.fun(set_m_with_floats[-1])))
         np_approx = np.array(approx)
 
         def final_approximation(t):
-            if self.m_set[-1] < t < self.m_set[0]:
+            if not self.example.f__a <= t <= self.example.f__b:
                 raise Exception("value {} is outside function domain".format(t))
 
             ii = bisect.bisect_right(np_approx[:, 0], t)
@@ -191,38 +197,22 @@ class Alg2014:
 
         return final_approximation
 
-    def a_test(self, a0, a1, b1, b0):
+    def a_test_mp(self, a0, a1, b1, b0):
         r = self.example.f__r
 
-        knots_1 = np.linspace(a0, a1, r + 1).tolist()
-        values = self.example.fun(knots_1)
-        w1 = interp_newton(knots_1, values)
+        w1_knots = mpmath.linspace(b1, b0, r + 1)
+        w1_values = [self.example.fun_mp(x) for x in w1_knots]
+        w1_coeffs = divided_diff_coeffs_all_mpmath(w1_knots, w1_values)
 
-        knots_2 = np.linspace(b1, b0, r + 1).tolist()
-        values = self.example.fun(knots_2)
-        w2 = interp_newton(knots_2, values)
+        w2_knots = mpmath.linspace(a0, a1, r + 1)
+        w2_values = [self.example.fun_mp(x) for x in w2_knots]
+        w2_coeffs = divided_diff_coeffs_all_mpmath(w2_knots, w2_values)
 
-        z_arr = np.linspace(a1, b1, r + 1).tolist()
-        test_values = [abs(w1(z_i) - w2(z_i)) for z_i in z_arr]
+        z_arr = mpmath.linspace(a1, b1, r + 1)
+        w1_values_new = newton_poly_mpmath(w1_coeffs, w1_knots, z_arr)
+        w2_values_new = newton_poly_mpmath(w2_coeffs, w2_knots, z_arr)
+
+        test_values = [mpmath.fabs(w1_values_new[j] - w2_values_new[j]) for j in range(r + 1)]
         # / ((b0 - a0) ** (r + self.example.f__rho)) <- no need when all studied intervals have the same length
-
-        return max(test_values)
-
-    def a_test_2(self, a0, a1, b1, b0):
-        r = self.example.f__r
-
-        w1_knots = np.linspace(b1, b0, r + 1)
-        w1_values = self.example.fun(w1_knots)
-        w1_coeffs = divided_diff_coeffs(w1_knots, w1_values)[0, :]
-
-        w2_knots = np.linspace(a0, a1, r + 1)
-        w2_values = self.example.fun(w2_knots)
-        w2_coeffs = divided_diff_coeffs(w2_knots, w2_values)[0, :]
-
-        z_arr = np.linspace(a1, b1, r + 1)
-        w1_values_new = newton_poly(w1_coeffs, w1_knots, z_arr)
-        w2_values_new = newton_poly(w2_coeffs, w2_knots, z_arr)
-
-        test_values = [abs(w1_values_new[j] - w2_values_new[j]) for j in range(r + 1)]
 
         return max(test_values)

@@ -1,6 +1,7 @@
 from abc import ABC
 
 import matplotlib.pyplot as plt
+import mpmath
 import numpy as np
 
 rng = np.random.default_rng()
@@ -16,13 +17,27 @@ class ExampleFunction(ABC):
         self.f__class = f__class
         self.singularity = singularity
 
+    def get_noise(self):
+        return 0.0 if self.f__noise is None else rng.uniform(-self.f__noise, self.f__noise)
+
     def fun(self, x):
+        return self.raw_f(x) + self.get_noise()
+
+    def fun_mp(self, x):
+        return self.raw_f_mp(x) + self.get_noise()
+
+    def raw_f(self, x):
         pass
 
-    def plot(self):
+    def raw_f_mp(self, x):
+        pass
+
+    def plot(self, label=None):
         mesh = np.arange(self.f__a, self.f__b, 0.005, dtype='float64')
-        plt.scatter(mesh, self.fun(mesh), s=1)
-        plt.title(type(self).__name__)
+        plt.scatter(mesh, self.fun(mesh), s=1, label=label)
+        # plt.title(type(self).__name__)
+        if label is not None:
+            plt.legend()
         plt.show()
 
 
@@ -38,15 +53,17 @@ class Example1(ExampleFunction):
             singularity=np.pi
         )
 
-    @staticmethod
-    def raw_f(xx):
-        if 0 <= xx < np.pi:
-            return np.sin(xx - np.pi)
-        if np.pi <= xx <= 2 * np.pi + 0.5:
-            return np.sin(xx - np.pi - 0.5)
+    def raw_f(self, x):
+        if 0 <= x < np.pi:
+            return np.sin(x - np.pi)
+        if np.pi <= x <= 2 * np.pi + 0.5:
+            return np.sin(x - np.pi - 0.5)
 
-    def fun(self, x):
-        return f_values_with_noise(self.raw_f, self.f__noise, x)
+    def raw_f_mp(self, x):
+        if 0 <= x < mpmath.pi:
+            return mpmath.sin(x - mpmath.pi)
+        if mpmath.pi <= x <= 2 * mpmath.pi + 0.5:
+            return mpmath.sin(x - mpmath.pi - 0.5)
 
 
 class Example2(ExampleFunction):
@@ -61,15 +78,17 @@ class Example2(ExampleFunction):
             singularity=np.pi
         )
 
-    @staticmethod
-    def raw_f(xx):
-        if 0 <= xx < np.pi:
-            return np.sin(xx)
-        if np.pi <= xx <= 3 * np.pi:
-            return np.sin(xx - np.pi)
+    def raw_f(self, x):
+        if 0 <= x < np.pi:
+            return np.sin(x)
+        if np.pi <= x <= 3 * np.pi:
+            return np.sin(x - np.pi)
 
-    def fun(self, x):
-        return f_values_with_noise(self.raw_f, self.f__noise, x)
+    def raw_f_mp(self, x):
+        if 0 <= x < mpmath.pi:
+            return mpmath.sin(x)
+        if mpmath.pi <= x <= 3 * mpmath.pi:
+            return mpmath.sin(x - mpmath.pi)
 
 
 class Example3(ExampleFunction):
@@ -87,18 +106,31 @@ class Example3(ExampleFunction):
         )
         self.x_0 = x_0
 
-    def raw_f(self, xx):
-        def inner_f(xxx):
-            return 2 * (0.5 - (1 / np.pi) * (
-                    np.sin(np.pi * xxx) + (1 / 2) * np.sin(2 * np.pi * xxx) + (1 / 3) * np.sin(3 * np.pi * xxx)))
+    @staticmethod
+    def inner_f(x):
+        return 2 * (0.5 - (1 / np.pi) * (
+                np.sin(np.pi * x) +
+                (1 / 2) * np.sin(2 * np.pi * x) +
+                (1 / 3) * np.sin(3 * np.pi * x)))
 
-        if self.f__a <= xx <= self.singularity:
-            return inner_f(xx)
-        if self.singularity <= xx <= self.f__b:
-            return inner_f(xx + self.x_0)
+    @staticmethod
+    def inner_f_mp(x):
+        return 2 * (0.5 - (1 / mpmath.pi) * (
+                mpmath.sin(mpmath.pi * x) +
+                (1 / 2) * mpmath.sin(2 * mpmath.pi * x) +
+                (1 / 3) * mpmath.sin(3 * mpmath.pi * x)))
 
-    def fun(self, x):
-        return f_values_with_noise(self.raw_f, self.f__noise, x)
+    def raw_f(self, x):
+        if self.f__a <= x < self.singularity:
+            return self.inner_f(x)
+        if self.singularity <= x <= self.f__b:
+            return self.inner_f(x + self.x_0)
+
+    def raw_f_mp(self, x):
+        if self.f__a <= x < self.singularity:
+            return self.inner_f_mp(x)
+        if self.singularity <= x <= self.f__b:
+            return self.inner_f_mp(x + self.x_0)
 
 
 class Example4(ExampleFunction):
@@ -112,40 +144,14 @@ class Example4(ExampleFunction):
             f__rho=1,
             f__noise=f__noise,
             f__class='continuous',
-            singularity=rng.uniform(f__a + 1.5, f__b - 1.5)
+            singularity=rng.uniform(f__a + 2.5, f__b - 2.5)
         )
 
-    def raw_f(self, xx):
-        return np.cos(xx) + np.e ** (-8 * abs(xx - self.singularity))
+    def raw_f(self, x):
+        return np.cos(x) + np.e ** (-8 * abs(x - self.singularity))
 
-    def fun(self, x):
-        return f_values_with_noise(self.raw_f, self.f__noise, x)
-
-
-def f_values_with_noise(fun, noise, x):
-    values = f_values(fun, x)
-
-    if noise is not None:
-        values = add_noise(values, noise)
-
-    return values
-
-
-def f_values(fun, obj):
-    if isinstance(obj, (float, np.float64)):
-        return fun(obj)
-    elif isinstance(obj, (list, np.ndarray)):
-        return [fun(elem) for elem in obj]
-    raise Exception("obj has to be list or float")
-
-
-def add_noise(values, noise):
-    if isinstance(values, (float, np.float64)):
-        values = values + float(rng.uniform(-noise, noise))
-    elif isinstance(values, (list, np.ndarray)):
-        e = rng.uniform(-noise, noise, len(values))
-        values = [values[i] + e[i] for i in range(len(values))]
-    return values
+    def raw_f_mp(self, x):
+        return mpmath.cos(x) + mpmath.e ** (-8 * mpmath.fabs(x - self.singularity))
 
 
 def plot_all_examples():

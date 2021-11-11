@@ -6,7 +6,7 @@ from scipy import integrate
 
 logger = logging.getLogger(__name__)
 rng = np.random.default_rng()
-omitted_part_of_interval = 0.0
+omitted_part_of_interval = 1.0
 
 
 def norm_lp(f, interval, p):
@@ -55,9 +55,9 @@ def norm_infinity(f, interval, singularity=None):
             current += (step + randoms[counter % len(randoms)]) / step_reduction_ratio
 
             # TODO delete below commented code. It was added for debugging purposes.
-            # if is_near_singularity(current, singularity, margin):
-            #     current = singularity + margin
-            # logger.info("skipping interval with singularity during calculating error")
+            if is_near_singularity(current, singularity, margin):
+                current = singularity + margin
+            logger.info("skipping interval with singularity during calculation of error")
         else:
             current += step + randoms[counter % len(randoms)]
 
