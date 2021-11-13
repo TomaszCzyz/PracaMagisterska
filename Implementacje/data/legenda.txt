@@ -1,2 +1,0 @@
-alg2014 -> "Complexity of the derivative-free..."
-alg2015 -> "Approximation of piecewise Hölder functions..."

@@ -1,4 +1,5 @@
 import logging
+import math
 import multiprocessing as mp
 import os
 import sys
@@ -21,6 +22,7 @@ def apply_global_plot_styles():
     plt.rcParams['axes.linewidth'] = 0.1
     plt.rcParams['font.size'] = 7
     plt.rcParams['font.family'] = 'sans-serif'
+    plt.rcParams["figure.figsize"] = [6.4, 4.8 * 0.8]
     plt.rcParams['figure.dpi'] = 175
     plt.rcParams['savefig.dpi'] = 175
 
@@ -47,6 +49,13 @@ class ResultsCollector:
         self.finished_tasks = 0
         self.log10_errors_for_noise = {}
         self.log10_m_for_noise = {}
+        self.path = 'data/{}/{}/r_{}/p_{}/'.format(
+            self.data['algorithm_name'],
+            self.data['example_fun_name'],
+            self.data['f__r'],
+            self.data['p'])
+        if not os.path.exists(self.path):
+            os.makedirs(self.path)
 
     def callback_handler(self, args):
         """
@@ -87,13 +96,14 @@ class ResultsCollector:
         sorted_noises = sorted(self.log10_m_for_noise.keys(), key=lambda x: (x is not None, x), reverse=False)
         ref_noise = sorted_noises[0]  # we need a noise to reference data in dictionaries
 
-        x_min, x_max = min(self.log10_m_for_noise[ref_noise]), max(self.log10_m_for_noise[ref_noise])
+        x_values = self.log10_m_for_noise[ref_noise]
+        x_min, x_max = min(x_values), max(x_values)
 
         # data for plot of the theoretical error
         theoretical_error_exponent = -(self.data['f__r'] + 1)
-        m_original = np.array(np.floor(np.power(10, self.log10_m_for_noise[ref_noise])), dtype='float64')
+        m_original = np.array(np.floor(np.power(10, x_values)), dtype='float64')
         theoretical_error = np.power(m_original, theoretical_error_exponent)
-        reference_line = -np.log10(theoretical_error)  # - 2.0
+        reference_line = -np.log10(theoretical_error)
 
         markers = ['1', '2', '1', '2']
         colors = ['orange', 'grey', 'green', 'blue']
@@ -111,7 +121,7 @@ class ResultsCollector:
             subplot_nr += 1
 
         plt.plot(
-            sorted(self.log10_m_for_noise[ref_noise]), sorted(reference_line),
+            sorted(x_values)[:int(len(x_values) * 0.7)], sorted(reference_line)[:int(len(reference_line) * 0.7)],
             color='grey',
             linestyle='--',
             linewidth=1,
@@ -119,22 +129,17 @@ class ResultsCollector:
         )
 
         # description and general plot styles
-        plt.subplots_adjust(left=0.08, bottom=0.08, right=0.98, top=0.9, wspace=0.07, hspace=0.1)
+
+        base = 0.5
         plt.xlim([x_min - 0.1, x_max + 0.1])
-        plt.xticks(np.arange(np.floor(x_min), np.ceil(x_max), 0.5))
-        plt.grid(linewidth=0.5, linestyle=':')
+        plt.xticks(np.arange(base * round(x_min / base), base * round(x_max / base) + base, base))
         ax.xaxis.set_tick_params(width=0.5, color='grey')
         ax.yaxis.set_tick_params(width=0.5, color='grey')
+        fig.text(0.5, 0.008, r'$\log_{10}m$', ha='center')
+        fig.text(0.001, 0.5, r'$-\log_{10}err$', va='center', rotation='vertical')
+        plt.grid(linewidth=0.5, linestyle=':')
         plt.legend(numpoints=1)
-        fig.text(0.5, 0.02, r'$\log_{10}m$', ha='center')
-        fig.text(0.01, 0.5, r'$-\log_{10}err$', va='center', rotation='vertical')
-
-        plt.suptitle("{} for {}(r={}, p={})\nbased on {} sample functions ({})".format(
-            self.data['algorithm_name'], self.data['example_fun_name'],
-            self.data['f__r'],
-            self.data['p'],
-            self.data['executions_number'],
-            datetime.now()))
+        plt.tight_layout()
 
         if save:
             self.save_plot()
@@ -142,18 +147,14 @@ class ResultsCollector:
 
     def save_plot(self):
         """
-        Saves plot to directory: './data/<algorithm_name>/plot<nr>.jpg',
+        Saves plot to: './<self.path>/plot_<nr_of_evaluations>evaluations_<nr>.jpg',
         where <nr> is first loose number determined by current content of folder
         """
-        path = 'data/{}/'.format(self.data['algorithm_name'])
-        if not os.path.exists(path):
-            os.makedirs(path)
-
         plot_nr = 0
-        while os.path.exists("{}plot{}.jpg".format(path, plot_nr)):
+        while os.path.exists("{}plot_{}evaluation_{}.jpg".format(self.path, self.data['executions_number'], plot_nr)):
             plot_nr += 1
 
-        plt.savefig('{}plot{}.jpg'.format(path, plot_nr))
+        plt.savefig("{}plot_{}evaluation_{}.jpg".format(self.path, self.data['executions_number'], plot_nr))
 
     def print_status(self, args=None):
         """
@@ -164,9 +165,7 @@ class ResultsCollector:
         print("finished tasks: {}/{}".format(self.finished_tasks, self.tasks_number), end='\r')
 
     def save_results_to_file(self):
-        path = 'data/error_results.txt'
-
-        with open(path, 'a') as file:
+        with open(self.path + "error_results.txt", "a+") as file:
             file.write("Data from run of {}\n".format(self.data))
             file.write("log10_m_for_noise dict: {}\n)".format(json.dumps(self.log10_m_for_noise)))
             file.write("log10_errors_for_noise dict: {}\n)".format(json.dumps(self.log10_errors_for_noise)))
@@ -217,7 +216,7 @@ def calculate(repeat_count, knots_counts, deltas, algorithm_name, example_fun_na
     results_collector = ResultsCollector(tasks_number, extra_data, plot_threshold=None, save_results=True)
 
     if parallel:
-        with mp.Pool(processes=mp.cpu_count() - 4) as pool:
+        with mp.Pool(processes=mp.cpu_count() - 2) as pool:
             apply_results = []
             for knots_number in reversed(knots_counts):
                 for noise in deltas:
@@ -263,12 +262,12 @@ def main():
     logging.basicConfig(level=logging.INFO, filename='Calculate.log', format="%(asctime)s:%(message)s")
     logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 
-    log10_m_array = np.linspace(1.3, 4.0, num=30)  # 10 ** 4.7 =~ 50118; 10 ** 3.83 =~ 6827
+    log10_m_array = np.linspace(2.5, 4.5, num=30)  # 10 ** 4.7 =~ 50118; 10 ** 3.83 =~ 6827
 
     # input data for calculations
     m_array = [int(10 ** log10_m) for log10_m in log10_m_array]
     noises = [None, 1e-12, 1e-8, 1e-4]
-    repeat_count = 200
+    repeat_count = 3
     alg = 'alg2014mp'
     example = 'Example4'
     p_norm = 'infinity'

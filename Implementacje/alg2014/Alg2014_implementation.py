@@ -8,7 +8,7 @@ from Examples import ExampleFunction
 from Utilis import interp_newton, divided_diff_coeffs, newton_poly
 
 logger = logging.getLogger(__name__)
-mpmath.mp.dps = 50
+mpmath.mp.dps = 30
 
 
 class Alg2014:
