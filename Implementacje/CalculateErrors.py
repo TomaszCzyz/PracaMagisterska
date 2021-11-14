@@ -6,6 +6,7 @@ import sys
 from datetime import datetime
 
 import matplotlib.pyplot as plt
+import mpmath
 import numpy as np
 import json
 
@@ -129,7 +130,6 @@ class ResultsCollector:
         )
 
         # description and general plot styles
-
         base = 0.5
         plt.xlim([x_min - 0.1, x_max + 0.1])
         plt.xticks(np.arange(base * round(x_min / base), base * round(x_max / base) + base, base))
@@ -216,7 +216,7 @@ def calculate(repeat_count, knots_counts, deltas, algorithm_name, example_fun_na
     results_collector = ResultsCollector(tasks_number, extra_data, plot_threshold=None, save_results=True)
 
     if parallel:
-        with mp.Pool(processes=mp.cpu_count() - 2) as pool:
+        with mp.Pool(processes=mp.cpu_count() - 4) as pool:
             apply_results = []
             for knots_number in reversed(knots_counts):
                 for noise in deltas:
@@ -224,11 +224,12 @@ def calculate(repeat_count, knots_counts, deltas, algorithm_name, example_fun_na
                           .format(repeat_count, knots_number, noise))
 
                     function = create_example(example_fun_name, noise, f__r=f__r)
+                    # function.noise = 0.5 * mpmath.power((function.f__b - function.f__a) / knots_number, (f__r + 1))
                     alg = create_algorithm(algorithm_name, function, knots_number, p)
 
                     apply_result = pool.apply_async(
                         func=worst_case_error_n,
-                        # args=(alg, 1 if noise is None else repeat_count, p),
+                        # args=(alg, 1 if noise is None else repeat_count, p),  # for NOT random singularity
                         args=(alg, repeat_count, p),
                         callback=results_collector.callback_handler)
 
@@ -248,7 +249,7 @@ def calculate(repeat_count, knots_counts, deltas, algorithm_name, example_fun_na
 
                 result_tuple = worst_case_error_n(
                     alg=alg,
-                    # repeat_count=1 if noise is None else repeat_count,
+                    # repeat_count=1 if noise is None else repeat_count,  # for NOT random singularity
                     repeat_count=repeat_count,
                     lp_norm=p
                 )
@@ -262,18 +263,18 @@ def main():
     logging.basicConfig(level=logging.INFO, filename='Calculate.log', format="%(asctime)s:%(message)s")
     logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 
-    log10_m_array = np.linspace(2.5, 4.5, num=30)  # 10 ** 4.7 =~ 50118; 10 ** 3.83 =~ 6827
+    log10_m_array = np.linspace(1.0, 2.5, num=30)  # 10 ** 4.7 =~ 50118; 10 ** 3.83 =~ 6827
 
     # input data for calculations
     m_array = [int(10 ** log10_m) for log10_m in log10_m_array]
-    noises = [None, 1e-12, 1e-8, 1e-4]
-    repeat_count = 3
+    noises = [None, 1e-7, 1e-5, 1e-3]
+    repeat_count = 200
     alg = 'alg2014mp'
-    example = 'Example4'
-    p_norm = 'infinity'
+    example = 'Example1'
+    p_norm = 2  # 'infinity'
     r = 4
 
-    # create_example(example).plot()
+    create_example(example).plot()
 
     start_datetime = datetime.now()
     logging.info('Started at {}'.format(start_datetime.strftime("%d/%m/%Y %H:%M:%S")))

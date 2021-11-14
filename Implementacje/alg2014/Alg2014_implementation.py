@@ -165,7 +165,7 @@ class Alg2014:
             knot1, knot2 = current_knot + self.d, next_knot - self.d
 
             knots = np.linspace(knot1, knot2, self.example.f__r + 1)
-            values = self.example.fun(knots)
+            values = [self.example.fun(x) for x in knots]
             polynomial = interp_newton(knots, values)
 
             approx.append((knot1, polynomial))
@@ -194,11 +194,11 @@ class Alg2014:
         r = self.example.f__r
 
         knots_1 = np.linspace(a0, a1, r + 1).tolist()
-        values = self.example.fun(knots_1)
+        values = [self.example.fun(x) for x in knots_1]
         w1 = interp_newton(knots_1, values)
 
         knots_2 = np.linspace(b1, b0, r + 1).tolist()
-        values = self.example.fun(knots_2)
+        values = [self.example.fun(x) for x in knots_2]
         w2 = interp_newton(knots_2, values)
 
         z_arr = np.linspace(a1, b1, r + 1).tolist()
@@ -211,11 +211,11 @@ class Alg2014:
         r = self.example.f__r
 
         w1_knots = np.linspace(b1, b0, r + 1)
-        w1_values = self.example.fun(w1_knots)
+        w1_values = [self.example.fun(x) for x in w1_knots]
         w1_coeffs = divided_diff_coeffs(w1_knots, w1_values)[0, :]
 
         w2_knots = np.linspace(a0, a1, r + 1)
-        w2_values = self.example.fun(w2_knots)
+        w2_values = [self.example.fun(x) for x in w2_knots]
         w2_coeffs = divided_diff_coeffs(w2_knots, w2_values)[0, :]
 
         z_arr = np.linspace(a1, b1, r + 1)

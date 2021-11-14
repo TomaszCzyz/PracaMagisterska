@@ -387,7 +387,7 @@
  {\mgr@other@font Wydzia{\m@l}\ Matematyki Stosowanej}\par\vspace{-\smallskipamount}
   \noindent\rule{\textwidth}{.4pt}\\[-2.85\smallskipamount]
   \noindent\rule{\textwidth}{1pt}\\[\smallskipamount]
- {\mgr@other@font Krak{\m@o}w 2019}
+ {\mgr@other@font Krak{\m@o}w 2021}
   \end{center} }
 %------- Oswiadczenie --------% 
   \newpage\thispagestyle{empty}

@@ -22,7 +22,7 @@ class Alg2014mp:
     approximation = alg.run()
     """
 
-    def __init__(self, example: ExampleFunction, n_knots, mpmath_dps=None):
+    def __init__(self, example: ExampleFunction, n_knots):
 
         self.example = example
         self.m = n_knots
@@ -42,6 +42,7 @@ class Alg2014mp:
         self.is_interval_found = False
         self.b_set = None
         self.m_set = None
+        self.fun_evaluations_counter = self.m + self.m * 2 * self.example.f__r
 
     def run(self):
         logger.info("\nexecuting alg2014mp dla m={} and noise={}".format(self.m, self.example.f__noise))
@@ -119,7 +120,7 @@ class Alg2014mp:
         bisection is based on A_test values
         """
 
-        if self.is_interval_found is False:
+        if not self.is_interval_found:
             return
 
         self.b_set = {self.step1_a, self.step1_b}
@@ -142,6 +143,8 @@ class Alg2014mp:
                 b_new = v
             else:
                 a_new = v
+
+        self.fun_evaluations_counter += (iter_count + 1) * 2 * self.example.f__r
 
         logger.info('step2 - iterations: {}'.format(iter_count))
         logger.info("step2 - b_set(len:{}): {}".format(len(self.b_set), sorted(self.b_set)))

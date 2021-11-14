@@ -34,7 +34,7 @@ class ExampleFunction(ABC):
 
     def plot(self, label=None):
         mesh = np.arange(self.f__a, self.f__b, 0.005, dtype='float64')
-        plt.scatter(mesh, self.fun(mesh), s=1, label=label)
+        plt.scatter(mesh, [self.fun(x) for x in mesh], s=1, label=label)
         # plt.title(type(self).__name__)
         if label is not None:
             plt.legend()
@@ -43,55 +43,26 @@ class ExampleFunction(ABC):
 
 class Example1(ExampleFunction):
     def __init__(self, f__noise=None, f__r=3):
+        f__a = 0.0
+        f__b = 2 * np.pi
         super().__init__(
-            f__a=0,
-            f__b=2 * np.pi + 0.5,
-            f__r=f__r,
-            f__rho=1,
-            f__noise=f__noise,
-            f__class='discontinuous',
-            singularity=np.pi
-        )
-
-    def raw_f(self, x):
-        if 0 <= x < np.pi:
-            return np.sin(x - np.pi)
-        if np.pi <= x <= 2 * np.pi + 0.5:
-            return np.sin(x - np.pi - 0.5)
-
-    def raw_f_mp(self, x):
-        if 0 <= x < mpmath.pi:
-            return mpmath.sin(x - mpmath.pi)
-        if mpmath.pi <= x <= 2 * mpmath.pi + 0.5:
-            return mpmath.sin(x - mpmath.pi - 0.5)
-
-
-class Example2(ExampleFunction):
-    def __init__(self, f__noise=None, f__r=3):
-        super().__init__(
-            f__a=0,
-            f__b=3 * np.pi,
+            f__a=f__a,
+            f__b=f__b,
             f__r=f__r,
             f__rho=1,
             f__noise=f__noise,
             f__class='continuous',
-            singularity=np.pi
+            singularity=rng.uniform(f__a + 2.5, f__b - 2.5)
         )
 
     def raw_f(self, x):
-        if 0 <= x < np.pi:
-            return np.sin(x)
-        if np.pi <= x <= 3 * np.pi:
-            return np.sin(x - np.pi)
+        return np.cos(x) + np.e ** (-8 * abs(x - self.singularity))
 
     def raw_f_mp(self, x):
-        if 0 <= x < mpmath.pi:
-            return mpmath.sin(x)
-        if mpmath.pi <= x <= 3 * mpmath.pi:
-            return mpmath.sin(x - mpmath.pi)
+        return mpmath.cos(x) + mpmath.e ** (-8 * mpmath.fabs(x - self.singularity))
 
 
-class Example3(ExampleFunction):
+class Example2(ExampleFunction):
     def __init__(self, f__noise=None, f__r=3, x_0=0.5):
         f__a = 0.0
         f__b = 4.0 - x_0
@@ -133,25 +104,54 @@ class Example3(ExampleFunction):
             return self.inner_f_mp(x + self.x_0)
 
 
+class Example3(ExampleFunction):
+    def __init__(self, f__noise=None, f__r=3):
+        super().__init__(
+            f__a=0,
+            f__b=2 * np.pi + 0.5,
+            f__r=f__r,
+            f__rho=1,
+            f__noise=f__noise,
+            f__class='discontinuous',
+            singularity=np.pi
+        )
+
+    def raw_f(self, x):
+        if 0 <= x < np.pi:
+            return np.sin(x - np.pi)
+        if np.pi <= x <= 2 * np.pi + 0.5:
+            return np.sin(x - np.pi - 0.5)
+
+    def raw_f_mp(self, x):
+        if 0 <= x < mpmath.pi:
+            return mpmath.sin(x - mpmath.pi)
+        if mpmath.pi <= x <= 2 * mpmath.pi + 0.5:
+            return mpmath.sin(x - mpmath.pi - 0.5)
+
+
 class Example4(ExampleFunction):
     def __init__(self, f__noise=None, f__r=3):
-        f__a = 0.0
-        f__b = 2 * np.pi
         super().__init__(
-            f__a=f__a,
-            f__b=f__b,
+            f__a=0,
+            f__b=3 * np.pi,
             f__r=f__r,
             f__rho=1,
             f__noise=f__noise,
             f__class='continuous',
-            singularity=rng.uniform(f__a + 2.5, f__b - 2.5)
+            singularity=np.pi
         )
 
     def raw_f(self, x):
-        return np.cos(x) + np.e ** (-8 * abs(x - self.singularity))
+        if 0 <= x < np.pi:
+            return np.sin(x)
+        if np.pi <= x <= 3 * np.pi:
+            return np.sin(x - np.pi)
 
     def raw_f_mp(self, x):
-        return mpmath.cos(x) + mpmath.e ** (-8 * mpmath.fabs(x - self.singularity))
+        if 0 <= x < mpmath.pi:
+            return mpmath.sin(x)
+        if mpmath.pi <= x <= 3 * mpmath.pi:
+            return mpmath.sin(x - mpmath.pi)
 
 
 def plot_all_examples():
