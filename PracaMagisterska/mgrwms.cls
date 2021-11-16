@@ -455,10 +455,12 @@ zapewnienia prawid{\m@l}owego utrzymania i rozwoju tych baz oraz wsp\'o{\m@l}pra
   \chapter*{Streszczenie}
   \setcounter{mgr@fin@pom}{\value{page}}
 	\mgrafterthisheadother[\thepage]{Streszczenie}}
- {\par\bigskip%
-  \noindent{\bfseries\large S{\m@l}owa kluczowe}\nopagebreak\par\smallskip\nopagebreak% 
-  \mgr@wciecie{\parindent}{\@slowakluczowe}\par\mbox{}\vspace{-\baselineskip}%
-  \ifthenelse{\value{mgr@fin@pom} = \value{page}}{}{\thispagestyle{mgrclos}}}
+ {
+% \par\bigskip%
+%  \noindent{\bfseries\large S{\m@l}owa kluczowe}\nopagebreak\par\smallskip\nopagebreak% 
+%  \mgr@wciecie{\parindent}{\@slowakluczowe}\par\mbox{}\vspace{-\baselineskip}%
+%  \ifthenelse{\value{mgr@fin@pom} = \value{page}}{}{\thispagestyle{mgrclos}}
+ }
 %---------------------------%
 \newenvironment{abstract}
  {\def\chaptermark##1{\@mkboth{\mgr@head@style ##1}{\mgr@head@style ##1}}
