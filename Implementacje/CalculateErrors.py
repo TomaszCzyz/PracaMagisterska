@@ -263,14 +263,14 @@ def main():
     logging.basicConfig(level=logging.INFO, filename='Calculate.log', format="%(asctime)s:%(message)s")
     logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 
-    log10_m_array = np.linspace(1.0, 3.5, num=30)  # 10 ** 4.7 =~ 50118; 10 ** 3.83 =~ 6827
+    log10_m_array = np.linspace(1.0, 3.0, num=30)  # 10 ** 4.7 =~ 50118; 10 ** 3.83 =~ 6827
 
     # input data for calculations
     m_array = [int(10 ** log10_m) for log10_m in log10_m_array]
-    noises = [None, 1e-7, 1e-5, 1e-3]
-    repeat_count = 200
+    noises = [None, 1e-9, 1e-6, 1e-3]
+    repeat_count = 500
     alg = 'alg2014mp'
-    example = 'Example2'
+    example = 'Example1'
     p_norm = 2  # 'infinity'
     r = 4
 

@@ -467,10 +467,12 @@ zapewnienia prawid{\m@l}owego utrzymania i rozwoju tych baz oraz wsp\'o{\m@l}pra
   \chapter*{Abstract}
 	\setcounter{mgr@fin@pom}{\value{page}}
 	\mgrafterthisheadother[\thepage]{Abstract}}
- {\par\bigskip%
-  \noindent{\bfseries\large Key words}\nopagebreak\par\smallskip\nopagebreak% 
-  \mgr@wciecie{\parindent}{\@keywords}\par\mbox{}\vspace{-\baselineskip}%
-  \ifthenelse{\value{mgr@fin@pom} = \value{page}}{}{\thispagestyle{mgrclos}}}
+ {
+  % \par\bigskip%
+  % \noindent{\bfseries\large Key words}\nopagebreak\par\smallskip\nopagebreak% 
+  % \mgr@wciecie{\parindent}{\@keywords}\par\mbox{}\vspace{-\baselineskip}%
+  % \ifthenelse{\value{mgr@fin@pom} = \value{page}}{}{\thispagestyle{mgrclos}}
+ }
 %-------------- Wstep/Wprowadzenie ----------------%
 \newenvironment{wstep}[1][Wst{\m@e}p]
  { \def\chaptermark##1{\@mkboth{\mgr@head@style ##1}{\mgr@head@style ##1}}
@@ -481,6 +483,14 @@ zapewnienia prawid{\m@l}owego utrzymania i rozwoju tych baz oraz wsp\'o{\m@l}pra
  {\par\mbox{}\vspace{-\baselineskip}
   \ifthenelse{\value{mgr@fin@pom} = \value{page}}{}{\thispagestyle{mgrclos}}%
   \gdef\chaptermark##1{\@mkboth{\mgr@head@style\chaptername\ \thechapter.\  ##1}{}}}
+%---------------------------%
+\newenvironment{zakonczenie}
+{\def\chaptermark##1{\@mkboth{\mgr@head@style ##1}{\mgr@head@style ##1}}
+ \chapter*{Zakończenie}
+ \setcounter{mgr@fin@pom}{\value{page}}
+ \mgrafterthisheadother[\thepage]{Zakończenie}}
+{
+}
 %-------------- Spis tresci ----------------%
 \newcommand{\mgrtocfont}{\secondarysize}
    %------- Wyglad calosci --------%
