@@ -484,11 +484,11 @@ zapewnienia prawid{\m@l}owego utrzymania i rozwoju tych baz oraz wsp\'o{\m@l}pra
   \ifthenelse{\value{mgr@fin@pom} = \value{page}}{}{\thispagestyle{mgrclos}}%
   \gdef\chaptermark##1{\@mkboth{\mgr@head@style\chaptername\ \thechapter.\  ##1}{}}}
 %---------------------------%
-\newenvironment{zakonczenie}
+\newenvironment{podsumowanie}
 {\def\chaptermark##1{\@mkboth{\mgr@head@style ##1}{\mgr@head@style ##1}}
- \chapter*{Zakończenie}
+ \chapter*{Podsumowanie}
  \setcounter{mgr@fin@pom}{\value{page}}
- \mgrafterthisheadother[\thepage]{Zakończenie}}
+ \mgrafterthisheadother[\thepage]{Podsumowanie}}
 {
 }
 %-------------- Spis tresci ----------------%
