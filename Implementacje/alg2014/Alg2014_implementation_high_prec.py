@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 mpmath.mp.dps = 50
 
 
-class Alg2014mp:
+class AlgKPmp:
     """
     example - function to approximate (containing data about class parameters, interval and noise)
     n_knots - initial mesh resolution

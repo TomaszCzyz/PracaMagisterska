@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 mpmath.mp.dps = 30
 
 
-class Alg2014:
+class AlgKP:
     """
     example - function to approximate (containing data about class parameters, interval and noise)
     n_knots - initial mesh resolution
@@ -64,7 +64,7 @@ class Alg2014:
                 continue
             iter_count += 1
 
-            test_result = self.a_test_2(
+            test_result = self.a_test(
                 self.t[i],
                 self.t[i] + self.d,
                 self.t[i + 1] - self.d,
@@ -120,8 +120,8 @@ class Alg2014:
             v = (a_new + b_new) / 2
             self.b_set.append(v)
 
-            a1 = self.a_test_2(a_new, a_new + self.d, v - self.d, v)
-            a2 = self.a_test_2(v, v + self.d, b_new - self.d, b_new)
+            a1 = self.a_test(a_new, a_new + self.d, v - self.d, v)
+            a2 = self.a_test(v, v + self.d, b_new - self.d, b_new)
 
             if abs(a1 - a2) < 1e-14:
                 break
@@ -193,23 +193,6 @@ class Alg2014:
     def a_test(self, a0, a1, b1, b0):
         r = self.example.f__r
 
-        knots_1 = np.linspace(a0, a1, r + 1).tolist()
-        values = [self.example.fun(x) for x in knots_1]
-        w1 = interp_newton(knots_1, values)
-
-        knots_2 = np.linspace(b1, b0, r + 1).tolist()
-        values = [self.example.fun(x) for x in knots_2]
-        w2 = interp_newton(knots_2, values)
-
-        z_arr = np.linspace(a1, b1, r + 1).tolist()
-        test_values = [abs(w1(z_i) - w2(z_i)) for z_i in z_arr]
-        # / ((b0 - a0) ** (r + self.example.f__rho)) <- no need when all studied intervals have the same length
-
-        return max(test_values)
-
-    def a_test_2(self, a0, a1, b1, b0):
-        r = self.example.f__r
-
         w1_knots = np.linspace(b1, b0, r + 1)
         w1_values = [self.example.fun(x) for x in w1_knots]
         w1_coeffs = divided_diff_coeffs(w1_knots, w1_values)[0, :]
@@ -223,5 +206,6 @@ class Alg2014:
         w2_values_new = newton_poly(w2_coeffs, w2_knots, z_arr)
 
         test_values = [abs(w1_values_new[j] - w2_values_new[j]) for j in range(r + 1)]
+        # / ((b0 - a0) ** (r + self.example.f__rho)) <- no need when all studied intervals have the same length
 
         return max(test_values)

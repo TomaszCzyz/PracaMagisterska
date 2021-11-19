@@ -1,12 +1,10 @@
 import logging
-import math
 import multiprocessing as mp
 import os
 import sys
 from datetime import datetime
 
 import matplotlib.pyplot as plt
-import mpmath
 import numpy as np
 import json
 
@@ -14,9 +12,9 @@ import json
 # They are instantiate by globals() function for all classes with name like 'Example*'
 from Examples import Example1, Example2, Example3, Example4
 from Utilis import worst_case_error_n
-from alg2014.Alg2014_implementation import Alg2014
-from alg2014.Alg2014_implementation_high_prec import Alg2014mp
-from alg2015.Alg2015_implementation import Alg2015
+from alg2014.Alg2014_implementation import AlgKP
+from alg2014.Alg2014_implementation_high_prec import AlgKPmp
+from alg2015.Alg2015_implementation import AlgMP
 
 
 def apply_global_plot_styles():
@@ -141,6 +139,13 @@ class ResultsCollector:
         plt.legend(numpoints=1)
         plt.tight_layout()
 
+        plt.suptitle("{} for {}(r={}, p={})\nbased on {} sample functions ({})".format(
+            self.data['algorithm_name'], self.data['example_fun_name'],
+            self.data['f__r'],
+            self.data['p'],
+            self.data['executions_number'],
+            datetime.now()))
+
         if save:
             self.save_plot()
         plt.show()
@@ -187,12 +192,12 @@ def create_algorithm(algorithm_name, example_function, knots_number, p=2):
     """
     Create instance of algorithm with specified data.
     """
-    if algorithm_name.lower() == 'alg2014':
-        return Alg2014(example_function, knots_number)
-    if algorithm_name.lower() == 'alg2014mp':
-        return Alg2014mp(example_function, knots_number)
-    if algorithm_name.lower() == 'alg2015':
-        return Alg2015(example_function, knots_number, p)
+    if algorithm_name.lower() == 'AlgKP'.lower():
+        return AlgKP(example_function, knots_number)
+    if algorithm_name.lower() == 'AlgKPmp'.lower():
+        return AlgKPmp(example_function, knots_number)
+    if algorithm_name.lower() == 'AlgMP'.lower():
+        return AlgMP(example_function, knots_number, p)
 
     raise Exception("incorrect algorithm name")
 
@@ -203,7 +208,9 @@ def calculate(repeat_count, knots_counts, deltas, algorithm_name, example_fun_na
     Calculations are repeated 'n_times' for each knots count from 'array'.
     This method returns 'ResultCollector' class, which stores all collected results.
 
-    Note, for infinity norm pass the string p='infinity'
+    For infinity norm pass the string p='infinity'.
+    If you want to override regularity of function use 'f__r' parameter.
+    Set parallel=True for parallel computation
     """
     extra_data = {
         'algorithm_name': algorithm_name,
@@ -216,7 +223,7 @@ def calculate(repeat_count, knots_counts, deltas, algorithm_name, example_fun_na
     results_collector = ResultsCollector(tasks_number, extra_data, plot_threshold=None, save_results=True)
 
     if parallel:
-        with mp.Pool(processes=mp.cpu_count() - 4) as pool:
+        with mp.Pool(processes=mp.cpu_count() - 2) as pool:
             apply_results = []
             for knots_number in reversed(knots_counts):
                 for noise in deltas:
@@ -224,7 +231,6 @@ def calculate(repeat_count, knots_counts, deltas, algorithm_name, example_fun_na
                           .format(repeat_count, knots_number, noise))
 
                     function = create_example(example_fun_name, noise, f__r=f__r)
-                    # function.noise = 0.5 * mpmath.power((function.f__b - function.f__a) / knots_number, (f__r + 1))
                     alg = create_algorithm(algorithm_name, function, knots_number, p)
 
                     apply_result = pool.apply_async(
@@ -263,30 +269,28 @@ def main():
     logging.basicConfig(level=logging.INFO, filename='Calculate.log', format="%(asctime)s:%(message)s")
     logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 
-    log10_m_array = np.linspace(1.0, 3.0, num=30)  # 10 ** 4.7 =~ 50118; 10 ** 3.83 =~ 6827
-
     # input data for calculations
-    m_array = [int(10 ** log10_m) for log10_m in log10_m_array]
+    m_array = [int(10 ** log10_m) for log10_m in np.linspace(1.0, 3.0, num=30)]  # 10 ** 4.7 =~ 50118;
     noises = [None, 1e-9, 1e-6, 1e-3]
     repeat_count = 500
-    alg = 'alg2014mp'
+    alg = 'algKPmp'  # 'algKPmp' 'algKP' 'algMP'
     example = 'Example1'
-    p_norm = 2  # 'infinity'
+    p_norm = 'infinity'
     r = 4
 
     create_example(example).plot()
 
-    start_datetime = datetime.now()
-    logging.info('Started at {}'.format(start_datetime.strftime("%d/%m/%Y %H:%M:%S")))
+    start_time = datetime.now()
+    logging.info('Started at {}'.format(start_time.strftime("%d/%m/%Y %H:%M:%S")))
 
     results_collector = calculate(repeat_count, m_array, noises, alg, example, p=p_norm, parallel=True, f__r=r)
     results_collector.plot_results(save=True)
 
-    end_datetime = datetime.now()
-    processing_time = end_datetime - start_datetime
+    end_time = datetime.now()
+    processing_time = end_time - start_time
 
     logging.info('Finished at {} (execution time: {})'.format(
-        end_datetime.strftime("%d/%m/%Y %H:%M:%S"), str(processing_time)))
+        end_time.strftime("%d/%m/%Y %H:%M:%S"), str(processing_time)))
 
     return results_collector
 

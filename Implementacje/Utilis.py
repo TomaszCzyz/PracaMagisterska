@@ -53,11 +53,6 @@ def norm_infinity(f, interval, singularity=None):
         # more dense close to edge and singularity
         if current < start + margin or current > stop - margin or is_near_singularity(current, singularity, margin):
             current += (step + randoms[counter % len(randoms)]) / step_reduction_ratio
-
-            # TODO delete below commented code. It was added for debugging purposes.
-            # if is_near_singularity(current, singularity, margin):
-            #     current = singularity + margin
-            # logger.info("skipping interval with singularity during calculation of error")
         else:
             current += step + randoms[counter % len(randoms)]
 
@@ -69,7 +64,7 @@ def norm_infinity(f, interval, singularity=None):
 def worst_case_error(alg, lp_norm=2):
     """
     Calculates error of approximation for given algorithm.
-    Function used for comparison is stored in algorithm as part of 'example' function
+    Function used for comparison is stored in algorithm object as part of 'example' function
     """
     approximation = alg.run()
     original_func = alg.example.raw_f
@@ -100,7 +95,7 @@ def worst_case_error_n(alg, repeat_count, lp_norm=2):
     error = worst_case_error_n(
         alg=alg,
         repeat_count=100
-    )[0]  # <- if only interested in error
+    )[0]  # <- "[0]" if only interested in error
     """
     max_error = np.max([worst_case_error(alg, lp_norm) for _ in range(repeat_count)])
 
@@ -139,6 +134,8 @@ def interp_newton(xvals, yvals):
     This method combines two steps:
     1. calculate coefficients
     2. create function depending on these coefficients
+
+    It is basically divided_diff_coeffs + newton_poly, but it is more convenient to use in some cases.
     """
     assert len(xvals) == len(yvals)
     nbr_data_points = len(xvals)
@@ -162,7 +159,6 @@ def interp_newton(xvals, yvals):
             iter_val = (delta_y / delta_x)
             iter_data.append(iter_val)
 
-            # append top-most entries in tree to coeffs =>
             if i == 0:
                 coeffs.append(iter_val)
 

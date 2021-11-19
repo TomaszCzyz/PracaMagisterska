@@ -10,10 +10,11 @@ from Utilis import interp_newton
 logger = logging.getLogger(__name__)
 
 
-class Alg2015:
+class AlgMP:
     """
     example - function to approximate (containing data about class parameters, interval and noise)
     n_knots - initial mesh resolution
+    p - needed to determine break condition in steps (to calculate 'd')
 
     Execution example:
     alg = Alg2015(example=Example2(None), n_knots=1234, p=2)
@@ -23,17 +24,17 @@ class Alg2015:
     def __init__(self, example: ExampleFunction, n_knots, p):
         self.example = example
         self.m = n_knots
-        self.p = 10 if p == 'infinity' else p
 
         self.t = np.linspace(self.example.f__a, self.example.f__b, self.m + 1, dtype='float64')
         self.y = [example.fun(x) for x in self.t]
         self.h = (self.example.f__b - self.example.f__a) / self.m
 
-        # "d" can easily reach edge precision!!!
+        # watch out: "d" can easily reach edge precision!!!
         if example.f__class == 'continuous':
             self.d = (self.example.f__r + 1) * self.h + 1e-14
         else:
-            omega = self.h ** ((self.example.f__r + self.example.f__rho) * self.p + 1)
+            p = 10 if p == 'infinity' else p
+            omega = self.h ** ((self.example.f__r + self.example.f__rho) * p + 1)
             self.d = omega if omega > 5e-15 else 5e-15
 
         # following values could be local, but they are defined as class values
@@ -117,7 +118,6 @@ class Alg2015:
         while True:
             iter_count += 1
 
-            # z_max = max_local_primitive(inter_diff, u, v)
             res = minimize_scalar(fun=lambda x: -1.0 * inter_diff(x), bounds=(u, v), method='bounded',
                                   options={'xatol': xatol, 'maxiter': 100, 'disp': 0})
 
@@ -147,7 +147,7 @@ class Alg2015:
         res = minimize_scalar(fun=lambda x: inter_diff(x), bounds=(u_3, v_3), method='bounded',
                               options={'xatol': 1e-14, 'maxiter': 200, 'disp': 0})
         if not res['success']:
-            logger.info("step3 - WATCH OUT!!! - could not minimize function to calculate ksi")
+            logger.info("step3 - could not minimize function to calculate ksi")
             return
 
         ksi = res['x']
@@ -162,7 +162,6 @@ class Alg2015:
         approx = []
         r = self.example.f__r
         period = self.example.f__b - self.example.f__a
-        # -1 -> because t[0] == t[-1]
         rolled_t = np.concatenate((self.t[self.i_max + r + 1 + 1:-1], self.t[:self.i_max]))
         rolled_y = np.concatenate((self.y[self.i_max + r + 1 + 1:-1], self.y[:self.i_max]))
 

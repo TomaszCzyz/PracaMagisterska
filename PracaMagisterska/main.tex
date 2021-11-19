@@ -240,16 +240,16 @@
 
     W ogólności, optymalność algorytmu oraz złożoność problemu zależą od przyjętego modelu obliczeniowego. Model jest określony poprzez sposób w jaki błąd i koszt algorytmu są zdefiniowane. 
     
-    Jeżeli za błąd i koszt przyjmujemy wydajność na najtrudniejszym spośród wszystkich problemów w danej klasie, wtedy mówimy o \textit{modelu najgorszego przypadku}. Innymi często rozważanymi modelami są: model probablistyczny, średni, mieszany, losowy czy asymptotyczny, jednak nimi nie będziemy zajmować się w tej pracy.
+    Jeżeli za błąd i koszt przyjmujemy wydajność na najtrudniejszym spośród wszystkich problemów w danej klasie, wtedy mówimy o \textit{modelu najgorszego przypadku}. Innymi często rozważanymi modelami są: model probabilistyczny, średni, mieszany, losowy czy asymptotyczny, jednak nimi nie będziemy zajmować się w tej pracy.
 
-    Niech $N : F \rightarrow 2^{Y}$ będzie operatorem inforamcji a $S: F \rightarrow G$ operatorem rozwiązania dla $G=L^{p}$. Poprzez \textit{błąd najgorszego przypadku} algorytmu $\varphi : Y \rightarrow L^{p}$ na zbiorze $E \subset F$ rozumiemy:
+    Niech $N : F \rightarrow 2^{Y}$ będzie operatorem informacji a $S: F \rightarrow G$ operatorem rozwiązania dla $G=L^{p}$. Poprzez \textit{błąd najgorszego przypadku} algorytmu $\varphi : Y \rightarrow L^{p}$ na zbiorze $E \subset F$ rozumiemy:
     \begin{equation*}
         e_{p}^{\wor}(\varphi, N, E) = \sup_{f \in E} \sup_{y \in N(f)} \|S(f) - \varphi(y) \|_{L^{p}}
     \end{equation*}
 
     Celem jest znalezienia algorytmu, który minimalizuje błąd najgorszego przypadku względem wszystkich algorytmów w danej klasie. Algorytm osiągający to minimum nazywamy \textit{optymalnym}.
 
-    W tej pracy rozważamy algorytmy aproksymujące funkcje z osobliwością, które wykorzystują określoną liczbę wartości funkcji. Oznaczmy przez $\mathcal{N}(n, \delta)$ klasę wszystkich (adaptacyjnych) informacji $N$, które używają co najwyżej $n$ ewaluacji funkcji, z precyzją $\delta$ każda. Wtedy przez \textit{minimalany błąd najgorszego przypadku} w klasie $E$, który może zostać osiągnięty przez algorytm używający informacji o co najwyżej $n$ wartościach funkcji z precyzją $\delta$ rozumiemy:
+    W tej pracy rozważamy algorytmy aproksymujące funkcje z osobliwością, które wykorzystują określoną liczbę wartości funkcji. Oznaczmy przez $\mathcal{N}(n, \delta)$ klasę wszystkich (adaptacyjnych) informacji $N$, które używają co najwyżej $n$ ewaluacji funkcji, z precyzją $\delta$ każda. Wtedy przez \textit{minimalny błąd najgorszego przypadku} w klasie $E$, który może zostać osiągnięty przez algorytm używający informacji o co najwyżej $n$ wartościach funkcji z precyzją $\delta$ rozumiemy:
 
     \begin{equation*}
         r^{\wor}_{p}(n, \delta, E) = \inf\{ e_{p}^{\wor}(\varphi, N, E) : \; \varphi \text{ używa } N \in \mathcal{N}(n, \delta) \}
@@ -459,7 +459,7 @@
         \begin{equation*}
             f_{s}(x) = \frac{M}{T}\left( x\1_{[0,s)}(x) + (x-T)\1_{[s,T)}(x) \right), \quad 0 \leq x \leq T.
         \end{equation*}
-        Niech $N$ będzie dowolną (adaptacyjną) informacją używającą nie więcej niż $n$ ewaluacji funkcji. Ponieważ dla każdego ustalonego $x$, funkcja $f_{s}(x)$ może przyjmować tylko dwie wartości w zależności czy $s \leq x$ lub $s > x$, to całkowita liczba punktów użytych przez $N$ dla klasy $S(M)$ wynosi co najwyżej $2^{n}-1$. Dlatego istnieje przedział $[s_{1}, s_{2}] \subset (0,T)$ o długości $T 2^{-(n-1)}$, który nie zawiera żadnego z tych punktów. To oznacza, że  $N(f_{s_{1}}) = N(f_{s_{2}})$, a więc błąd dowolnego algorytmu używającego informacji $N$ wynosi przynajmniej $\| f_{s_{1}} - f_{s_{2}} \|_{L^{p}} / 2 = \delta M(T 2^{-(n+p+1)})^{1/p}$. Z uwagi na to, że $M$ jest dowlonie duże, błąd również może być dowolnie duży.
+        Niech $N$ będzie dowolną (adaptacyjną) informacją używającą nie więcej niż $n$ ewaluacji funkcji. Ponieważ dla każdego ustalonego $x$, funkcja $f_{s}(x)$ może przyjmować tylko dwie wartości w zależności czy $s \leq x$ lub $s > x$, to całkowita liczba punktów użytych przez $N$ dla klasy $S(M)$ wynosi co najwyżej $2^{n}-1$. Dlatego istnieje przedział $[s_{1}, s_{2}] \subset (0,T)$ o długości $T 2^{-(n-1)}$, który nie zawiera żadnego z tych punktów. To oznacza, że  $N(f_{s_{1}}) = N(f_{s_{2}})$, a więc błąd dowolnego algorytmu używającego informacji $N$ wynosi przynajmniej $\| f_{s_{1}} - f_{s_{2}} \|_{L^{p}} / 2 = \delta M(T 2^{-(n+p+1)})^{1/p}$. Z uwagi na to, że $M$ jest dowolnie duże, błąd również może być dowolnie duży.
     \end{proof}
 
     Stwierdzenie \ref{stw1} \ref{stw1_iii} mówi, że nie możemy uogólnić wyników na klasę kawałkami Hölderowskich funkcji $\mathcal{F}_{r,\varrho}$ z $r \geq 1$. Z tego powodu rozważania będziemy prowadzić głównie na klasie $\mathcal{F}_{r,\varrho}^{D}$ funkcji kawałkami Hölderowskich z jednostajnie ograniczonymi skokami nieciągłości $\Delta_{f}^{(0)}$ oraz na klasie $\mathcal{F}_{r,\varrho}^{C}$ funkcji kawałkami Hölderowskich ciągłych.
@@ -596,7 +596,7 @@
         \tilde{d_{i}} = \tilde{f}[t_{i}, \dots, t_{i+r+1}] = \sum_{j = 1}^{i+r+1} y_{j} \prod_{\substack{k=1 \\ k \neq j}}^{i+r+1}(t_{j}-t_{k})^{-1}.
     \end{equation}
 
-    Algorym używa podziału o ilości punktów i długości przedziałów wprowadzonych jak w definicji różnic dzielonych. 
+    Algorytm używa podziału o ilości punktów i długości przedziałów wprowadzonych jak w definicji różnic dzielonych. 
     
     Dodatkowo, ze względu na inny sposób wykorzystania, wielomiany interpolacyjne związane z algorytmem $\varphi^{MP}$ będziemy oznaczać przez $p$, jeśli bazują na informacji dokładnej, oraz przez $\tilde{p}$, jeśli bazują na informacji niedokładnej. Ostatnią zmienną potrzebną na wejściu algorytmu jest $\omega  = \omega(h)$ spełniająca $0 < \omega < (r + 1)h $, pełniącą podobną rolę jak w $\varphi^{KP}$
     
@@ -677,7 +677,7 @@
 
     Twierdzenia i lematy przedstawione w tym rozdziale pochodzą z artykułu \cite{CoDF} i pokazują, że tępo zbieżności błędu aproksymacji algorytmu $\varphi^{KP}$ wynosi $\mathcal{O}(n^{-(r+\varrho)})$, a koszt algorytmu zależy od $n = \mathcal{O}(m)$ wartości funkcji.
 
-    Przedstawmy krótko schemat analizy. Aproksymacja konstruowana w ostatnim kroku algorytmu składa się z funkcji stałych na odpowiednio małych przedziałach oraz wielomianów Lagrange'a na pozostałych. Aby udowodnić, że aproksymacja zachowuje wspomniane właściwości musimy pokazać, że zarówno obecność punktu osobliwego na "małych" przedziałach, jak i na przedziałach z interpolacją nie pogorsza znacząco błędu.
+    Przedstawmy krótko schemat analizy. Aproksymacja konstruowana w ostatnim kroku algorytmu składa się z funkcji stałych na odpowiednio małych przedziałach oraz wielomianów Lagrange'a na pozostałych. Aby udowodnić, że aproksymacja zachowuje wspomniane właściwości musimy pokazać, że zarówno obecność punktu osobliwego na "małych" przedziałach, jak i na przedziałach z interpolacją nie pogarsza znacząco błędu.
 
     Drugi przypadek udowodniono, ograniczając błąd interpolacji wartością testu $A_{g}$ (stwierdzenie \ref{stw:2:2014}), który z kolei ograniczono przez normę wielomianu $s_{g}$, zdefiniowanego w rozdziale \ref{rozdzial:klasy_funkcji}. To oszacowanie wymaga rozważenia błędu interpolacji w zależności czy punkt osobliwy $\po_{g}$ należy do przedziału z węzłami interpolacji (lemat \ref{lem:1:2014}), czy nie (lematy \ref{lem:2:2014}).
     
@@ -791,7 +791,7 @@
         \begin{equation}
             g(t)-w_{g}^{r}([\alpha, \bar{\alpha}])(t)=s_{g}(t) \1_{\left[\hat{t}_{g}, \beta\right]}(t)+\bar{R}_{g}(t), \text{ gdzie } \bar{R}_{g}(t)=\tilde{g}_{1}(t)-w_{\tilde{g}_{1}}^{r}([\alpha, \bar{\alpha}])(t)
         \end{equation}
-        a z regularności $\tilde{g}_{1}$ i $w_{\tilde{g}_{2}}^{r}$ wynika oszcowanie na $\bar{R}_{g}$, co kończy dowód.
+        a z regularności $\tilde{g}_{1}$ i $w_{\tilde{g}_{2}}^{r}$ wynika oszacowanie na $\bar{R}_{g}$, co kończy dowód.
     \end{proof}
 
     Lemat \ref{lem:2:2014} uzasadnia definicję testu $A_{g}(\alpha, \bar{\alpha}, \bar{\beta}, \beta)$ w następujący sposób.
@@ -831,7 +831,7 @@
     \end{proof}
 
     \begin{uw} \label{uw:1}
-        Z stwierdzenia \ref{stw:1:2014} oraz z definicji algorytmu $\varphi^{KP}$ wynika, że dla jakiegokolwiek przedziału $[\alpha, \beta]$, który nie został wybrany podczas działania algorytmu, mamy $A_{g}(\alpha, \bar{\alpha}, \bar{\beta}, \beta) \leq C^{*}$, jeżeli osobliwość $\hat{t}_{g}$ jest jedyna. Dzieje się tak, ponieważ w pierwszym i drugim krou algorytmu przedziały wybierane są na podstawie wartości testu.
+        Z stwierdzenia \ref{stw:1:2014} oraz z definicji algorytmu $\varphi^{KP}$ wynika, że dla jakiegokolwiek przedziału $[\alpha, \beta]$, który nie został wybrany podczas działania algorytmu, mamy $A_{g}(\alpha, \bar{\alpha}, \bar{\beta}, \beta) \leq C^{*}$, jeżeli osobliwość $\hat{t}_{g}$ jest jedyna. Dzieje się tak, ponieważ w pierwszym i drugim kroku algorytmu przedziały wybierane są na podstawie wartości testu.
     \end{uw}
 
     Następna właściwość pokazuje, że w przypadku osobliwym, górne ograniczenie na błąd interpolacji może być wyrażone za pomocą $A_{g}(\alpha, \bar{\alpha}, \bar{\beta}, \beta)$.
@@ -882,11 +882,11 @@
     Za pomocą wprowadzonych lematów możemy teraz udowodnić ograniczenie górne dla $\varphi^{KP}$.
 
     \begin{proof}[\textbf{Dowód twierdzenia \ref{thm:1:ograniczenia_z_gory}\ref{thm:1:iii}}]
-        Niech $g \in \G([a,b])$ i $\Delta_{g}^{(0)} = 0$. W kroku 3. algorytmu, aprokysmacja $\varphi^{KP}(t)$ jest zdefiniowana jako funkcja kawałkami regularna na podziale $t_{0} < t_{1} < \ldots < t_{k}$, zawierającym brzegowe podprzedziały.
+        Niech $g \in \G([a,b])$ i $\Delta_{g}^{(0)} = 0$. W kroku 3. algorytmu, aproksymacja $\varphi^{KP}(t)$ jest zdefiniowana jako funkcja kawałkami regularna na podziale $t_{0} < t_{1} < \ldots < t_{k}$, zawierającym brzegowe podprzedziały.
         
         W każdym podprzedziale, gdzie $\varphi^{KP}(t)$ jest zdefiniowana jako funkcja stała mamy, że $\|g(t) - \varphi^{KP}(t)\| = \mathcal{O}(h^{r+\varrho})$. Wynika to z długości przedziału oraz Lipschitzowskiej ciągłości $g$ na $[t_{i}, t_{i+1})$. Wniosek \ref{cor:1} gwarantuje, że to ograniczenie zachodzi również, gdy punkt osobliwy $\po_{g}$ znajduje się w takim przedziale.
 
-        Wobec tego weźmy przedziały $[t_{i} + h^{r+\varrho}, t_{i+1} - h^{r+\varrho})$ dla $t_{i+1}-t_{i} > 4h^{r+\varrho}$. Na takim przedziale aproksymajca ma postać:
+        Wobec tego weźmy przedziały $[t_{i} + h^{r+\varrho}, t_{i+1} - h^{r+\varrho})$ dla $t_{i+1}-t_{i} > 4h^{r+\varrho}$. Na takim przedziale aproksymacja ma postać:
         \begin{equation*}
             \varphi^{KP}(t)=w_{g}^{r}\left(\left[t_{i}+h^{r+\varrho}, t_{i+1}-h^{r+\varrho}\right]\right)(t).
         \end{equation*}
@@ -1380,7 +1380,7 @@
 
 
 \begin{podsumowanie}
-    Główny problem niniejszej pracy było sprawdzenie jak ważne jest uwzględnienie zaburzenia danych w analizie teoretycznej algorytmów aproksymujących funkcje kawałkami regularne. 
+    Główny problemem niniejszej pracy było sprawdzenie jak ważne jest uwzględnienie zaburzenia danych w analizie teoretycznej algorytmów aproksymujących funkcje kawałkami regularne. 
     
     Część przeprowadzonych testów numerycznych wskazuje, że jest to bardzo istotne założenie i pominięcie go może zmniejszyć zastosowania praktyczne. Z drugiej strony, przy odpowiednio dobranych parametrach oba testowane algorytmy okazały się skuteczne.
     Warto podkreślić, że dla wielu algorytmów analiza uwzględniająca niedokładność informacji jest znacząco bardziej złożona, a czasami wręcz niemożliwa. Jednak pomimo jej braku, końcowe efekty mogą być w pełni satysfakcjonujące. Oczywiście istnieje cały szereg problemów nie wymagających założenia dotyczącego błędów ewaluacji wartości funkcji.

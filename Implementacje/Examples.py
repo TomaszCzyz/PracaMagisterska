@@ -7,14 +7,27 @@ import numpy as np
 rng = np.random.default_rng()
 
 
+def plot_all_examples():
+    name = 'Example'
+    i = 1
+    while name + str(i) in globals():
+        var = globals()[name + str(i)]()
+        var.plot()
+        i += 1
+
+
 class ExampleFunction(ABC):
+    """
+    abstract class contains basic template for each example
+    """
+
     def __init__(self, f__a, f__b, f__r, f__rho, f__noise, f__class, singularity=None):
         self.f__a = f__a
         self.f__b = f__b
         self.f__r = f__r
         self.f__rho = f__rho
         self.f__noise = f__noise
-        self.f__class = f__class
+        self.f__class = f__class if f__class in ['continuous', 'discontinuous'] else None
         self.singularity = singularity
 
     def get_noise(self):
@@ -152,12 +165,3 @@ class Example4(ExampleFunction):
             return mpmath.sin(x)
         if mpmath.pi <= x <= 3 * mpmath.pi:
             return mpmath.sin(x - mpmath.pi)
-
-
-def plot_all_examples():
-    name = 'Example'
-    i = 1
-    while name + str(i) in globals():
-        var = globals()[name + str(i)]()
-        var.plot()
-        i += 1
