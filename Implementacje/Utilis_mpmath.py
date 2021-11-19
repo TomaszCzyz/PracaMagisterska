@@ -1,7 +1,5 @@
 import mpmath
 
-mpmath.dps = 50
-
 
 def divided_diff_coeffs_all_mpmath(x, y):
     """
