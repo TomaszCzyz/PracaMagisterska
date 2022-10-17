@@ -19,7 +19,7 @@
 %% and version 1.2 or later is part of all distributions of LaTeX
 %% version 1999/12/01 or later.
 %% 
-\NeedsTeXFormat{LaTeX2e}[1995/12/01]
+\NeedsTeXFormat{LaTeX2e}%[1995/12/01]
 \ProvidesClass{mwbk}
               [2003/01/30 v0.60
  A LaTeX document class (MW)]
@@ -163,7 +163,7 @@
   \setlength\parindent{1.5em}
 \fi
 \newdimen\@parindent
-%%\parindent32pt % warto¶æ testowa.  Wyrzuciæ!
+%%\parindent32pt % wartoï¿½ï¿½ testowa.  Wyrzuciï¿½!
 \@parindent\parindent
 \@lowpenalty   51
 \@medpenalty  151
@@ -1005,7 +1005,7 @@
      \ifnum#1>\previous@toc@level
         \nobreak
      \else\ifnum#1<\previous@toc@level
-        \addpenalty\@secpenalty % czy to dobra warto¶æ?
+        \addpenalty\@secpenalty % czy to dobra wartoï¿½ï¿½?
      \fi\fi
     \gdef\previous@toc@level{#1}%
     \vskip #2\relax
